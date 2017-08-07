@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <style name="NMJManager.Theme.Overview" parent="NMJManager.Theme">
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="NMJManager.Theme.Preference" parent="android:Theme.Material">
+        <item name="android:windowBackground">@drawable/bg</item>
+        <item name="android:colorPrimary">#3f51b5</item>
+        <item name="android:colorAccent">#fff</item>
+        <item name="android:colorPrimaryDark">#1a237e</item>
+        <item name="android:windowContentTransitions">true</item>
+        <item name="android:colorControlNormal">#fff</item>
+        <item name="android:colorControlActivated">#fff</item>
+        <item name="android:colorControlHighlight">#fff</item>
+        <item name="android:activatedBackgroundIndicator">@drawable/menu_selector</item>
+    </style>
+
+    <style name="Button.RightAligned" parent="android:style/Widget.Material.Button" >
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:layout_gravity">right</item>
+    </style>
+
+    <style name="NMJManager.Theme.Dialog" parent="android:style/Theme.Material.Dialog" />
+
+    <!-- Theme for cancel library update dialog and such -->
+    <style name="NMJManager.Theme.Transparent.Dialog" parent="android:Theme.Material">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
+</resources>

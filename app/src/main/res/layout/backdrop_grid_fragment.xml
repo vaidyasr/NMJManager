@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <com.github.ksoichiro.android.observablescrollview.ObservableGridView
+        android:id="@+id/gridView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:columnWidth="@dimen/backdrop_thumbnail_width"
+        android:drawSelectorOnTop="true"
+        android:horizontalSpacing="@dimen/image_thumbnail_spacing"
+        android:numColumns="auto_fit"
+        android:padding="@dimen/image_thumbnail_spacing"
+        android:scrollbarStyle="outsideOverlay"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="@dimen/image_thumbnail_spacing" >
+    </com.github.ksoichiro.android.observablescrollview.ObservableGridView>
+
+    <ProgressBar
+        android:id="@+id/progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" />
+
+</FrameLayout>

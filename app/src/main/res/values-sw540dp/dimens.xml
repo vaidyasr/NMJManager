@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="image_thumbnail_size">135dp</dimen>
+    <dimen name="image_thumbnail_height">218dp</dimen>
+    <dimen name="backdrop_thumbnail_width">195dp</dimen>
+    <dimen name="image_thumbnail_spacing">8dp</dimen>
+    <dimen name="details_text_size">22sp</dimen>
+    <dimen name="tagline_text_size">26sp</dimen>
+    <dimen name="large_text_size">26sp</dimen>
+    <dimen name="movie_details_padding">16dp</dimen>
+    <dimen name="widgetColumnWidth">200dip</dimen>
+    <dimen name="widgetThumbnailHeight">140dip</dimen>
+    <dimen name="widgetCoverHeight">250dip</dimen>
+    <dimen name="widgetCoverColumnWidth">160dip</dimen>
+    <dimen name="details_padding">24dp</dimen>
+    <dimen name="empty_library_message_width">400dp</dimen>
+    <dimen name="backdrop_portrait_height">440dp</dimen>
+    
+    <dimen name="horizontal_grid_item_width">120dp</dimen>
+    <dimen name="horizontal_grid_item_backdrop_width">180dp</dimen>
+
+    <dimen name="content_details_thumb_height">330dp</dimen>
+    <dimen name="content_details_thumb_width">220dp</dimen>
+    <dimen name="content_details_main_height">346dp</dimen>
+    <dimen name="content_details_title">32sp</dimen>
+    <dimen name="content_details_subheader">20sp</dimen>
+    <dimen name="content_details_body_text">18sp</dimen>
+
+</resources>

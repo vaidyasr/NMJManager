@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="image_thumbnail_size">135dp</dimen>
+    <dimen name="image_thumbnail_height">218dp</dimen>
+    <dimen name="backdrop_thumbnail_width">195dp</dimen>
+    <dimen name="image_thumbnail_spacing">8dp</dimen>
+    <dimen name="details_text_size">22sp</dimen>
+    <dimen name="tagline_text_size">26sp</dimen>
+    <dimen name="large_text_size">26sp</dimen>
+    <dimen name="movie_details_padding">16dp</dimen>
+    <dimen name="widgetColumnWidth">200dip</dimen>
+    <dimen name="widgetThumbnailHeight">140dip</dimen>
+    <dimen name="widgetCoverHeight">250dip</dimen>
+    <dimen name="widgetCoverColumnWidth">160dip</dimen>
+    <dimen name="details_padding">24dp</dimen>
+    <dimen name="episode_details_background_overlay_height">300dp</dimen>
+    <dimen name="episode_details_background_overlay_width">510dp</dimen>
+    <dimen name="empty_library_message_width">480dp</dimen>
+    
+    
+    <!-- Movie / show details -->
+    <dimen name="backdrop_portrait_height">448dp</dimen>
+    <dimen name="details_very_small_padding">4dp</dimen>
+    <dimen name="details_medium_padding">14dp</dimen>
+    
+    <dimen name="horizontal_grid_item_width">120dp</dimen>
+    <dimen name="horizontal_grid_item_backdrop_width">180dp</dimen>
+    <dimen name="content_details_large_margin">64dp</dimen>
+    <dimen name="content_details_baseline_margin">32dp</dimen>
+    <dimen name="content_details_main_height">424dp</dimen>
+    <dimen name="content_details_thumb_height">392dp</dimen>
+    <dimen name="content_details_thumb_width">261dp</dimen>
+    <dimen name="content_details_title">40sp</dimen>
+    <dimen name="content_details_small_margin">8dp</dimen>
+    <dimen name="content_details_very_small_margin">2dp</dimen>
+    <dimen name="content_details_subheader">22sp</dimen>
+    <dimen name="content_details_title_margin_top">0dp</dimen>
+    <dimen name="content_details_area_margin">24dp</dimen>
+    <dimen name="content_details_area_right_padding">136dp</dimen>
+    <dimen name="content_details_area_subheader">16sp</dimen>
+    <dimen name="content_details_area_header">20sp</dimen>
+    <dimen name="content_details_body_text">20sp</dimen>
+    <dimen name="content_details_filepath">14sp</dimen>
+    <dimen name="content_details_portrait_thumb_width">200dp</dimen>
+    <dimen name="content_details_portrait_thumb_height">300dp</dimen>
+    <dimen name="content_details_portrait_thumb_negative_margin">-96dp</dimen>
+    <dimen name="content_details_fab_negative_margin">-32dp</dimen>
+    <dimen name="content_details_landscape_fab_margin_top">32dp</dimen>
+    <dimen name="horizontal_card_layout_title_padding">16dp</dimen>
+    <dimen name="episode_details_thumb_width">400dp</dimen>
+    <dimen name="episode_details_thumb_height">280dp</dimen>
+    <dimen name="thumb_small_width">200dp</dimen>
+    <dimen name="thumb_small_height">300dp</dimen>
+
+</resources>

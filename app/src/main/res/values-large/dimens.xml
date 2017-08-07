@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="image_thumbnail_size">135dp</dimen>
+    <dimen name="image_thumbnail_height">291dp</dimen>
+    <dimen name="backdrop_thumbnail_width">260dp</dimen>
+    <dimen name="details_text_size">22sp</dimen>
+    <dimen name="movie_details_padding">16dp</dimen>
+
+</resources>

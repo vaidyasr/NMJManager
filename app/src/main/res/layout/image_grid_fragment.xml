@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container"
+    android:fitsSystemWindows="true"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <com.github.ksoichiro.android.observablescrollview.ObservableGridView
+        android:id="@+id/gridView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:animationCache="false"
+        android:cacheColorHint="#00000000"
+        android:clipToPadding="false"
+        android:columnWidth="@dimen/image_thumbnail_size"
+        android:fastScrollEnabled="true"
+        android:horizontalSpacing="@dimen/image_thumbnail_spacing"
+        android:nextFocusLeft="@android:id/home"
+        android:numColumns="auto_fit"
+        android:padding="@dimen/image_thumbnail_spacing"
+        android:scrollbarStyle="outsideOverlay"
+        android:scrollingCache="true"
+        android:smoothScrollbar="true"
+        android:stretchMode="columnWidth"
+        android:drawSelectorOnTop="true"
+        android:verticalSpacing="@dimen/image_thumbnail_spacing" >
+    </com.github.ksoichiro.android.observablescrollview.ObservableGridView>
+
+    <ProgressBar
+        android:id="@+id/progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" />
+
+    <LinearLayout
+        android:id="@+id/empty_library_layout"
+        android:layout_width="@dimen/empty_library_message_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:visibility="gone" >
+
+        <TextView
+            android:id="@+id/empty_library_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:focusable="false"
+            android:gravity="center_horizontal"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="26sp" />
+
+        <TextView
+            android:id="@+id/empty_library_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_horizontal"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+    </LinearLayout>
+
+</FrameLayout>
