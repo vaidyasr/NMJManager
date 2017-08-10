@@ -85,11 +85,91 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
     private Config mConfig;
     private MovieSectionLoader mMovieSectionLoader;
     private String mCollectionId;
+    LoaderCallbacks<Cursor> loaderCallbacks = new LoaderCallbacks<Cursor>() {
+        @Override
+        public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
+            mLoading = true;
+            return new SQLiteCursorLoader(getActivity(), DatabaseHelper.getHelper(getActivity()).getWritableDatabase(), DbAdapterMovies.DATABASE_TABLE,
+                    DbAdapterMovies.SELECT_ALL, DbAdapterMovies.KEY_COLLECTION_ID + " = '" + mCollectionId + "'", null, null, null, null);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> arg0, final Cursor cursor) {
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected void onPreExecute() {
+                    mMovies.clear();
+                    mMovieKeys.clear();
+                }
+
+                @Override
+                protected Void doInBackground(Void... params) {
+
+                    ColumnIndexCache cache = new ColumnIndexCache();
+
+                    try {
+                        while (cursor.moveToNext()) {
+                            mMovies.add(new MediumMovie(getActivity(),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TITLE)),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TMDB_ID)),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RATING)),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RELEASEDATE)),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_GENRES)),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_FAVOURITE)),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_ACTORS)),
+                                    NMJManagerApplication.getCollectionsAdapter().getCollection(cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_COLLECTION_ID))),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_COLLECTION_ID)),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TO_WATCH)),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_HAS_WATCHED)),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_DATE_ADDED)),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_CERTIFICATION)),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RUNTIME)),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RUNTIME)),
+                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RUNTIME)),
+                                    mIgnorePrefixes
+                            ));
+                        }
+                    } catch (Exception e) {
+                    } finally {
+                        cursor.close();
+                        cache.clear();
+                    }
+
+                    for (int i = 0; i < mMovies.size(); i++)
+                        mMovieKeys.add(i);
+
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(Void result) {
+                    showMovieSection(0);
+
+                    mLoading = false;
+                }
+            }.execute();
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> arg0) {
+            mMovies.clear();
+            mMovieKeys.clear();
+            notifyDataSetChanged();
+        }
+    };
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            clearCaches();
+            forceLoaderLoad();
+        }
+    };
 
     /**
      * Empty constructor as per the Fragment documentation
      */
-    public CollectionLibraryFragment() {}
+    public CollectionLibraryFragment() {
+    }
 
     public static CollectionLibraryFragment newInstance(String collectionId, String collectionTitle) {
         CollectionLibraryFragment frag = new CollectionLibraryFragment();
@@ -143,85 +223,6 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_MOVIE_LIBRARY));
     }
-
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            clearCaches();
-            forceLoaderLoad();
-        }
-    };
-
-    LoaderCallbacks<Cursor> loaderCallbacks = new LoaderCallbacks<Cursor>() {
-        @Override
-        public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
-            mLoading = true;
-            return new SQLiteCursorLoader(getActivity(), DatabaseHelper.getHelper(getActivity()).getWritableDatabase(), DbAdapterMovies.DATABASE_TABLE,
-                    DbAdapterMovies.SELECT_ALL, DbAdapterMovies.KEY_COLLECTION_ID + " = '" + mCollectionId + "'", null, null, null, null);
-        }
-
-        @Override
-        public void onLoadFinished(Loader<Cursor> arg0, final Cursor cursor) {
-            new AsyncTask<Void, Void, Void>() {
-                @Override
-                protected void onPreExecute() {
-                    mMovies.clear();
-                    mMovieKeys.clear();
-                }
-
-                @Override
-                protected Void doInBackground(Void... params) {
-
-                    ColumnIndexCache cache = new ColumnIndexCache();
-
-                    try {
-                        while (cursor.moveToNext()) {
-                            mMovies.add(new MediumMovie(getActivity(),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TITLE)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TMDB_ID)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RATING)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RELEASEDATE)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_GENRES)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_FAVOURITE)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_ACTORS)),
-                                    NMJManagerApplication.getCollectionsAdapter().getCollection(cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_COLLECTION_ID))),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_COLLECTION_ID)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TO_WATCH)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_HAS_WATCHED)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_DATE_ADDED)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_CERTIFICATION)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RUNTIME)),
-                                    mIgnorePrefixes
-                            ));
-                        }
-                    } catch (Exception e) {
-                    } finally {
-                        cursor.close();
-                        cache.clear();
-                    }
-
-                    for (int i = 0; i < mMovies.size(); i++)
-                        mMovieKeys.add(i);
-
-                    return null;
-                }
-
-                @Override
-                protected void onPostExecute(Void result) {
-                    showMovieSection(0);
-
-                    mLoading = false;
-                }
-            }.execute();
-        }
-
-        @Override
-        public void onLoaderReset(Loader<Cursor> arg0) {
-            mMovies.clear();
-            mMovieKeys.clear();
-            notifyDataSetChanged();
-        }
-    };
 
     private void clearCaches() {
         if (isAdded())
@@ -299,143 +300,9 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
         super.onDestroy();
     }
 
-    private class LoaderAdapter extends BaseAdapter {
-
-        private LayoutInflater mInflater;
-        private final Context mContext;
-        private int mNumColumns = 0;
-        private ArrayList<Integer> mMovieKeys = new ArrayList<Integer>();
-        private ArrayList<MediumMovie> mMovies = new ArrayList<MediumMovie>();
-
-        public LoaderAdapter(Context context) {
-            mContext = context;
-            mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        }
-
-        // This is necessary in order to avoid random ArrayOutOfBoundsException when changing the items (i.e. during a library update)
-        public void setItems(ArrayList<Integer> movieKeys, ArrayList<MediumMovie> movies) {
-            mMovieKeys = new ArrayList<Integer>(movieKeys);
-            mMovies = new ArrayList<MediumMovie>(movies);
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return (!mLoading && mMovieKeys.size() == 0);
-        }
-
-        @Override
-        public int getCount() {
-            return mMovieKeys.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return position;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup container) {
-
-            final MediumMovie mMovie = mMovies.get(mMovieKeys.get(position));
-
-            CoverItem holder;
-            if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.grid_cover_two_line, container, false);
-                holder = new CoverItem();
-
-                holder.cover = (ImageView) convertView.findViewById(R.id.cover);
-                holder.text = (TextView) convertView.findViewById(R.id.text);
-                holder.text.setSingleLine(true);
-                holder.subtext = (TextView) convertView.findViewById(R.id.sub_text);
-                holder.subtext.setSingleLine(true);
-
-                holder.text.setTypeface(TypefaceUtils.getRobotoMedium(mContext));
-
-                convertView.setTag(holder);
-            } else {
-                holder = (CoverItem) convertView.getTag();
-            }
-
-            if (!mShowTitles) {
-                holder.text.setVisibility(View.GONE);
-                holder.subtext.setVisibility(View.GONE);
-            } else {
-                holder.text.setVisibility(View.VISIBLE);
-                holder.subtext.setVisibility(View.VISIBLE);
-
-                holder.text.setText(mMovie.getTitle());
-                holder.subtext.setText(mMovie.getSubText(mCurrentSort));
-            }
-
-            holder.cover.setImageResource(R.color.card_background_dark);
-            if (mResizedWidth > 0)
-                mPicasso.load(mMovie.getThumbnail()).resize(mResizedWidth, mResizedHeight).config(mConfig).into(holder);
-            else
-                mPicasso.load(mMovie.getThumbnail()).config(mConfig).into(holder);
-
-            return convertView;
-        }
-
-        public void setNumColumns(int numColumns) {
-            mNumColumns = numColumns;
-        }
-
-        public int getNumColumns() {
-            return mNumColumns;
-        }
-    }
-
     private void notifyDataSetChanged() {
         if (mAdapter != null)
             mAdapter.setItems(mMovieKeys, mMovies);
-    }
-
-    private class MovieSectionLoader extends LibrarySectionAsyncTask<Void, Void, Boolean> {
-        private int mPosition;
-        private ArrayList<Integer> mTempKeys = new ArrayList<Integer>();
-
-        public MovieSectionLoader(int position) {
-            mPosition = position;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            setProgressBarVisible(true);
-            mMovieKeys.clear();
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            if (isCancelled())
-                return false;
-
-            switch (mPosition) {
-                case 0:
-                    for (int i = 0; i < mMovies.size(); i++)
-                        mTempKeys.add(i);
-                    break;
-            }
-
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            // Make sure that the loading was successful, that the Fragment is still added and
-            // that the currently selected navigation index is the same as when we started loading
-            if (success && isAdded()) {
-                mMovieKeys.addAll(mTempKeys);
-
-                notifyDataSetChanged();
-                setProgressBarVisible(false);
-            }
-        }
     }
 
     private void showMovieSection(int position) {
@@ -532,5 +399,139 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
             } else {
                 getLoaderManager().restartLoader(0, null, loaderCallbacks);
             }
+    }
+
+    private class LoaderAdapter extends BaseAdapter {
+
+        private final Context mContext;
+        private LayoutInflater mInflater;
+        private int mNumColumns = 0;
+        private ArrayList<Integer> mMovieKeys = new ArrayList<Integer>();
+        private ArrayList<MediumMovie> mMovies = new ArrayList<MediumMovie>();
+
+        public LoaderAdapter(Context context) {
+            mContext = context;
+            mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        }
+
+        // This is necessary in order to avoid random ArrayOutOfBoundsException when changing the items (i.e. during a library update)
+        public void setItems(ArrayList<Integer> movieKeys, ArrayList<MediumMovie> movies) {
+            mMovieKeys = new ArrayList<Integer>(movieKeys);
+            mMovies = new ArrayList<MediumMovie>(movies);
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return (!mLoading && mMovieKeys.size() == 0);
+        }
+
+        @Override
+        public int getCount() {
+            return mMovieKeys.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return position;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup container) {
+
+            final MediumMovie mMovie = mMovies.get(mMovieKeys.get(position));
+
+            CoverItem holder;
+            if (convertView == null) {
+                convertView = mInflater.inflate(R.layout.grid_cover_two_line, container, false);
+                holder = new CoverItem();
+
+                holder.cover = (ImageView) convertView.findViewById(R.id.cover);
+                holder.text = (TextView) convertView.findViewById(R.id.text);
+                holder.text.setSingleLine(true);
+                holder.subtext = (TextView) convertView.findViewById(R.id.sub_text);
+                holder.subtext.setSingleLine(true);
+
+                holder.text.setTypeface(TypefaceUtils.getRobotoMedium(mContext));
+
+                convertView.setTag(holder);
+            } else {
+                holder = (CoverItem) convertView.getTag();
+            }
+
+            if (!mShowTitles) {
+                holder.text.setVisibility(View.GONE);
+                holder.subtext.setVisibility(View.GONE);
+            } else {
+                holder.text.setVisibility(View.VISIBLE);
+                holder.subtext.setVisibility(View.VISIBLE);
+
+                holder.text.setText(mMovie.getTitle());
+                holder.subtext.setText(mMovie.getSubText(mCurrentSort));
+            }
+
+            holder.cover.setImageResource(R.color.card_background_dark);
+            if (mResizedWidth > 0)
+                mPicasso.load(mMovie.getThumbnail()).resize(mResizedWidth, mResizedHeight).config(mConfig).into(holder);
+            else
+                mPicasso.load(mMovie.getThumbnail()).config(mConfig).into(holder);
+
+            return convertView;
+        }
+
+        public int getNumColumns() {
+            return mNumColumns;
+        }
+
+        public void setNumColumns(int numColumns) {
+            mNumColumns = numColumns;
+        }
+    }
+
+    private class MovieSectionLoader extends LibrarySectionAsyncTask<Void, Void, Boolean> {
+        private int mPosition;
+        private ArrayList<Integer> mTempKeys = new ArrayList<Integer>();
+
+        public MovieSectionLoader(int position) {
+            mPosition = position;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            setProgressBarVisible(true);
+            mMovieKeys.clear();
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            if (isCancelled())
+                return false;
+
+            switch (mPosition) {
+                case 0:
+                    for (int i = 0; i < mMovies.size(); i++)
+                        mTempKeys.add(i);
+                    break;
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            // Make sure that the loading was successful, that the Fragment is still added and
+            // that the currently selected navigation index is the same as when we started loading
+            if (success && isAdded()) {
+                mMovieKeys.addAll(mTempKeys);
+
+                notifyDataSetChanged();
+                setProgressBarVisible(false);
+            }
+        }
     }
 }

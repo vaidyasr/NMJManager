@@ -129,6 +129,17 @@ public class MovieLoader {
     }
 
     /**
+     * Get the movie sort type. Can be either <code>TITLE</code>,
+     * <code>RELEASE</code>, <code>DURATION</code>, <code>RATING</code>,
+     * <code>WEIGHTED_RATING</code>, <code>DATE_ADDED</code> or <code>COLLECTION_TITLE</code>.
+     *
+     * @return Movie sort type
+     */
+    public MovieSortType getSortType() {
+        return mSortType;
+    }
+
+    /**
      * Set the movie sort type.
      *
      * @param type
@@ -164,17 +175,6 @@ public class MovieLoader {
                 editor.apply();
             }
         }
-    }
-
-    /**
-     * Get the movie sort type. Can be either <code>TITLE</code>,
-     * <code>RELEASE</code>, <code>DURATION</code>, <code>RATING</code>,
-     * <code>WEIGHTED_RATING</code>, <code>DATE_ADDED</code> or <code>COLLECTION_TITLE</code>.
-     *
-     * @return Movie sort type
-     */
-    public MovieSortType getSortType() {
-        return mSortType;
     }
 
     /**
@@ -287,6 +287,8 @@ public class MovieLoader {
                             object.getString("id"), //KEY_DATE_ADDED
                             object.getString("id"),
                             object.getString("id"), //RUNTIME
+                            object.getString("id"), //RUNTIME
+                            object.getString("thumbnail"),
                             true));
                 }
             }
@@ -302,7 +304,7 @@ public class MovieLoader {
 
     private ArrayList<MediumMovie> listFromJSON(String loadType) {
         ArrayList<MediumMovie> list = new ArrayList<>();
-        String url = "http://pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=Movies&VALUE=&searchtype=title";
+        String url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=Movies&VALUE=&searchtype=title";
         try {
             HttpGet httpGet = new HttpGet(url);
             System.out.println("url " + url);
@@ -337,6 +339,8 @@ public class MovieLoader {
                             object.getString("SHOW_ID"), //KEY_DATE_ADDED
                             object.getString("PARENTAL_CONTROL"),
                             object.getString("RUNTIME"), //RUNTIME
+                            object.getString("SHOW_ID"),
+                            object.getString("THUMBNAIL"),
                             true));
                 }
             }
@@ -356,7 +360,7 @@ public class MovieLoader {
      * @param cursor
      * @return List of movie objects from the supplied Cursor.
      */
-    private ArrayList<MediumMovie> listFromCursor(Cursor cursor) {
+    /*private ArrayList<MediumMovie> listFromCursor(Cursor cursor) {
 
         // Normally we'd have to go through each movie and add filepaths mapped to that movie
         // one by one. This is a hacky approach that gets all filepaths at once and creates a
@@ -414,7 +418,7 @@ public class MovieLoader {
             System.out.println(value);
         }
         return list;
-    }
+    }*/
 
     /**
      * Get the results of the most recently loaded movies.
@@ -423,6 +427,160 @@ public class MovieLoader {
      */
     public ArrayList<MediumMovie> getResults() {
         return mResults;
+    }
+
+    /**
+     * Show genres filter dialog.
+     *
+     * @param activity
+     */
+    public void showGenresFilterDialog(Activity activity) {
+        final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
+        String[] splitGenres;
+        for (int i = 0; i < mResults.size(); i++) {
+            if (!mResults.get(i).getGenres().isEmpty()) {
+                splitGenres = mResults.get(i).getGenres().split(",");
+                for (int j = 0; j < splitGenres.length; j++) {
+                    if (map.containsKey(splitGenres[j].trim())) {
+                        map.put(splitGenres[j].trim(), map.get(splitGenres[j].trim()) + 1);
+                    } else {
+                        map.put(splitGenres[j].trim(), 1);
+                    }
+                }
+            }
+        }
+
+        createAndShowAlertDialog(activity, setupItemArray(map), R.string.selectGenre, MovieFilter.GENRE);
+    }
+
+    /**
+     * Show certifications filter dialog.
+     *
+     * @param activity
+     */
+    public void showCertificationsFilterDialog(Activity activity) {
+        final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
+        for (int i = 0; i < mResults.size(); i++) {
+            String certification = mResults.get(i).getCertification();
+            if (!TextUtils.isEmpty(certification)) {
+                if (map.containsKey(certification.trim())) {
+                    map.put(certification.trim(), map.get(certification.trim()) + 1);
+                } else {
+                    map.put(certification.trim(), 1);
+                }
+            }
+        }
+
+        createAndShowAlertDialog(activity, setupItemArray(map), R.string.selectCertification, MovieFilter.CERTIFICATION);
+    }
+
+    /**
+     * Show release year filter dialog.
+     *
+     * @param activity
+     */
+    public void showReleaseYearFilterDialog(Activity activity) {
+        final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
+        for (int i = 0; i < mResults.size(); i++) {
+            String year = mResults.get(i).getReleaseYear().trim();
+            if (!TextUtils.isEmpty(year)) {
+                if (map.containsKey(year)) {
+                    map.put(year, map.get(year) + 1);
+                } else {
+                    map.put(year, 1);
+                }
+            }
+        }
+
+        createAndShowAlertDialog(activity, setupItemArray(map), R.string.selectReleaseYear, MovieFilter.RELEASE_YEAR);
+    }
+
+    /**
+     * Used to set up an array of items for the alert dialog.
+     *
+     * @param map
+     * @return List of dialog options.
+     */
+    private CharSequence[] setupItemArray(TreeMap<String, Integer> map) {
+        final CharSequence[] tempArray = map.keySet().toArray(new CharSequence[map.keySet().size()]);
+        for (int i = 0; i < tempArray.length; i++)
+            tempArray[i] = tempArray[i] + " (" + map.get(tempArray[i]) + ")";
+
+        return tempArray;
+    }
+
+    /**
+     * Shows an alert dialog and handles the user selection.
+     *
+     * @param activity
+     * @param temp
+     * @param title
+     * @param type
+     */
+    private void createAndShowAlertDialog(Activity activity, final CharSequence[] temp, int title, final int type) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle(title)
+                .setItems(temp, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Let's get what the user selected and remove the parenthesis at the end
+                        String selected = temp[which].toString();
+                        selected = selected.substring(0, selected.lastIndexOf("(")).trim();
+
+                        // Add filter
+                        MovieFilter filter = new MovieFilter(type);
+                        filter.setFilter(selected);
+                        addFilter(filter);
+
+                        // Re-load the library with the new filter
+                        load();
+
+                        // Dismiss the dialog
+                        dialog.dismiss();
+                    }
+                });
+        builder.show();
+    }
+
+    /**
+     * Sets the sort type depending on the movie
+     * library type. The collections library will
+     * always be sorted by collection title, the
+     * "New releases" library will be sorted by
+     * release date and the "All movies" library
+     * will be sorted by the user's preference, if
+     * such exists. If not, it'll sort by movie title
+     * like the other library types do by default.
+     */
+    private void setupSortType() {
+        if (getType() == MovieLibraryType.ALL_MOVIES) {
+
+            // Load the saved sort type and set it
+            String savedSortType = PreferenceManager.getDefaultSharedPreferences(mContext).getString(PreferenceKeys.SORTING_MOVIES, SORT_TITLE);
+
+            switch (savedSortType) {
+                case SORT_TITLE:
+                    setSortType(MovieSortType.TITLE);
+                    break;
+                case SORT_RELEASE:
+                    setSortType(MovieSortType.RELEASE);
+                    break;
+                case SORT_RATING:
+                    setSortType(MovieSortType.RATING);
+                    break;
+                case SORT_DATE_ADDED:
+                    setSortType(MovieSortType.DATE_ADDED);
+                    break;
+                case SORT_DURATION:
+                    setSortType(MovieSortType.DURATION);
+                    break;
+            }
+        } else if (getType() == MovieLibraryType.COLLECTIONS) {
+            setSortType(MovieSortType.COLLECTION_TITLE);
+        } else if (getType() == MovieLibraryType.NEW_RELEASES) {
+            setSortType(MovieSortType.RELEASE);
+        } else {
+            setSortType(MovieSortType.TITLE);
+        }
     }
 
     /**
@@ -717,160 +875,6 @@ public class MovieLoader {
                 mCallback.onLoadCompleted();
             } else
                 mMovieList.clear();
-        }
-    }
-
-    /**
-     * Show genres filter dialog.
-     *
-     * @param activity
-     */
-    public void showGenresFilterDialog(Activity activity) {
-        final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
-        String[] splitGenres;
-        for (int i = 0; i < mResults.size(); i++) {
-            if (!mResults.get(i).getGenres().isEmpty()) {
-                splitGenres = mResults.get(i).getGenres().split(",");
-                for (int j = 0; j < splitGenres.length; j++) {
-                    if (map.containsKey(splitGenres[j].trim())) {
-                        map.put(splitGenres[j].trim(), map.get(splitGenres[j].trim()) + 1);
-                    } else {
-                        map.put(splitGenres[j].trim(), 1);
-                    }
-                }
-            }
-        }
-
-        createAndShowAlertDialog(activity, setupItemArray(map), R.string.selectGenre, MovieFilter.GENRE);
-    }
-
-    /**
-     * Show certifications filter dialog.
-     *
-     * @param activity
-     */
-    public void showCertificationsFilterDialog(Activity activity) {
-        final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
-        for (int i = 0; i < mResults.size(); i++) {
-            String certification = mResults.get(i).getCertification();
-            if (!TextUtils.isEmpty(certification)) {
-                if (map.containsKey(certification.trim())) {
-                    map.put(certification.trim(), map.get(certification.trim()) + 1);
-                } else {
-                    map.put(certification.trim(), 1);
-                }
-            }
-        }
-
-        createAndShowAlertDialog(activity, setupItemArray(map), R.string.selectCertification, MovieFilter.CERTIFICATION);
-    }
-
-    /**
-     * Show release year filter dialog.
-     *
-     * @param activity
-     */
-    public void showReleaseYearFilterDialog(Activity activity) {
-        final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
-        for (int i = 0; i < mResults.size(); i++) {
-            String year = mResults.get(i).getReleaseYear().trim();
-            if (!TextUtils.isEmpty(year)) {
-                if (map.containsKey(year)) {
-                    map.put(year, map.get(year) + 1);
-                } else {
-                    map.put(year, 1);
-                }
-            }
-        }
-
-        createAndShowAlertDialog(activity, setupItemArray(map), R.string.selectReleaseYear, MovieFilter.RELEASE_YEAR);
-    }
-
-    /**
-     * Used to set up an array of items for the alert dialog.
-     *
-     * @param map
-     * @return List of dialog options.
-     */
-    private CharSequence[] setupItemArray(TreeMap<String, Integer> map) {
-        final CharSequence[] tempArray = map.keySet().toArray(new CharSequence[map.keySet().size()]);
-        for (int i = 0; i < tempArray.length; i++)
-            tempArray[i] = tempArray[i] + " (" + map.get(tempArray[i]) + ")";
-
-        return tempArray;
-    }
-
-    /**
-     * Shows an alert dialog and handles the user selection.
-     *
-     * @param activity
-     * @param temp
-     * @param title
-     * @param type
-     */
-    private void createAndShowAlertDialog(Activity activity, final CharSequence[] temp, int title, final int type) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setTitle(title)
-                .setItems(temp, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Let's get what the user selected and remove the parenthesis at the end
-                        String selected = temp[which].toString();
-                        selected = selected.substring(0, selected.lastIndexOf("(")).trim();
-
-                        // Add filter
-                        MovieFilter filter = new MovieFilter(type);
-                        filter.setFilter(selected);
-                        addFilter(filter);
-
-                        // Re-load the library with the new filter
-                        load();
-
-                        // Dismiss the dialog
-                        dialog.dismiss();
-                    }
-                });
-        builder.show();
-    }
-
-    /**
-     * Sets the sort type depending on the movie
-     * library type. The collections library will
-     * always be sorted by collection title, the
-     * "New releases" library will be sorted by
-     * release date and the "All movies" library
-     * will be sorted by the user's preference, if
-     * such exists. If not, it'll sort by movie title
-     * like the other library types do by default.
-     */
-    private void setupSortType() {
-        if (getType() == MovieLibraryType.ALL_MOVIES) {
-
-            // Load the saved sort type and set it
-            String savedSortType = PreferenceManager.getDefaultSharedPreferences(mContext).getString(PreferenceKeys.SORTING_MOVIES, SORT_TITLE);
-
-            switch (savedSortType) {
-                case SORT_TITLE:
-                    setSortType(MovieSortType.TITLE);
-                    break;
-                case SORT_RELEASE:
-                    setSortType(MovieSortType.RELEASE);
-                    break;
-                case SORT_RATING:
-                    setSortType(MovieSortType.RATING);
-                    break;
-                case SORT_DATE_ADDED:
-                    setSortType(MovieSortType.DATE_ADDED);
-                    break;
-                case SORT_DURATION:
-                    setSortType(MovieSortType.DURATION);
-                    break;
-            }
-        } else if (getType() == MovieLibraryType.COLLECTIONS) {
-            setSortType(MovieSortType.COLLECTION_TITLE);
-        } else if (getType() == MovieLibraryType.NEW_RELEASES) {
-            setSortType(MovieSortType.RELEASE);
-        } else {
-            setSortType(MovieSortType.TITLE);
         }
     }
 }

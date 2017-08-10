@@ -40,10 +40,10 @@ import java.util.regex.Pattern;
 
 public class MovieContentProvider extends SearchRecentSuggestionsProvider {
 
-	static final String TAG = MovieContentProvider.class.getSimpleName();
 	public static final String AUTHORITY = MovieContentProvider.class.getName();
 	public static final int MODE = DATABASE_MODE_QUERIES | DATABASE_MODE_2LINES;
-	private static final String[] COLUMNS = {
+    static final String TAG = MovieContentProvider.class.getSimpleName();
+    private static final String[] COLUMNS = {
 		BaseColumns._ID, // must include this column
 		SearchManager.SUGGEST_COLUMN_TEXT_1, // First line (title)
 		SearchManager.SUGGEST_COLUMN_TEXT_2, // Second line (smaller text)
@@ -138,7 +138,9 @@ public class MovieContentProvider extends SearchRecentSuggestionsProvider {
 								c.getString(cache.getColumnIndex(c, DbAdapterMovies.KEY_HAS_WATCHED)),
 								c.getString(cache.getColumnIndex(c, DbAdapterMovies.KEY_DATE_ADDED)),
 								c.getString(cache.getColumnIndex(c, DbAdapterMovies.KEY_CERTIFICATION)),
-								c.getString(cache.getColumnIndex(c, DbAdapterMovies.KEY_RUNTIME)),
+                                c.getString(cache.getColumnIndex(c, DbAdapterMovies.KEY_RUNTIME)),
+                                c.getString(cache.getColumnIndex(c, DbAdapterMovies.KEY_RUNTIME)),
+                                c.getString(cache.getColumnIndex(c, DbAdapterMovies.KEY_RUNTIME)),
 								false
 								));
 					}

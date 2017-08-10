@@ -34,15 +34,15 @@ public class TMDbMovieService extends MovieApiService {
 	private final String mTmdbApiKey;
 	private final Context mContext;
 
+    private TMDbMovieService(Context context) {
+        mContext = context;
+        mTmdbApiKey = NMJLib.getTmdbApiKey(mContext);
+    }
+
 	public static TMDbMovieService getInstance(Context context) {
 		if (mService == null)
 			mService = new TMDbMovieService(context);
 		return mService;
-	}
-
-	private TMDbMovieService(Context context) {
-		mContext = context;
-		mTmdbApiKey = NMJLib.getTmdbApiKey(mContext);
 	}
 
     /**
@@ -501,8 +501,8 @@ public class TMDbMovieService extends MovieApiService {
 	}
 
 	@Override
-	public List<Actor> getActors(String id) {
-		ArrayList<Actor> results = new ArrayList<Actor>();
+    public List<Actor> getCast(String id) {
+        ArrayList<Actor> results = new ArrayList<Actor>();
 
 		String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
@@ -519,7 +519,36 @@ public class TMDbMovieService extends MovieApiService {
 					results.add(new Actor(
 							jArray.getJSONObject(i).getString("name"),
 							jArray.getJSONObject(i).getString("character"),
-							jArray.getJSONObject(i).getString("id"),
+                            jArray.getJSONObject(i).getString("id"),
+                            baseUrl + NMJLib.getActorUrlSize(mContext) + jArray.getJSONObject(i).getString("profile_path")));
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        return results;
+    }
+
+    @Override
+    public List<Actor> getCrew(String id) {
+        ArrayList<Actor> results = new ArrayList<Actor>();
+
+        String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
+
+        try {
+            JSONObject jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "/credits?api_key=" + mTmdbApiKey);
+            JSONArray jArray = jObject.getJSONArray("crew");
+
+            Set<String> actorIds = new HashSet<String>();
+
+            for (int i = 0; i < jArray.length(); i++) {
+                if (!actorIds.contains(jArray.getJSONObject(i).getString("id"))) {
+                    actorIds.add(jArray.getJSONObject(i).getString("id"));
+
+                    results.add(new Actor(
+                            jArray.getJSONObject(i).getString("name"),
+                            jArray.getJSONObject(i).getString("job"),
+                            jArray.getJSONObject(i).getString("id"),
 							baseUrl + NMJLib.getActorUrlSize(mContext) + jArray.getJSONObject(i).getString("profile_path")));
 				}
 			}

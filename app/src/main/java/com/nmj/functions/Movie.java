@@ -32,13 +32,13 @@ public class Movie extends MediumBaseMovie {
 	private String mGetPlot, mGetTagline;
 
 	public Movie(Context context, String title, String plot, String tagline, String tmdbId, String imdbId, String rating, String releasedate,
-			String certification, String runtime, String trailer, String genres, String favourite, String cast, String collection, String collectionId, String toWatch, String hasWatched,
-			String date_added, boolean ignorePrefixes) {
+                 String certification, String runtime, String trailer, String genres, String favourite, String cast, String collection, String collectionId, String toWatch, String hasWatched,
+                 String date_added, String showId, String thumbnail, boolean ignorePrefixes) {
 
 		super(context, title, tmdbId, rating, releasedate, genres, favourite, cast, collection,
-				collectionId, toWatch, hasWatched, date_added, certification, runtime, ignorePrefixes);
-		
-		// Set up movie fields based on constructor
+                collectionId, toWatch, hasWatched, date_added, certification, runtime, showId, thumbnail, ignorePrefixes);
+
+        // Set up movie fields based on constructor
 		PLOT = plot;
 		TAGLINE = tagline;
 		mTmdbId = tmdbId;
@@ -90,16 +90,16 @@ public class Movie extends MediumBaseMovie {
 		return FAVOURITE;
 	}
 
-	public void setFavourite(String fav) {
-		FAVOURITE = fav;
-	}
-
 	public void setFavourite(boolean isFavourite) {
 		if (isFavourite)
 			FAVOURITE = "1";
 		else
 			FAVOURITE = "0";
-	}
+    }
+
+    public void setFavourite(String fav) {
+        FAVOURITE = fav;
+    }
 
 	public String getHasWatched() {
 		return HAS_WATCHED;

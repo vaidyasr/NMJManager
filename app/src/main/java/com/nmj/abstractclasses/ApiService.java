@@ -68,9 +68,17 @@ public abstract class ApiService<T> {
 	public abstract T get(String id, String language);
 	
 	/**
-	 * Get actors for the given content ID.
-	 * @param id Movie or TV show ID.
+     * Get cast for the given content ID.
+     * @param id Movie or TV show ID.
 	 * @return {@link List} of {@link Actor} objects.
 	 */
-	public abstract List<Actor> getActors(String id);
+    public abstract List<Actor> getCast(String id);
+
+    /**
+     * Get crew for the given content ID.
+     *
+     * @param id Movie or TV show ID.
+     * @return {@link List} of {@link Actor} objects.
+     */
+    public abstract List<Actor> getCrew(String id);
 }

@@ -40,13 +40,13 @@ import java.util.HashSet;
 
 public class TraktMoviesSyncService extends IntentService {
 
-	private ArrayList<Movie> mMovies;
+    private final int NOTIFICATION_ID = 9;
+    private ArrayList<Movie> mMovies;
 	private ArrayList<String> mTmdbIds;
 	private HashSet<String> mMovieCollection, mWatchedMovies, mMovieFavorites, mWatchlist;
 	private NotificationCompat.Builder mBuilder;
 	private NotificationManager mNotificationManager;
 	private DbAdapterMovies mMovieDatabase;
-	private final int NOTIFICATION_ID = 9;
 
 	public TraktMoviesSyncService() {
 		super("TraktMoviesSyncService");
@@ -183,7 +183,9 @@ public class TraktMoviesSyncService extends IntentService {
 						cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_COLLECTION_ID)),
 						cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TO_WATCH)),
 						cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_HAS_WATCHED)),
-						cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_DATE_ADDED)),
+                        cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_DATE_ADDED)),
+                        cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_DATE_ADDED)),
+                        cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_DATE_ADDED)),
 						false
 						));
 			}

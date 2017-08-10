@@ -50,7 +50,8 @@ import java.util.ArrayList;
 public class ActorBrowserFragment extends Fragment {
 
 	private int mImageThumbSize, mImageThumbSpacing;
-	private ArrayList<Actor> mActors = new ArrayList<Actor>();
+	private ArrayList<Actor> mCast = new ArrayList<Actor>();
+	private ArrayList<Actor> mCrew = new ArrayList<Actor>();
 	private GridView mGridView = null;
 	private ProgressBar mProgressBar;
 	private Picasso mPicasso;
@@ -118,7 +119,7 @@ public class ActorBrowserFragment extends Fragment {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), arg1.findViewById(R.id.cover), "cover");
-                ActivityCompat.startActivity(getActivity(), IntentUtils.getActorIntent(getActivity(), mActors.get(arg2)), options.toBundle());
+				ActivityCompat.startActivity(getActivity(), IntentUtils.getActorIntent(getActivity(), mCast.get(arg2)), options.toBundle());
 			}
 		});
 
@@ -134,8 +135,14 @@ public class ActorBrowserFragment extends Fragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		if (mActors.size() == 0)
-			new GetActorDetails(getArguments().getString("movieId"), getActivity()).execute();
+		String loadType = getArguments().getString("loadType");
+		if (loadType == "cast") {
+			if (mCast.size() == 0)
+				new GetCastDetails(getArguments().getString("movieId"), getActivity()).execute();
+		} else {
+			if (mCrew.size() == 0)
+				new GetCrewDetails(getArguments().getString("movieId"), getActivity()).execute();
+		}
 	}
 	
 	private class ImageAdapter extends BaseAdapter {
@@ -150,7 +157,7 @@ public class ActorBrowserFragment extends Fragment {
 
 		@Override
 		public int getCount() {
-			return mActors.size();
+			return mCast.size();
 		}
 
 		@Override
@@ -201,13 +208,13 @@ public class ActorBrowserFragment extends Fragment {
 
 			holder.cover.setImageResource(R.color.card_background_dark);
 
-			holder.text.setText(mActors.get(position).getName());
-			holder.subtext.setText(mActors.get(position).getCharacter());
+			holder.text.setText(mCast.get(position).getName());
+			holder.subtext.setText(mCast.get(position).getCharacter());
 
 			// Finally load the image asynchronously into the ImageView, this also takes care of
 			// setting a placeholder image while the background thread runs
-			if (!mActors.get(position).getUrl().endsWith("null"))
-				mPicasso.load(mActors.get(position).getUrl()).error(R.drawable.noactor).config(mConfig).into(holder);
+			if (!mCast.get(position).getUrl().endsWith("null"))
+				mPicasso.load(mCast.get(position).getUrl()).error(R.drawable.noactor).config(mConfig).into(holder);
 			else
 				holder.cover.setImageResource(R.drawable.noactor);
 
@@ -215,12 +222,12 @@ public class ActorBrowserFragment extends Fragment {
 		}
 	}
 
-	protected class GetActorDetails extends AsyncTask<Void, Void, Void> {
+	protected class GetCastDetails extends AsyncTask<Void, Void, Void> {
 
 		private final Context mContext;
 		private final String mMovieId;
 
-		public GetActorDetails(String movieId, Context context) {
+		public GetCastDetails(String movieId, Context context) {
 			mMovieId = movieId;
 			mContext = context;
 		}
@@ -233,8 +240,7 @@ public class ActorBrowserFragment extends Fragment {
 		@Override
 		protected Void doInBackground(Void... params) {
 			MovieApiService service = NMJManagerApplication.getMovieService(mContext);
-			mActors = new ArrayList<Actor>(service.getActors(mMovieId));
-
+			mCast = new ArrayList<Actor>(service.getCast(mMovieId));
 			return null;
 		}
 
@@ -244,7 +250,40 @@ public class ActorBrowserFragment extends Fragment {
 				mProgressBar.setVisibility(View.GONE);
 				mAdapter.notifyDataSetChanged();
 
-				mEmptyView.setVisibility((mActors.size() == 0) ? View.VISIBLE : View.GONE);
+				mEmptyView.setVisibility((mCast.size() == 0) ? View.VISIBLE : View.GONE);
+			}
+		}
+	}
+
+	protected class GetCrewDetails extends AsyncTask<Void, Void, Void> {
+
+		private final Context mContext;
+		private final String mMovieId;
+
+		public GetCrewDetails(String movieId, Context context) {
+			mMovieId = movieId;
+			mContext = context;
+		}
+
+		@Override
+		protected void onPreExecute() {
+			mProgressBar.setVisibility(View.VISIBLE);
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			MovieApiService service = NMJManagerApplication.getMovieService(mContext);
+			mCrew = new ArrayList<Actor>(service.getCrew(mMovieId));
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			if (isAdded()) {
+				mProgressBar.setVisibility(View.GONE);
+				mAdapter.notifyDataSetChanged();
+
+				mEmptyView.setVisibility((mCrew.size() == 0) ? View.VISIBLE : View.GONE);
 			}
 		}
 	}

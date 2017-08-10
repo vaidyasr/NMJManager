@@ -104,7 +104,8 @@
     <string name="prefsFileSourcesDescription">Configure the file sources to include in library updates.</string>
     <string name="actorsShowAllPhotos">Photos</string>
     <string name="actorsTaggedPhotos">Tagged photos</string>
-    <string name="detailsActors">Actors</string>
+    <string name="detailsCast">Cast</string>
+    <string name="detailsCrew">Crew</string>
     <string name="chooserMovies">Movies</string>
     <string name="chooserTVShows">TV shows</string>
     <string name="showGuestStars">Guest stars</string>

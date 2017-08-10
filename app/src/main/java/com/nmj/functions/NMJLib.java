@@ -157,6 +157,23 @@ public class NMJLib {
     public static final int HOUR = 60 * MINUTE;
     public static final int DAY = 24 * HOUR;
     public static final int WEEK = 7 * DAY;
+    public static final long GB = 1000 * 1000 * 1000;
+    public static final long MB = 1000 * 1000;
+    public static final long KB = 1000;
+    public static final int TYPE_MOVIE = 0, TYPE_SHOWS = 1;
+    public static final int HEIGHT = 100, WIDTH = 110;
+    private final static String YEAR_PATTERN = "(18|19|20)[0-9][0-9]";
+    private final static String WAREZ_PATTERN = "(?i)(dvdscreener|dvdscreen|dvdscr|dvdrip|dvd5|dvd|xvid|divx|m\\-480p|m\\-576p|m\\-720p|m\\-864p|m\\-900p|m\\-1080p|m480p|m576p|m720p|m864p|m900p|m1080p|480p|576p|720p|864p|900p|1080p|1080i|720i|mhd|brrip|bdrip|brscreener|brscreen|brscr|aac|x264|bluray|dts|screener|hdtv|ac3|repack|2\\.1|5\\.1|ac3_6|7\\.1|h264|hdrip|ntsc|proper|readnfo|rerip|subbed|vcd|scvd|pdtv|sdtv|hqts|hdcam|multisubs|650mb|700mb|750mb|webdl|web-dl|bts|korrip|webrip|korsub|1link|sample|tvrip|tvr|extended.editions?|directors cut|tfe|unrated|\\(.*?torrent.*?\\)|\\[.*?\\]|\\(.*?\\)|\\{.*?\\}|part[0-9]|cd[0-9])";
+    private final static String ABBREVIATION_PATTERN = "(?<=(^|[.])[\\S&&\\D])[.](?=[\\S&&\\D]([.]|$))";
+    public static int COVER = 1, BACKDROP = 2;
+    public static String[] subtitleFormats = new String[]{".srt", ".sub", ".ssa", ".ssf", ".smi", ".txt", ".usf", ".ass", ".stp", ".idx", ".aqt", ".cvd", ".dks", ".jss", ".mpl", ".pjs", ".psb", ".rt", ".svcd", ".usf"};
+    private static String[] MEDIA_APPS = new String[]{"com.imdb.mobile", "com.google.android.youtube", "com.ted.android", "com.google.android.videos", "se.mtg.freetv.tv3_dk", "tv.twitch.android.viewer",
+            "com.netflix.mediaclient", "com.gotv.crackle.handset", "net.flixster.android", "com.google.tv.alf", "com.viki.android", "com.mobitv.client.mobitv", "com.hulu.plus.jp", "com.hulu.plus",
+            "com.mobitv.client.tv", "air.com.vudu.air.DownloaderTablet", "com.hbo.android.app", "com.HBO", "bbc.iplayer.android", "air.uk.co.bbc.android.mediaplayer", "com.rhythmnewmedia.tvdotcom",
+            "com.cnettv.app", "com.xfinity.playnow"};
+    private static int mRuntimeInMinutes;
+    private static String[] mAdultKeywords = new String[]{"adult", "sex", "porn", "explicit", "penis", "vagina", "asshole",
+            "blowjob", "cock", "fuck", "dildo", "kamasutra", "masturbat", "squirt", "slutty", "cum", "cunt"};
 
     private NMJLib() {
     } // No instantiation
@@ -394,10 +411,6 @@ public class NMJLib {
             return null;
         }
     }
-
-    public static final long GB = 1000 * 1000 * 1000;
-    public static final long MB = 1000 * 1000;
-    public static final long KB = 1000;
 
     /**
      * Returns the input file size as a string in either KB, MB or GB
@@ -1147,7 +1160,6 @@ public class NMJLib {
         return true;
     }
 
-
     public static JSONObject getJson(String url) {
 
         InputStream is = null;
@@ -1191,61 +1203,6 @@ public class NMJLib {
 
     }
 
-    public static String getJSONFromURL1(String url) {
-        System.out.println("inputURL : " + url);
-
-        new android.os.AsyncTask<String, Void, Void>() {
-            private String data;
-
-            @Override
-            protected Void doInBackground(String... url) {
-                try {
-                    HttpGet httpGet = new HttpGet(url[0]);
-                    HttpClient httpclient = new DefaultHttpClient();
-                    HttpResponse response = httpclient.execute(httpGet);
-                    // StatusLine stat = response.getStatusLine();
-                    int status = response.getStatusLine().getStatusCode();
-
-                    if (status == 200) {
-                        HttpEntity entity = response.getEntity();
-                        data = EntityUtils.toString(entity);
-                        System.out.println("finalResult " + data);
-                    }
-                } catch (ParseException e1) {
-                    e1.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(String data) {
-                System.out.println("finalResult " + data);
-            }
-        }.execute();
-    }
-
-    public static String getJSONFromURL(String url) throws IOException {
-        System.out.println("getJSONFromURL: " + url);
-        final OkHttpClient client = NMJManagerApplication.getOkHttpClient();
-        final String TAG = NMJActivity.class.getName();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .get()
-                .build();
-        Response response = null;
-        try {
-            response = client.newCall(request).execute();
-            System.out.println("Output: " + response.body().string());
-            return response.body().string();
-        } catch (IOException e) {
-            Log.e(TAG, "error in getting response get request okhttp");
-        }
-        return null;
-    }
-
     public static JSONObject getJSONObject(Context context, String url) {
         System.out.println("getJSONFromURL: " + url);
         final OkHttpClient client = NMJManagerApplication.getOkHttpClient();
@@ -1264,8 +1221,9 @@ public class NMJLib {
                 Thread.sleep(5000);
                 response = client.newCall(request).execute();
             }
-            System.out.println("Output: " + response.body().string());
-            return new JSONObject(response.body().string());
+            String result = response.body().string();
+            System.out.println("Output: " + result);
+            return new JSONObject(result);
         } catch (Exception e) { // IOException and JSONException
             return new JSONObject();
         }
@@ -1328,8 +1286,6 @@ public class NMJLib {
     public static String URLEncodeUTF8(String s) {
         return Uri.parse(s).toString();
     }
-
-    public static final int TYPE_MOVIE = 0, TYPE_SHOWS = 1;
 
     public static ArrayList<FileSource> getFileSources(int type, boolean onlyNetworkSources) {
 
@@ -1404,8 +1360,6 @@ public class NMJLib {
 
         return getLoginFromFilesource(source);
     }
-
-    public static int COVER = 1, BACKDROP = 2;
 
     public static SmbFile getCustomCoverArt(String filepath, SmbLogin auth, int type) throws MalformedURLException, UnsupportedEncodingException, SmbException {
         String parentPath = filepath.substring(0, filepath.lastIndexOf("/"));
@@ -1502,8 +1456,6 @@ public class NMJLib {
 
         return null;
     }
-
-    public static String[] subtitleFormats = new String[]{".srt", ".sub", ".ssa", ".ssf", ".smi", ".txt", ".usf", ".ass", ".stp", ".idx", ".aqt", ".cvd", ".dks", ".jss", ".mpl", ".pjs", ".psb", ".rt", ".svcd", ".usf"};
 
     public static boolean isSubtitleFile(String s) {
         int count = subtitleFormats.length;
@@ -1754,8 +1706,6 @@ public class NMJLib {
         return false;
     }
 
-    public static final int HEIGHT = 100, WIDTH = 110;
-
     public static int getDisplaySize(Context c, int type) {
         WindowManager wm = (WindowManager) c.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
@@ -1947,10 +1897,6 @@ public class NMJLib {
         return output.replaceAll(" +", " ").trim(); // replaceAll() needed to remove all instances of multiple spaces
     }
 
-    private final static String YEAR_PATTERN = "(18|19|20)[0-9][0-9]";
-    private final static String WAREZ_PATTERN = "(?i)(dvdscreener|dvdscreen|dvdscr|dvdrip|dvd5|dvd|xvid|divx|m\\-480p|m\\-576p|m\\-720p|m\\-864p|m\\-900p|m\\-1080p|m480p|m576p|m720p|m864p|m900p|m1080p|480p|576p|720p|864p|900p|1080p|1080i|720i|mhd|brrip|bdrip|brscreener|brscreen|brscr|aac|x264|bluray|dts|screener|hdtv|ac3|repack|2\\.1|5\\.1|ac3_6|7\\.1|h264|hdrip|ntsc|proper|readnfo|rerip|subbed|vcd|scvd|pdtv|sdtv|hqts|hdcam|multisubs|650mb|700mb|750mb|webdl|web-dl|bts|korrip|webrip|korsub|1link|sample|tvrip|tvr|extended.editions?|directors cut|tfe|unrated|\\(.*?torrent.*?\\)|\\[.*?\\]|\\(.*?\\)|\\{.*?\\}|part[0-9]|cd[0-9])";
-    private final static String ABBREVIATION_PATTERN = "(?<=(^|[.])[\\S&&\\D])[.](?=[\\S&&\\D]([.]|$))";
-
     public static String getNameFromFilename(String input) {
         int lastIndex = 0;
 
@@ -2101,19 +2047,12 @@ public class NMJLib {
             return stat.getAvailableBlocks() * stat.getBlockSize();
     }
 
-    private static String[] MEDIA_APPS = new String[]{"com.imdb.mobile", "com.google.android.youtube", "com.ted.android", "com.google.android.videos", "se.mtg.freetv.tv3_dk", "tv.twitch.android.viewer",
-            "com.netflix.mediaclient", "com.gotv.crackle.handset", "net.flixster.android", "com.google.tv.alf", "com.viki.android", "com.mobitv.client.mobitv", "com.hulu.plus.jp", "com.hulu.plus",
-            "com.mobitv.client.tv", "air.com.vudu.air.DownloaderTablet", "com.hbo.android.app", "com.HBO", "bbc.iplayer.android", "air.uk.co.bbc.android.mediaplayer", "com.rhythmnewmedia.tvdotcom",
-            "com.cnettv.app", "com.xfinity.playnow"};
-
     public static boolean isMediaApp(ApplicationInfo ai) {
         for (int i = 0; i < MEDIA_APPS.length; i++)
             if (MEDIA_APPS[i].equals(ai.packageName))
                 return true;
         return false;
     }
-
-    private static int mRuntimeInMinutes;
 
     public static String getRuntimeInMinutesOrHours(String runtime, String hour, String minute) {
         mRuntimeInMinutes = Integer.valueOf(runtime);
@@ -2321,13 +2260,15 @@ public class NMJLib {
         }
     }
 
-    public static String getPrettyRuntime(Context context, int minutes) {
-        if (minutes == 0) {
+    public static String getPrettyRuntime(Context context, int timeInSeconds) {
+        if (timeInSeconds == 0) {
             return context.getString(R.string.stringNA);
         }
 
-        int hours = (minutes / 60);
-        minutes = (minutes % 60);
+        int hours = (timeInSeconds / 3600);
+        int secondsLeft = timeInSeconds - hours * 3600;
+        int minutes = secondsLeft / 60;
+        int seconds = secondsLeft - minutes * 60;
 
         if (hours > 0) {
             if (minutes == 0) {
@@ -2419,9 +2360,6 @@ public class NMJLib {
             }
         };
     }
-
-    private static String[] mAdultKeywords = new String[]{"adult", "sex", "porn", "explicit", "penis", "vagina", "asshole",
-            "blowjob", "cock", "fuck", "dildo", "kamasutra", "masturbat", "squirt", "slutty", "cum", "cunt"};
 
     public static boolean isAdultContent(Context context, String title) {
         // Check if the user has enabled adult content - if so, nothing should

@@ -29,13 +29,14 @@ import java.io.File;
 
 public abstract class MediumBaseMovie extends BaseMovie {
 
-	protected String TO_WATCH, COLLECTION, COLLECTION_ID, RATING, FAVOURITE, HAS_WATCHED, RELEASEDATE, DATE_ADDED, GENRES, CAST, CERTIFICATION, RUNTIME;
+	protected String TO_WATCH, COLLECTION, COLLECTION_ID, RATING, FAVOURITE, HAS_WATCHED,
+			RELEASEDATE, DATE_ADDED, GENRES, CAST, CERTIFICATION, RUNTIME, THUMBNAIL, SHOW_ID;
 	protected String mGetReleaseYear, mWeightedCompatibility, mDateAdded, mRuntime, mReleaseDate;
 	
 	public MediumBaseMovie(Context context, String title, String tmdbId, String rating, String releasedate,
-			String genres, String favourite, String cast, String collection, String collectionId, String toWatch, String hasWatched,
-			String date_added, String certification, String runtime, boolean ignorePrefixes) {
-		super(context, title, tmdbId, ignorePrefixes);
+						   String genres, String favourite, String cast, String collection, String collectionId, String toWatch, String hasWatched,
+						   String date_added, String certification, String runtime, String showId, String thumbnail, boolean ignorePrefixes) {
+		super(context, title, tmdbId, showId, ignorePrefixes);
 		
 		RATING = rating;
 		RELEASEDATE = releasedate;
@@ -49,6 +50,8 @@ public abstract class MediumBaseMovie extends BaseMovie {
 		DATE_ADDED = date_added;
 		CERTIFICATION = certification;
 		RUNTIME = runtime.replace("min", "").trim();
+		SHOW_ID = showId;
+		THUMBNAIL = thumbnail;
 		
 		// getReleaseYear()
 		if (!TextUtils.isEmpty(RELEASEDATE)) {
@@ -100,7 +103,11 @@ public abstract class MediumBaseMovie extends BaseMovie {
 			return collectionImage;
 		return getThumbnail();
 	}
-	
+
+	public String getNMJThumbnail() {
+		return THUMBNAIL.replaceAll(" ", "%20");
+	}
+
 	public void setRating(int rating) {
 		RATING = String.valueOf(Double.valueOf((double) rating / 10));
 	}
@@ -129,14 +136,14 @@ public abstract class MediumBaseMovie extends BaseMovie {
         return FAVOURITE.equals("1");
     }
 	
-	public void setRuntime(int runtime) {
-		RUNTIME = String.valueOf(runtime);
-	}
-	
 	public String getRuntime() {
         if (TextUtils.isEmpty(RUNTIME))
             return "0";
 		return RUNTIME;
+	}
+
+	public void setRuntime(int runtime) {
+		RUNTIME = String.valueOf(runtime);
 	}
 	
 	public String getPrettyRuntime() {
@@ -168,7 +175,7 @@ public abstract class MediumBaseMovie extends BaseMovie {
 			return "0";
 		return DATE_ADDED;
 	}
-	
+
 	public String getPrettyDateAdded() {
 		return mDateAdded;
 	}
@@ -181,12 +188,12 @@ public abstract class MediumBaseMovie extends BaseMovie {
 		return CAST;
 	}
 	
-	public void setCertification(String certification) {
-		CERTIFICATION = certification;
-	}
-	
 	public String getCertification() {
 		return CERTIFICATION;
+	}
+
+	public void setCertification(String certification) {
+		CERTIFICATION = certification;
 	}
 	
 	public boolean isUnidentified() {

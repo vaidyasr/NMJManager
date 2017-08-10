@@ -34,15 +34,16 @@ public abstract class BaseMovie implements Comparable<BaseMovie> {
 
 	protected ArrayList<Filepath> mFilepaths = new ArrayList<Filepath>();
 	protected Context mContext;
-	protected String mTitle, mTmdbId;
-	protected boolean mIgnorePrefixes;
+    protected String mTitle, mTmdbId, mShowId;
+    protected boolean mIgnorePrefixes;
 
-	public BaseMovie(Context context, String title, String tmdbId, boolean ignorePrefixes) {
-		// Set up movie fields based on constructor
+    public BaseMovie(Context context, String title, String tmdbId, String showId, boolean ignorePrefixes) {
+        // Set up movie fields based on constructor
 		mContext = context;
 		mTitle = title;
 		mTmdbId = tmdbId;
-		mIgnorePrefixes = ignorePrefixes;
+        mShowId = showId;
+        mIgnorePrefixes = ignorePrefixes;
 
 		// getTitle()
 		if (!TextUtils.isEmpty(mTitle) && ignorePrefixes) {
@@ -92,6 +93,10 @@ public abstract class BaseMovie implements Comparable<BaseMovie> {
 		return mTmdbId;
 	}
 
+    public String getShowId() {
+        return mShowId;
+    }
+
 	public File getBackdrop() {
 		return FileUtils.getMovieBackdrop(mContext, mTmdbId);
 	}
@@ -101,13 +106,13 @@ public abstract class BaseMovie implements Comparable<BaseMovie> {
 		return getTitle().compareToIgnoreCase(another.getTitle());
 	}
 
+    public ArrayList<Filepath> getFilepaths() {
+        return mFilepaths;
+    }
+
 	public void setFilepaths(List<String> paths) {
 		for (String path : paths)
 			mFilepaths.add(new Filepath(path));
-	}
-
-	public ArrayList<Filepath> getFilepaths() {
-		return mFilepaths;
 	}
 
 	public String getAllFilepaths() {

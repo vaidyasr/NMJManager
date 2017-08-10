@@ -30,7 +30,6 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.graphics.Typeface;
-import android.net.ParseException;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -66,7 +65,6 @@ import com.nmj.functions.BlurTransformation;
 import com.nmj.functions.FileSource;
 import com.nmj.functions.Filepath;
 import com.nmj.functions.IntentKeys;
-import com.nmj.functions.MediumMovie;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.Movie;
 import com.nmj.functions.PaletteLoader;
@@ -93,27 +91,10 @@ import com.nmj.views.ObservableScrollView.OnScrollChangedListener;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.Charset;
 
 import static com.nmj.functions.PreferenceKeys.ALWAYS_DELETE_FILE;
 import static com.nmj.functions.PreferenceKeys.CHROMECAST_BETA_SUPPORT;
@@ -121,7 +102,6 @@ import static com.nmj.functions.PreferenceKeys.IGNORED_FILES_ENABLED;
 import static com.nmj.functions.PreferenceKeys.IGNORED_TITLE_PREFIXES;
 import static com.nmj.functions.PreferenceKeys.REMOVE_MOVIES_FROM_WATCHLIST;
 import static com.nmj.functions.PreferenceKeys.SHOW_FILE_LOCATION;
-
 
 public class MovieDetailsFragment extends Fragment {
 
@@ -141,6 +121,12 @@ public class MovieDetailsFragment extends Fragment {
     private Toolbar mToolbar;
     private FloatingActionButton mFab;
     private PaletteLoader mPaletteLoader;
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            loadImages();
+        }
+    };
 
     /**
      * Empty constructor as per the Fragment documentation
@@ -179,59 +165,40 @@ public class MovieDetailsFragment extends Fragment {
 
         mDatabase = NMJManagerApplication.getMovieAdapter();
 
-        String myURL = "http://api.themoviedb.org/3/movie/313297?api_key=b626260be86175272e48fa6347e58100&language=en&append_to_response=images,credits,similar,content_ratings,releases,keywords";
-        String output = NMJLib.getJSONFromURL1(myURL);
-        System.out.println("JSON: " + output);
-
-        //String myURL = "http://pchportal.duckdns.org/NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&showid=1770&title_type=1";
-        /*JSONObject jObject = NMJLib.getJson(myURL);
-        System.out.println("JSON: " + jObject.toString());
-        /*BufferedReader reader = null;
+        Cursor cursor = mDatabase.fetchMovie(getArguments().getString("tmdbId"));
         try {
-            URL url = new URL(myURL);
-            reader = new BufferedReader(new InputStreamReader(url.openStream()));
-            StringBuffer buffer = new StringBuffer();
-            int read;
-            char[] chars = new char[1024];
-            while ((read = reader.read(chars)) != -1)
-                buffer.append(chars, 0, read);
-
-            return buffer.toString();
+            mMovie = new Movie(mContext,
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TITLE)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_PLOT)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TAGLINE)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TMDB_ID)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_IMDB_ID)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_RATING)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_RELEASEDATE)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_CERTIFICATION)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_RUNTIME)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TRAILER)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_GENRES)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_FAVOURITE)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_ACTORS)),
+                    NMJManagerApplication.getCollectionsAdapter().getCollection(cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_COLLECTION_ID))),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_COLLECTION_ID)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TO_WATCH)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_HAS_WATCHED)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_DATE_ADDED)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_DATE_ADDED)),
+                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_DATE_ADDED)),
+                    mIgnorePrefixes
+            );
+        } catch (Exception e) {
         } finally {
-            if (reader != null)
-                reader.close();
+            if (cursor != null) {
+                cursor.close();
+            } else { // Cursor is null, yikes!
+                getActivity().finish();
+                return;
+            }
         }
-        catch (JSONException e) {
-            e.printStackTrace();
-        }*/
-
-
-
-
-            /*JSONObject jObject = NMJLib.getJSONObject(mContext, myURL);
-            System.out.println("JSON: " + jObject.toString());*/
-            /*    System.out.println("SHOW_ID: " + jObject.getString("SHOW_ID"));
-                mMovie = new Movie(mContext,
-                        jObject.getString("TITLE"),
-                        jObject.getString("CONTENT"),
-                        jObject.getString("CONTENT"), //TAGLINE
-                        jObject.getString("CONTENT_TTID"),
-                        jObject.getString("TTID"),
-                        jObject.getString("RATING"),
-                        jObject.getString("RELEASE_DATE"),
-                        jObject.getString("PARENTAL_CONTROL"),
-                        jObject.getString("RUNTIME"),
-                        jObject.getString("RUNTIME"), //KEY_TRAILER
-                        jObject.getString("RUNTIME"), //KEY_GENRES
-                        jObject.getString("RUNTIME"), //KEY_FAVOURITE
-                        jObject.getString("RUNTIME"), //KEY_ACTORS
-                        jObject.getString("RUNTIME"), //KEY_COLLECTION_ID
-                        jObject.getString("RUNTIME"), //KEY_COLLECTION_ID
-                        jObject.getString("RUNTIME"), //KEY_TO_WATCH
-                        jObject.getString("PLAY_COUNT"),
-                        jObject.getString("RUNTIME"), //KEY_DATE_ADDED
-                        mIgnorePrefixes
-                );*/
 
         LocalBroadcastManager.getInstance(mContext).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.CLEAR_IMAGE_CACHE));
     }
@@ -247,13 +214,6 @@ public class MovieDetailsFragment extends Fragment {
                 watched(false); // Mark it as watched
         }
     }
-
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            loadImages();
-        }
-    };
 
     @Override
     public void onDestroy() {
@@ -442,7 +402,7 @@ public class MovieDetailsFragment extends Fragment {
         mActorsLayout.setSeeMoreOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(IntentUtils.getActorBrowserMovies(mContext, mMovie.getTitle(), mMovie.getTmdbId(), mToolbarColor));
+                startActivity(IntentUtils.getCastBrowserMovies(mContext, mMovie.getTitle(), mMovie.getTmdbId(), mToolbarColor));
             }
         });
 
@@ -459,7 +419,7 @@ public class MovieDetailsFragment extends Fragment {
             @Override
             protected Void doInBackground(Void... params) {
                 MovieApiService service = NMJManagerApplication.getMovieService(mContext);
-                mActors = service.getActors(mMovie.getTmdbId());
+                mActors = service.getCast(mMovie.getTmdbId());
 
                 return null;
             }
@@ -721,21 +681,21 @@ public class MovieDetailsFragment extends Fragment {
                         if (!movieExists) {
                             try { // Delete cover art image
                                 File coverArt = mMovie.getPoster();
-                                if (coverArt.exists() && coverArt.getAbsolutePath().contains("com.nmj.nmjmanager")) {
+                                if (coverArt.exists() && coverArt.getAbsolutePath().contains("com.nmj.mizuu")) {
                                     NMJLib.deleteFile(coverArt);
                                 }
                             } catch (NullPointerException e) {} // No file to delete
 
                             try { // Delete thumbnail image
                                 File thumbnail = mMovie.getThumbnail();
-                                if (thumbnail.exists() && thumbnail.getAbsolutePath().contains("com.nmj.nmjmanager")) {
+                                if (thumbnail.exists() && thumbnail.getAbsolutePath().contains("com.nmj.mizuu")) {
                                     NMJLib.deleteFile(thumbnail);
                                 }
                             } catch (NullPointerException e) {} // No file to delete
 
                             try { // Delete backdrop image
                                 File backdrop = mMovie.getBackdrop();
-                                if (backdrop.exists() && backdrop.getAbsolutePath().contains("com.nmj.nmjmanager")) {
+                                if (backdrop.exists() && backdrop.getAbsolutePath().contains("com.nmj.mizuu")) {
                                     NMJLib.deleteFile(backdrop);
                                 }
                             } catch (NullPointerException e) {} // No file to delete

@@ -52,6 +52,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.net.URLEncoder;
+
 import com.github.ksoichiro.android.observablescrollview.ObservableGridView;
 import com.nmj.functions.CoverItem;
 import com.nmj.functions.MediumMovie;
@@ -63,7 +65,7 @@ import com.nmj.loader.MovieSortType;
 import com.nmj.loader.OnLoadCompletedCallback;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.MovieCollection;
-import com.nmj.nmjmanager.MovieDetails;
+import com.nmj.nmjmanager.NMJMovieDetails;
 import com.nmj.nmjmanager.R;
 import com.nmj.nmjmanager.UnidentifiedMovies;
 import com.nmj.nmjmanager.Update;
@@ -98,6 +100,25 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     private SearchView mSearchView;
     private View mEmptyLibraryLayout;
     private TextView mEmptyLibraryTitle, mEmptyLibraryDescription;
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mMovieLoader != null) {
+                if (intent.filterEquals(new Intent("NMJManager-movie-actor-search"))) {
+                    mMovieLoader.search("actor: " + intent.getStringExtra("intent_extra_data_key"));
+                } else {
+                    mMovieLoader.load();
+                }
+                showProgressBar();
+            }
+        }
+    };
+    private OnLoadCompletedCallback mCallback = new OnLoadCompletedCallback() {
+        @Override
+        public void onLoadCompleted() {
+            mAdapter.notifyDataSetChanged();
+        }
+    };
 
     /**
      * Empty constructor as per the Fragment documentation
@@ -149,27 +170,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         LocalBroadcastManager.getInstance(mContext).unregisterReceiver(mMessageReceiver);
         PreferenceManager.getDefaultSharedPreferences(mContext).unregisterOnSharedPreferenceChangeListener(this);
     }
-
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (mMovieLoader != null) {
-                if (intent.filterEquals(new Intent("NMJManager-movie-actor-search"))) {
-                    mMovieLoader.search("actor: " + intent.getStringExtra("intent_extra_data_key"));
-                } else {
-                    mMovieLoader.load();
-                }
-                showProgressBar();
-            }
-        }
-    };
-
-    private OnLoadCompletedCallback mCallback = new OnLoadCompletedCallback() {
-        @Override
-        public void onLoadCompleted() {
-            mAdapter.notifyDataSetChanged();
-        }
-    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -279,7 +279,8 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             startActivity(intent);
         } else {
             intent.putExtra("tmdbId", mAdapter.getItem(position).getTmdbId());
-            intent.setClass(mContext, MovieDetails.class);
+            intent.putExtra("showId", mAdapter.getItem(position).getShowId());
+            intent.setClass(mContext, NMJMovieDetails.class);
 
             if (view != null) {
                 Pair<View, String> pair = new Pair<>(view.findViewById(R.id.cover), "cover");
@@ -287,122 +288,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 ActivityCompat.startActivityForResult(getActivity(), intent, 0, options.toBundle());
             } else {
                 startActivityForResult(intent, 0);
-            }
-        }
-    }
-
-    private class LoaderAdapter extends BaseAdapter {
-
-        private Set<Integer> mChecked = new HashSet<>();
-        private LayoutInflater mInflater;
-        private final Context mContext;
-        private Typeface mTypeface;
-
-        public LoaderAdapter(Context context) {
-            mContext = context;
-            mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            mTypeface = TypefaceUtils.getRobotoMedium(mContext);
-        }
-
-        public void setItemChecked(int index, boolean checked) {
-            if (checked)
-                mChecked.add(index);
-            else
-                mChecked.remove(index);
-
-            notifyDataSetChanged();
-        }
-
-        public void clearCheckedItems() {
-            mChecked.clear();
-            notifyDataSetChanged();
-        }
-
-        public int getCheckedItemCount() {
-            return mChecked.size();
-        }
-
-        public List<MediumMovie> getCheckedMovies() {
-            List<MediumMovie> movies = new ArrayList<>(mChecked.size());
-            for (Integer i : mChecked)
-                movies.add(getItem(i));
-            return movies;
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return getCount() == 0 && !mLoading;
-        }
-
-        @Override
-        public int getCount() {
-            if (mMovieLoader != null)
-                return mMovieLoader.getResults().size();
-            return 0;
-        }
-
-        @Override
-        public MediumMovie getItem(int position) {
-            return mMovieLoader.getResults().get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup container) {
-            final MediumMovie movie = getItem(position);
-
-            CoverItem holder;
-            if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.grid_cover, container, false);
-                holder = new CoverItem();
-
-                holder.cardview = (CardView) convertView.findViewById(R.id.card);
-                holder.cover = (ImageView) convertView.findViewById(R.id.cover);
-                holder.text = (TextView) convertView.findViewById(R.id.text);
-                holder.text.setTypeface(mTypeface);
-
-                convertView.setTag(holder);
-            } else {
-                holder = (CoverItem) convertView.getTag();
-            }
-
-            if (!mShowTitles) {
-                holder.text.setVisibility(View.GONE);
-            } else {
-                holder.text.setVisibility(View.VISIBLE);
-                holder.text.setText(mMovieLoader.getType() == MovieLibraryType.COLLECTIONS ?
-                        movie.getCollection() : movie.getTitle());
-            }
-
-            holder.cover.setImageResource(R.color.card_background_dark);
-
-            mPicasso.load(mMovieLoader.getType() == MovieLibraryType.COLLECTIONS ?
-                    movie.getCollectionPoster() : movie.getThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
-
-            if (mChecked.contains(position)) {
-                holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));
-            } else {
-                holder.cardview.setForeground(null);
-            }
-
-            return convertView;
-        }
-
-        @Override
-        public void notifyDataSetChanged() {
-            super.notifyDataSetChanged();
-
-            // Hide the progress bar once the data set has been changed
-            hideProgressBar();
-
-            if (isEmpty()) {
-                showEmptyView();
-            } else {
-                hideEmptyView();
             }
         }
     }
@@ -621,6 +506,124 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         } else if (key.equals(SHOW_TITLES_IN_GRID)) {
             mShowTitles = sharedPreferences.getBoolean(SHOW_TITLES_IN_GRID, true);
             mAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private class LoaderAdapter extends BaseAdapter {
+
+        private final Context mContext;
+        private Set<Integer> mChecked = new HashSet<>();
+        private LayoutInflater mInflater;
+        private Typeface mTypeface;
+
+        public LoaderAdapter(Context context) {
+            mContext = context;
+            mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            mTypeface = TypefaceUtils.getRobotoMedium(mContext);
+        }
+
+        public void setItemChecked(int index, boolean checked) {
+            if (checked)
+                mChecked.add(index);
+            else
+                mChecked.remove(index);
+
+            notifyDataSetChanged();
+        }
+
+        public void clearCheckedItems() {
+            mChecked.clear();
+            notifyDataSetChanged();
+        }
+
+        public int getCheckedItemCount() {
+            return mChecked.size();
+        }
+
+        public List<MediumMovie> getCheckedMovies() {
+            List<MediumMovie> movies = new ArrayList<>(mChecked.size());
+            for (Integer i : mChecked)
+                movies.add(getItem(i));
+            return movies;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return getCount() == 0 && !mLoading;
+        }
+
+        @Override
+        public int getCount() {
+            if (mMovieLoader != null)
+                return mMovieLoader.getResults().size();
+            return 0;
+        }
+
+        @Override
+        public MediumMovie getItem(int position) {
+            return mMovieLoader.getResults().get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup container) {
+            final MediumMovie movie = getItem(position);
+
+            CoverItem holder;
+            if (convertView == null) {
+                convertView = mInflater.inflate(R.layout.grid_cover, container, false);
+                holder = new CoverItem();
+
+                holder.cardview = (CardView) convertView.findViewById(R.id.card);
+                holder.cover = (ImageView) convertView.findViewById(R.id.cover);
+                holder.text = (TextView) convertView.findViewById(R.id.text);
+                holder.text.setTypeface(mTypeface);
+
+                convertView.setTag(holder);
+            } else {
+                holder = (CoverItem) convertView.getTag();
+            }
+
+            if (!mShowTitles) {
+                holder.text.setVisibility(View.GONE);
+            } else {
+                holder.text.setVisibility(View.VISIBLE);
+                holder.text.setText(mMovieLoader.getType() == MovieLibraryType.COLLECTIONS ?
+                        movie.getCollection() : movie.getTitle());
+            }
+
+            holder.cover.setImageResource(R.color.card_background_dark);
+
+            //mPicasso.load(mMovieLoader.getType() == MovieLibraryType.COLLECTIONS ?
+            //       movie.getCollectionPoster() : movie.getThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
+
+            System.out.println("Thumbnail: " + movie.getNMJThumbnail());
+            mPicasso.load("http://pchportal.duckdns.org/NMJManagerTablet_web/guerilla/" + movie.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
+            if (mChecked.contains(position)) {
+                holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));
+            } else {
+                holder.cardview.setForeground(null);
+            }
+
+            return convertView;
+        }
+
+        @Override
+        public void notifyDataSetChanged() {
+            super.notifyDataSetChanged();
+
+            // Hide the progress bar once the data set has been changed
+            hideProgressBar();
+
+            if (isEmpty()) {
+                showEmptyView();
+            } else {
+                hideEmptyView();
+            }
         }
     }
 }

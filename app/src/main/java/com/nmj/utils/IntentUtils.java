@@ -23,6 +23,7 @@ import android.text.TextUtils;
 
 import com.nmj.functions.Actor;
 import com.nmj.functions.IntentKeys;
+import com.nmj.functions.NMJMovie;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.WebMovie;
 import com.nmj.nmjmanager.ActorBrowser;
@@ -32,9 +33,14 @@ import com.nmj.nmjmanager.ActorMovies;
 import com.nmj.nmjmanager.ActorPhotos;
 import com.nmj.nmjmanager.ActorTaggedPhotos;
 import com.nmj.nmjmanager.ActorTvShows;
+import com.nmj.nmjmanager.CastBrowser;
+import com.nmj.nmjmanager.CrewBrowser;
+import com.nmj.nmjmanager.CrewBrowserTv;
+import com.nmj.nmjmanager.CastBrowserTv;
 import com.nmj.nmjmanager.ImageViewer;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.MovieDetails;
+import com.nmj.nmjmanager.NMJMovieDetails;
 import com.nmj.nmjmanager.SimilarMovies;
 import com.nmj.nmjmanager.TMDbMovieDetails;
 import com.nmj.nmjmanager.TvShowDetails;
@@ -74,35 +80,70 @@ public class IntentUtils {
 	}
 	
 	/**
-	 * Intent for the movie actor browser.
+	 * Intent for the movie cast browser.
 	 * @param context
 	 * @param title
 	 * @param movieId
 	 * @return
 	 */
-	public static Intent getActorBrowserMovies(Context context, String title, String movieId, int toolbarColor) {
-		Intent actorIntent = new Intent(context, ActorBrowser.class);
+	public static Intent getCastBrowserMovies(Context context, String title, String movieId, int toolbarColor) {
+		Intent actorIntent = new Intent(context, CastBrowser.class);
 		actorIntent.putExtra("title", title);
 		actorIntent.putExtra("movieId", movieId);
-        actorIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
+		actorIntent.putExtra("loadType", "cast");
+		actorIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
 		return actorIntent;
 	}
-	
+
 	/**
-	 * Intent for the TV show actor browser.
+	 * Intent for the movie crew browser.
+	 *
+	 * @param context
+	 * @param title
+	 * @param movieId
+	 * @return
+	 */
+	public static Intent getCrewBrowserMovies(Context context, String title, String movieId, int toolbarColor) {
+		Intent actorIntent = new Intent(context, CrewBrowser.class);
+		actorIntent.putExtra("title", title);
+		actorIntent.putExtra("movieId", movieId);
+		actorIntent.putExtra("loadType", "crew");
+		actorIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
+		return actorIntent;
+	}
+
+	/**
+	 * Intent for the TV show cast browser.
 	 * @param context
 	 * @param title
 	 * @param showId
 	 * @return
 	 */
-	public static Intent getActorBrowserTvShows(Context context, String title, String showId, int toolbarColor) {
-		Intent actorIntent = new Intent(context, ActorBrowserTv.class);
+	public static Intent getCastBrowserTvShows(Context context, String title, String showId, int toolbarColor) {
+		Intent actorIntent = new Intent(context, CastBrowserTv.class);
 		actorIntent.putExtra("title", title);
 		actorIntent.putExtra("showId", showId);
-        actorIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
+		actorIntent.putExtra("loadType", "cast");
+		actorIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
 		return actorIntent;
 	}
-	
+
+	/**
+	 * Intent for the TV show crew browser.
+	 *
+	 * @param context
+	 * @param title
+	 * @param showId
+	 * @return
+	 */
+	public static Intent getCrewBrowserTvShows(Context context, String title, String showId, int toolbarColor) {
+		Intent actorIntent = new Intent(context, CrewBrowserTv.class);
+		actorIntent.putExtra("title", title);
+		actorIntent.putExtra("showId", showId);
+		actorIntent.putExtra("loadType", "crew");
+		actorIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
+		return actorIntent;
+	}
 	/**
 	 * Intent for the similar movies browser.
 	 * @param context
@@ -121,6 +162,7 @@ public class IntentUtils {
 	public static Intent getTmdbMovieDetails(Context context, WebMovie movie) {
 		Intent movieDetailsIntent = new Intent(context, movie.isInLibrary() ? MovieDetails.class : TMDbMovieDetails.class);
 		movieDetailsIntent.putExtra("tmdbId", movie.getId());
+		//movieDetailsIntent.putExtra("showId", movie.getS());
 		movieDetailsIntent.putExtra("title", movie.getTitle());
 		return movieDetailsIntent;
 	}

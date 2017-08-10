@@ -194,27 +194,6 @@ public class TmdbMovieDetailsFragment extends Fragment {
         return v;
     }
 
-    private class MovieLoader extends AsyncTask<String, Object, Object> {
-        @Override
-        protected Object doInBackground(String... params) {
-            mMovie = mMovieApiService.getCompleteMovie(mMovie.getId(), "en");
-
-            for (int i = 0; i < mMovie.getSimilarMovies().size(); i++) {
-                String id = mMovie.getSimilarMovies().get(i).getId();
-                mMovie.getSimilarMovies().get(i).setInLibrary(NMJManagerApplication.getMovieAdapter().movieExists(id));
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Object result) {
-            getActivity().invalidateOptionsMenu();
-
-            setupFields();
-        }
-    }
-
     private void setupFields() {
         if (isAdded() && mMovie != null) {
             // Set the movie title
@@ -321,7 +300,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
             mActorsLayout.setSeeMoreOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startActivity(IntentUtils.getActorBrowserMovies(mContext, mMovie.getTitle(), mMovie.getId(), mToolbarColor));
+                    startActivity(IntentUtils.getCastBrowserMovies(mContext, mMovie.getTitle(), mMovie.getId(), mToolbarColor));
                 }
             });
 
@@ -494,5 +473,26 @@ public class TmdbMovieDetailsFragment extends Fragment {
                     Toast.makeText(mContext, getString(R.string.errorSomethingWentWrong), Toast.LENGTH_SHORT).show();
             }
         }.execute();
+    }
+
+    private class MovieLoader extends AsyncTask<String, Object, Object> {
+        @Override
+        protected Object doInBackground(String... params) {
+            mMovie = mMovieApiService.getCompleteMovie(mMovie.getId(), "en");
+
+            for (int i = 0; i < mMovie.getSimilarMovies().size(); i++) {
+                String id = mMovie.getSimilarMovies().get(i).getId();
+                mMovie.getSimilarMovies().get(i).setInLibrary(NMJManagerApplication.getMovieAdapter().movieExists(id));
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Object result) {
+            getActivity().invalidateOptionsMenu();
+
+            setupFields();
+        }
     }
 }

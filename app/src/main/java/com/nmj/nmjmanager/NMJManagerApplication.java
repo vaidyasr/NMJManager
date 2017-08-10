@@ -26,10 +26,13 @@ import android.support.v7.graphics.Palette;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.nmj.abstractclasses.MovieApiService;
+import com.nmj.abstractclasses.NMJApiService;
 import com.nmj.abstractclasses.TvShowApiService;
 import com.nmj.apis.thetvdb.TheTVDbService;
 import com.nmj.apis.tmdb.TMDbMovieService;
 import com.nmj.apis.tmdb.TMDbTvShowService;
+import com.nmj.apis.nmj.NMJMovieService;
+import com.nmj.apis.nmj.NMJTvShowService;
 import com.nmj.db.DbAdapterCollections;
 import com.nmj.db.DbAdapterMovieMappings;
 import com.nmj.db.DbAdapterMovies;
@@ -82,73 +85,8 @@ public class NMJManagerApplication extends Application {
 	private static ArrayListMultimap<String, String> mMovieFilepaths;
 	private static OkHttpClient mOkHttpClient;
 	
-	@Override
-	public void onCreate() {
-		super.onCreate();
-
-		mInstance = this;
-		
-		jcifs.Config.setProperty("jcifs.smb.client.disablePlainTextPasswords", "false");
-
-        // Initialize the preferences
-        initializePreferences();
-
-		// Database setup
-		sDbMovies = new DbAdapterMovies(this);
-		sDbMovieMapping = new DbAdapterMovieMappings(this);
-		sDbTvShowEpisode = new DbAdapterTvShowEpisodes(this);
-		sDbTvShow = new DbAdapterTvShows(this);
-		sDbTvShowEpisodeMappings = new DbAdapterTvShowEpisodeMappings(this);
-		sDbSources = new DbAdapterSources(this);
-		sDbCollections = new DbAdapterCollections(this);
-
-		getMovieThumbFolder(this);
-		getMovieBackdropFolder(this);
-		getTvShowThumbFolder(this);
-		getTvShowBackdropFolder(this);
-		getTvShowEpisodeFolder(this);
-		getTvShowSeasonFolder(this);
-		getAvailableOfflineFolder(this);
-
-		transitionLocalizationPreference();
-    }
-
-	@Override
-	public void onTerminate() {
-		super.onTerminate();
-
-		sDbTvShow.close();
-		sDbTvShowEpisode.close();
-		sDbSources.close();
-		sDbMovies.close();
-		sDbMovieMapping.close();
-		sDbCollections.close();
-	}
-
 	public static Context getContext() {
 		return mInstance;
-	}
-
-    private void initializePreferences() {
-        PreferenceManager.setDefaultValues(this, R.xml.advanced_prefs, false);
-        PreferenceManager.setDefaultValues(this, R.xml.general_prefs, false);
-        PreferenceManager.setDefaultValues(this, R.xml.identification_search_prefs, false);
-        PreferenceManager.setDefaultValues(this, R.xml.other_prefs, false);
-        PreferenceManager.setDefaultValues(this, R.xml.user_interface_prefs, false);
-    }
-
-	private void transitionLocalizationPreference() {
-		// Transition from the old localization preference if such exists
-		String languagePref;
-		boolean oldLocalizedPref = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("prefsUseLocalData", false);
-		if (oldLocalizedPref) {
-			languagePref = Locale.getDefault().getLanguage();
-			PreferenceManager.getDefaultSharedPreferences(this).edit().remove("prefsUseLocalData").commit();
-		} else {
-			languagePref = PreferenceManager.getDefaultSharedPreferences(this).getString(LANGUAGE_PREFERENCE, "en");
-		}
-
-		PreferenceManager.getDefaultSharedPreferences(this).edit().putString(LANGUAGE_PREFERENCE, languagePref).commit();
 	}
 
 	public static DbAdapterTvShows getTvDbAdapter() {
@@ -158,7 +96,7 @@ public class NMJManagerApplication extends Application {
 	public static DbAdapterTvShowEpisodes getTvEpisodeDbAdapter() {
 		return sDbTvShowEpisode;
 	}
-	
+
 	public static DbAdapterTvShowEpisodeMappings getTvShowEpisodeMappingsDbAdapter() {
 		return sDbTvShowEpisodeMappings;
 	}
@@ -211,29 +149,12 @@ public class NMJManagerApplication extends Application {
 			mFileRequestTransformer = new FileRequestTransformer();
 		return mFileRequestTransformer;
 	}
-	
+
 	private static ThreadPoolExecutor getThreadPoolExecutor() {
 		if (sThreadPoolExecutor == null)
 			sThreadPoolExecutor = new ThreadPoolExecutor(3, 3, 0, TimeUnit.MILLISECONDS,
 					new LinkedBlockingQueue<Runnable>(), new PicassoThreadFactory());
 		return sThreadPoolExecutor;
-	}
-
-	static class PicassoThreadFactory implements ThreadFactory {
-		public Thread newThread(Runnable r) {
-			return new PicassoThread(r);
-		}
-	}
-
-	private static class PicassoThread extends Thread {
-		public PicassoThread(Runnable r) {
-			super(r);
-		}
-
-		@Override public void run() {
-			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-			super.run();
-		}
 	}
 
 	public static LruCache getLruCache(Context context) {
@@ -252,7 +173,7 @@ public class NMJManagerApplication extends Application {
 		return sDownloader;
 	}
 
-	public static int calculateMemoryCacheSize(Context context) {
+    public static int calculateMemoryCacheSize(Context context) {
 		ActivityManager am = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
 		int memoryClass = am.getLargeMemoryClass();
 
@@ -269,7 +190,7 @@ public class NMJManagerApplication extends Application {
 			sTypefaces.put(key, Typeface.createFromAsset(context.getAssets(), key));
 		return sTypefaces.get(key);
 	}
-	
+
 	public static Palette getPalette(String key) {
 		return sPalettes.get(key);
 	}
@@ -284,35 +205,36 @@ public class NMJManagerApplication extends Application {
 
 	public static Bus getBus() {
 		if (sBus == null)
-			sBus = new Bus();	
-		return sBus;
+            sBus = new Bus();
+        return sBus;
 	}
-	
+
 	public static File getAppFolder(Context c) {
 		if (sBaseAppFolder == null) {
 			sBaseAppFolder = c.getExternalFilesDir(null);
         }
 		return sBaseAppFolder;
 	}
-	
+
 	private static File getSubAppFolder(Context c, String foldername) {
 		return new File(getAppFolder(c), foldername);
 	}
 
-	/*
-	 * Please refrain from using this when you need a File object for a specific image.
-	 */
+    /*
+     * Please refrain from using this when you need a File object for a specific image.
+     */
 	public static File getMovieThumbFolder(Context c) {
 		if (sMovieThumbFolder == null) {
 			sMovieThumbFolder = getSubAppFolder(c, "movie-thumbs");
 			sMovieThumbFolder.mkdirs();
 		}
-		return sMovieThumbFolder;
+        //sMovieThumbFolder = "http://pchportal.duckdns.org/NMJManagerTablet_web/";
+        return sMovieThumbFolder;
 	}
 
-	/*
-	 * Please refrain from using this when you need a File object for a specific image.
-	 */
+    /*
+     * Please refrain from using this when you need a File object for a specific image.
+     */
 	public static File getMovieBackdropFolder(Context c) {
 		if (sMovieBackdropFolder == null) {
 			sMovieBackdropFolder = getSubAppFolder(c, "movie-backdrops");
@@ -343,20 +265,20 @@ public class NMJManagerApplication extends Application {
 		return sTvShowBackdropFolder;
 	}
 
-	/*
-	 * Please refrain from using this when you need a File object for a specific image.
-	 */
-	public static File getTvShowEpisodeFolder(Context c) {		
-		if (sTvShowEpisodeFolder == null) {
+    /*
+     * Please refrain from using this when you need a File object for a specific image.
+     */
+    public static File getTvShowEpisodeFolder(Context c) {
+        if (sTvShowEpisodeFolder == null) {
 			sTvShowEpisodeFolder = getSubAppFolder(c, "tvshows-episodes");
 			sTvShowEpisodeFolder.mkdirs();
 		}
 		return sTvShowEpisodeFolder;
 	}
 
-	/*
-	 * Please refrain from using this when you need a File object for a specific image.
-	 */
+    /*
+     * Please refrain from using this when you need a File object for a specific image.
+     */
 	public static File getTvShowSeasonFolder(Context c) {
 		if (sTvShowSeasonFolder == null) {
 			sTvShowSeasonFolder = getSubAppFolder(c, "tvshows-seasons");
@@ -375,11 +297,11 @@ public class NMJManagerApplication extends Application {
 		}
 		return sAvailableOfflineFolder;
 	}
-	
-	/*
-	 * Cache folder is used to store videos that are available offline as well
-	 * as user profile photo from Trakt.
-	 */
+
+    /*
+     * Cache folder is used to store videos that are available offline as well
+     * as user profile photo from Trakt.
+     */
 	public static File getCacheFolder(Context c) {
 		if (sCacheFolder == null) {
 			sCacheFolder = getSubAppFolder(c, "app_cache");
@@ -387,18 +309,22 @@ public class NMJManagerApplication extends Application {
 		}
 		return sCacheFolder;
 	}
-	
-	public static TvShowApiService getTvShowService(Context context) {
+
+    public static TvShowApiService getTvShowService(Context context) {
 		String option = PreferenceManager.getDefaultSharedPreferences(context).getString(TV_SHOW_DATA_SOURCE, context.getString(R.string.ratings_option_0));
 		if (option.equals(context.getString(R.string.ratings_option_0)))
 			return TheTVDbService.getInstance(context);
 		return TMDbTvShowService.getInstance(context);
 	}
-	
-	public static MovieApiService getMovieService(Context context) {
+
+    public static MovieApiService getMovieService(Context context) {
 		return TMDbMovieService.getInstance(context);
 	}
-	
+
+    public static NMJApiService getNMJService(Context context) {
+        return NMJMovieService.getInstance(context);
+    }
+
 	/**
 	 * This is used as an optimization to loading the movie library view.
 	 * @param filepaths
@@ -406,8 +332,8 @@ public class NMJManagerApplication extends Application {
 	public static void setMovieFilepaths(ArrayListMultimap<String, String> filepaths) {
 		mMovieFilepaths = filepaths;
 	}
-	
-	public static List<String> getMovieFilepaths(String id) {
+
+    public static List<String> getMovieFilepaths(String id) {
         if (mMovieFilepaths != null && mMovieFilepaths.containsKey(id))
 		    return mMovieFilepaths.get(id);
         return null;
@@ -420,14 +346,97 @@ public class NMJManagerApplication extends Application {
 	public static OkHttpClient getOkHttpClient() {
 		if (mOkHttpClient == null) {
 			mOkHttpClient = new OkHttpClient();
-			
-			try {
+
+            try {
 				File cacheDir = getContext().getCacheDir();
 			    Cache cache = new Cache(cacheDir, 2 * 1024 * 1024); // 25 MB cache
 			    mOkHttpClient.setCache(cache);
 			} catch (IOException e) {}
 		}
-		
-		return mOkHttpClient;
-	}
+
+        return mOkHttpClient;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        mInstance = this;
+
+        jcifs.Config.setProperty("jcifs.smb.client.disablePlainTextPasswords", "false");
+
+        // Initialize the preferences
+        initializePreferences();
+
+        // Database setup
+        sDbMovies = new DbAdapterMovies(this);
+        sDbMovieMapping = new DbAdapterMovieMappings(this);
+        sDbTvShowEpisode = new DbAdapterTvShowEpisodes(this);
+        sDbTvShow = new DbAdapterTvShows(this);
+        sDbTvShowEpisodeMappings = new DbAdapterTvShowEpisodeMappings(this);
+        sDbSources = new DbAdapterSources(this);
+        sDbCollections = new DbAdapterCollections(this);
+
+        getMovieThumbFolder(this);
+        getMovieBackdropFolder(this);
+        getTvShowThumbFolder(this);
+        getTvShowBackdropFolder(this);
+        getTvShowEpisodeFolder(this);
+        getTvShowSeasonFolder(this);
+        getAvailableOfflineFolder(this);
+
+        transitionLocalizationPreference();
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+
+        sDbTvShow.close();
+        sDbTvShowEpisode.close();
+        sDbSources.close();
+        sDbMovies.close();
+        sDbMovieMapping.close();
+        sDbCollections.close();
+    }
+
+    private void initializePreferences() {
+        PreferenceManager.setDefaultValues(this, R.xml.advanced_prefs, false);
+        PreferenceManager.setDefaultValues(this, R.xml.general_prefs, false);
+        PreferenceManager.setDefaultValues(this, R.xml.identification_search_prefs, false);
+        PreferenceManager.setDefaultValues(this, R.xml.other_prefs, false);
+        PreferenceManager.setDefaultValues(this, R.xml.user_interface_prefs, false);
+    }
+
+    private void transitionLocalizationPreference() {
+        // Transition from the old localization preference if such exists
+        String languagePref;
+        boolean oldLocalizedPref = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("prefsUseLocalData", false);
+        if (oldLocalizedPref) {
+            languagePref = Locale.getDefault().getLanguage();
+            PreferenceManager.getDefaultSharedPreferences(this).edit().remove("prefsUseLocalData").commit();
+        } else {
+            languagePref = PreferenceManager.getDefaultSharedPreferences(this).getString(LANGUAGE_PREFERENCE, "en");
+        }
+
+        PreferenceManager.getDefaultSharedPreferences(this).edit().putString(LANGUAGE_PREFERENCE, languagePref).commit();
+    }
+
+    static class PicassoThreadFactory implements ThreadFactory {
+        public Thread newThread(Runnable r) {
+            return new PicassoThread(r);
+        }
+    }
+
+    private static class PicassoThread extends Thread {
+        public PicassoThread(Runnable r) {
+            super(r);
+        }
+
+        @Override
+        public void run() {
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+            super.run();
+        }
+    }
 }

@@ -141,8 +141,8 @@ public class ActorBrowserTvFragment extends Fragment {
 
 	private class ImageAdapter extends BaseAdapter {
 
-		private LayoutInflater inflater;
 		private final Context mContext;
+        private LayoutInflater inflater;
 
 		public ImageAdapter(Context context) {
 			mContext = context;
@@ -232,9 +232,9 @@ public class ActorBrowserTvFragment extends Fragment {
 		protected String doInBackground(String... params) {
 			try {
 				TMDbTvShowService service = TMDbTvShowService.getInstance(mContext);
-				mActors = service.getActors(mId);
-				
-				mLoaded = true;
+                mActors = service.getCast(mId);
+
+                mLoaded = true;
 			} catch (Exception e) {} // If the fragment is no longer attached to the Activity
 
 			return null;

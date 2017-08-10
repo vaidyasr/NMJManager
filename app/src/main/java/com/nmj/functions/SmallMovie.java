@@ -22,7 +22,7 @@ import com.nmj.abstractclasses.BaseMovie;
 
 public class SmallMovie extends BaseMovie {
 
-	public SmallMovie(Context context, String title, String tmdbId, boolean ignorePrefixes) {
-		super(context, title, tmdbId, ignorePrefixes);
-	}
+    public SmallMovie(Context context, String title, String tmdbId, String showId, boolean ignorePrefixes) {
+        super(context, title, tmdbId, showId, ignorePrefixes);
+    }
 }

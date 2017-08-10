@@ -54,15 +54,15 @@ public class TheTVDbService extends TvShowApiService {
 	private final String mTvdbApiKey;
 	private final Context mContext;
 
-	public static TheTVDbService getInstance(Context context) {
+    private TheTVDbService(Context context) {
+        mContext = context;
+        mTvdbApiKey = NMJLib.getTvdbApiKey(mContext);
+    }
+
+    public static TheTVDbService getInstance(Context context) {
 		if (mService == null)
 			mService = new TheTVDbService(context);
 		return mService;
-	}
-	
-	private TheTVDbService(Context context) {
-		mContext = context;
-		mTvdbApiKey = NMJLib.getTvdbApiKey(mContext);
 	}
 
     /**
@@ -609,7 +609,12 @@ public class TheTVDbService extends TvShowApiService {
 	}
 
 	@Override
-	public List<Actor> getActors(String id) {
-		throw new UnsupportedOperationException(); // Not supported for TheTVDb
+    public List<Actor> getCast(String id) {
+        throw new UnsupportedOperationException(); // Not supported for TheTVDb
+    }
+
+    @Override
+    public List<Actor> getCrew(String id) {
+        throw new UnsupportedOperationException(); // Not supported for TheTVDb
 	}
 }

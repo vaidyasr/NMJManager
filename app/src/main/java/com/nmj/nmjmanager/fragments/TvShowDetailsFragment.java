@@ -114,6 +114,12 @@ public class TvShowDetailsFragment extends Fragment {
     private Toolbar mToolbar;
     private FloatingActionButton mFab;
     private PaletteLoader mPaletteLoader;
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            loadImages();
+        }
+    };
 
     /**
      * Empty constructor as per the Fragment documentation
@@ -176,13 +182,6 @@ public class TvShowDetailsFragment extends Fragment {
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.CLEAR_IMAGE_CACHE));
     }
-
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            loadImages();
-        }
-    };
 
     @Override
     public void onResume() {
@@ -387,7 +386,7 @@ public class TvShowDetailsFragment extends Fragment {
         mActorsLayout.setSeeMoreOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(IntentUtils.getActorBrowserTvShows(mContext, thisShow.getTitle(), thisShow.getId(), mToolbarColor));
+                startActivity(IntentUtils.getCastBrowserTvShows(mContext, thisShow.getTitle(), thisShow.getId(), mToolbarColor));
             }
         });
 
@@ -465,7 +464,7 @@ public class TvShowDetailsFragment extends Fragment {
             @Override
             protected Void doInBackground(Void... params) {
                 TMDbTvShowService service = TMDbTvShowService.getInstance(mContext);
-                mActors = service.getActors(thisShow.getId());
+                mActors = service.getCast(thisShow.getId());
 
                 return null;
             }

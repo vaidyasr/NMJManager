@@ -128,7 +128,8 @@ public class MovieCoverWidgetService extends RemoteViewsService {
 					movies.add(new SmallMovie(mContext,
 							cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TITLE)),
 							cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TMDB_ID)),
-							ignorePrefixes
+                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TMDB_ID)),
+                            ignorePrefixes
 							));
 				}
 			} catch (NullPointerException e) {} finally {

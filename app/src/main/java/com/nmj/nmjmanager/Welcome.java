@@ -81,6 +81,21 @@ public class Welcome extends NMJActivity {
     private ArrayList<MenuItem> mMenuItems = new ArrayList<>();
     private Typeface mTfMedium, mTfRegular;
     private ListView mListView;
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isRunning) {
+                increaseIndex();
+
+                mImageSwitcher.setImageURI(Uri.parse(mItems.get(index).getBackdropPath()));
+                mImageCover.setImageURI(Uri.parse(mItems.get(index).getCoverPath()));
+                title.setCurrentText(mItems.get(index).getTitle());
+
+                mHandler.removeCallbacks(this);
+                mHandler.postDelayed(this, INTERVAL);
+            }
+        }
+    };
 
     @Override
     protected int getLayoutResource() {
@@ -245,22 +260,6 @@ public class Welcome extends NMJActivity {
             index++;
     }
 
-    private Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            if (isRunning) {
-                increaseIndex();
-
-                mImageSwitcher.setImageURI(Uri.parse(mItems.get(index).getBackdropPath()));
-                mImageCover.setImageURI(Uri.parse(mItems.get(index).getCoverPath()));
-                title.setCurrentText(mItems.get(index).getTitle());
-
-                mHandler.removeCallbacks(this);
-                mHandler.postDelayed(this, INTERVAL);
-            }
-        }
-    };
-
     public void onResume() {
         super.onResume();
 
@@ -329,7 +328,7 @@ public class Welcome extends NMJActivity {
 
         public Intent getIntent(Context context) {
             Intent i = new Intent(context, getType() == MOVIE ?
-                    MovieDetails.class : TvShowDetails.class);
+                    NMJMovieDetails.class : TvShowDetails.class);
             i.putExtra(getType() == MOVIE ?
                     "tmdbId" : "showId", getItemId());
             return i;
