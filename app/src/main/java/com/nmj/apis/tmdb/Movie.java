@@ -28,9 +28,11 @@ import java.util.List;
 public class Movie {
 	
 	private String id = "", title = "", originalTitle = "", plot = "", cover = "", backdrop = "", rating = "0.0", tagline = "", releasedate = "", imdbId = "",
-			certification = "", runtime = "0", trailer = "", genres = "", cast = "", collectionTitle = "", collectionId = "", collectionImage = "", year = "";
+			certification = "", runtime = "0", trailer = "", genres = "", cast = "", crew = "", collectionTitle = "", collectionId = "", collectionImage = "", year = "";
 	
 	private List<Actor> mActors = new ArrayList<Actor>();
+	private List<Actor> mCast = new ArrayList<Actor>();
+	private List<Actor> mCrew = new ArrayList<Actor>();
 	private List<WebMovie> mSimilarMovies = new ArrayList<WebMovie>();
 
     public Movie() {
@@ -144,11 +146,19 @@ public class Movie {
 		this.genres = genres;
 	}
 
-	public String getCast() {
+	public String getCrewString() {
+		return crew;
+	}
+
+	public void setCrewString(String crew) {
+		this.crew = crew;
+	}
+
+	public String getCastString() {
 		return cast;
 	}
 
-	public void setCast(String cast) {
+	public void setCastString(String cast) {
 		this.cast = cast;
 	}
 	
@@ -198,6 +208,22 @@ public class Movie {
 	
 	public List<Actor> getActors() {
 		return mActors;
+	}
+
+	public List<Actor> getCast() {
+		return mCast;
+	}
+
+	public void setCast(List<Actor> actors) {
+		mCast = actors;
+	}
+
+	public List<Actor> getCrew() {
+		return mCrew;
+	}
+
+	public void setCrew(List<Actor> actors) {
+		mCrew = actors;
 	}
 	
 	public void setSimilarMovies(List<WebMovie> movies) {

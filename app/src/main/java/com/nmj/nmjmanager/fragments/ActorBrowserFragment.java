@@ -65,10 +65,11 @@ public class ActorBrowserFragment extends Fragment {
 	 */
 	public ActorBrowserFragment() {}
 
-	public static ActorBrowserFragment newInstance(String movieId) { 
+	public static ActorBrowserFragment newInstance(String movieId, String loadType) {
 		ActorBrowserFragment pageFragment = new ActorBrowserFragment();
 		Bundle bundle = new Bundle();
 		bundle.putString("movieId", movieId);
+		bundle.putString("loadType", loadType);
 		pageFragment.setArguments(bundle);		
 		return pageFragment;
 	}
@@ -136,6 +137,8 @@ public class ActorBrowserFragment extends Fragment {
 		super.onActivityCreated(savedInstanceState);
 
 		String loadType = getArguments().getString("loadType");
+		System.out.println("loadType: " + loadType);
+		System.out.println("movieId: " + getArguments().getString("movieId"));
 		if (loadType == "cast") {
 			if (mCast.size() == 0)
 				new GetCastDetails(getArguments().getString("movieId"), getActivity()).execute();
@@ -241,6 +244,7 @@ public class ActorBrowserFragment extends Fragment {
 		protected Void doInBackground(Void... params) {
 			MovieApiService service = NMJManagerApplication.getMovieService(mContext);
 			mCast = new ArrayList<Actor>(service.getCast(mMovieId));
+			System.out.println("Cast:" + mCast.toString());
 			return null;
 		}
 

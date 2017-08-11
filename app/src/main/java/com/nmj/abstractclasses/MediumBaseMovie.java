@@ -179,6 +179,13 @@ public abstract class MediumBaseMovie extends BaseMovie {
 	public String getPrettyDateAdded() {
 		return mDateAdded;
 	}
+
+	public String getVideoType(){
+		if (getShowId() == "0")
+			return "tmdb";
+		else
+			return "nmj";
+	}
 	
 	public String getGenres() {
 		return GENRES;

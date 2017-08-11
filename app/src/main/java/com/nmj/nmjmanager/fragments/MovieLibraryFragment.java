@@ -63,10 +63,12 @@ import com.nmj.loader.MovieLoader;
 import com.nmj.loader.MovieLibraryType;
 import com.nmj.loader.MovieSortType;
 import com.nmj.loader.OnLoadCompletedCallback;
+import com.nmj.nmjmanager.MovieDetails;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.MovieCollection;
 import com.nmj.nmjmanager.NMJMovieDetails;
 import com.nmj.nmjmanager.R;
+import com.nmj.nmjmanager.TMDbMovieDetails;
 import com.nmj.nmjmanager.UnidentifiedMovies;
 import com.nmj.nmjmanager.Update;
 import com.nmj.utils.LocalBroadcastUtils;
@@ -88,6 +90,7 @@ import static com.nmj.functions.PreferenceKeys.SHOW_TITLES_IN_GRID;
 public class MovieLibraryFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private Context mContext;
+    private String baseUrl, imageSizeUrl;
     private SharedPreferences mSharedPreferences;
     private int mImageThumbSize, mImageThumbSpacing;
     private LoaderAdapter mAdapter;
@@ -140,6 +143,9 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         setHasOptionsMenu(true);
 
         mContext = getActivity().getApplicationContext();
+
+        baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
+        imageSizeUrl = NMJLib.getImageUrlSize(mContext);
 
         // Set OnSharedPreferenceChange listener
         PreferenceManager.getDefaultSharedPreferences(mContext).registerOnSharedPreferenceChangeListener(this);
@@ -277,7 +283,15 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             intent.putExtra("collectionTitle", mAdapter.getItem(position).getCollection());
             intent.setClass(mContext, MovieCollection.class);
             startActivity(intent);
-        } else {
+        } else if(mMovieLoader.getType() == MovieLibraryType.UPCOMING ||
+                mMovieLoader.getType() == MovieLibraryType.TOP_RATED ||
+                mMovieLoader.getType() == MovieLibraryType.POPULAR ||
+                mMovieLoader.getType() == MovieLibraryType.NOW_PLAYING) { // Collection
+            intent.putExtra("tmdbId", mAdapter.getItem(position).getTmdbId());
+            //intent.putExtra("collectionTitle", mAdapter.getItem(position).getCollection());
+            intent.setClass(mContext, TMDbMovieDetails.class);
+            startActivity(intent);
+        }else {
             intent.putExtra("tmdbId", mAdapter.getItem(position).getTmdbId());
             intent.putExtra("showId", mAdapter.getItem(position).getShowId());
             intent.setClass(mContext, NMJMovieDetails.class);
@@ -572,6 +586,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         @Override
         public View getView(int position, View convertView, ViewGroup container) {
             final MediumMovie movie = getItem(position);
+            String mURL;
 
             CoverItem holder;
             if (convertView == null) {
@@ -601,8 +616,14 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             //mPicasso.load(mMovieLoader.getType() == MovieLibraryType.COLLECTIONS ?
             //       movie.getCollectionPoster() : movie.getThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
 
+            System.out.println("baseUrl: " + baseUrl);
+            System.out.println("imageSizeUrl: " + imageSizeUrl);
             System.out.println("Thumbnail: " + movie.getNMJThumbnail());
-            mPicasso.load("http://pchportal.duckdns.org/NMJManagerTablet_web/guerilla/" + movie.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
+            if (movie.getVideoType() == "tmdb")
+                mURL = baseUrl + imageSizeUrl;
+            else
+                mURL = "http://pchportal.duckdns.org/NMJManagerTablet_web/guerilla/";
+            mPicasso.load(mURL + movie.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
             if (mChecked.contains(position)) {
                 holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));
             } else {

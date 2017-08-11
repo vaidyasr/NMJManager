@@ -294,7 +294,7 @@ public class MovieIdentification {
         // Finally, create or update the movie
         dbHelper.createOrUpdateMovie(movie.getId(), movie.getTitle(), movie.getPlot(), movie.getImdbId(), movie.getRating(), movie.getTagline(),
                 movie.getReleasedate(), movie.getCertification(), movie.getRuntime(), movie.getTrailer(), movie.getGenres(), "0",
-                movie.getCast(), movie.getCollectionTitle(), movie.getCollectionId(), "0", "0", String.valueOf(System.currentTimeMillis()));
+                movie.getCastString(), movie.getCollectionTitle(), movie.getCollectionId(), "0", "0", String.valueOf(System.currentTimeMillis()));
 
         updateNotification(movie);
     }

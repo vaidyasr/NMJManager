@@ -214,15 +214,45 @@ public class TMDbMovieService extends MovieApiService {
 			} catch (Exception e) {}
 
 			try {
-				StringBuilder cast = new StringBuilder();
+				ArrayList<Actor> cast = new ArrayList<Actor>();
 
 				JSONArray array = jObject.getJSONObject("credits").getJSONArray("cast");
+				Set<String> actorIds = new HashSet<String>();
+
 				for (int i = 0; i < array.length(); i++) {
-					cast.append(array.getJSONObject(i).getString("name"));
-					cast.append("|");
+					if (!actorIds.contains(array.getJSONObject(i).getString("id"))) {
+						actorIds.add(array.getJSONObject(i).getString("id"));
+
+						cast.add(new Actor(
+								array.getJSONObject(i).getString("name"),
+								array.getJSONObject(i).getString("character"),
+								array.getJSONObject(i).getString("id"),
+								baseUrl + NMJLib.getActorUrlSize(mContext) + array.getJSONObject(i).getString("profile_path")));
+					}
 				}
 
-				movie.setCast(cast.toString());
+				movie.setCast(cast);
+			} catch (Exception e) {}
+
+			try {
+				ArrayList<Actor> actors = new ArrayList<Actor>();
+
+				JSONArray array = jObject.getJSONObject("credits").getJSONArray("crew");
+				Set<String> actorIds = new HashSet<String>();
+
+				for (int i = 0; i < array.length(); i++) {
+					if (!actorIds.contains(array.getJSONObject(i).getString("id"))) {
+						actorIds.add(array.getJSONObject(i).getString("id"));
+
+						actors.add(new Actor(
+								array.getJSONObject(i).getString("name"),
+								array.getJSONObject(i).getString("job"),
+								array.getJSONObject(i).getString("id"),
+								baseUrl + NMJLib.getActorUrlSize(mContext) + array.getJSONObject(i).getString("profile_path")));
+					}
+				}
+
+				movie.setCrew(actors);
 			} catch (Exception e) {}
 
 			try {
@@ -383,7 +413,28 @@ public class TMDbMovieService extends MovieApiService {
 					}
 				}
 
-				movie.setActors(actors);
+				movie.setCast(actors);
+			} catch (Exception e) {}
+
+			try {
+				ArrayList<Actor> actors = new ArrayList<Actor>();
+
+				JSONArray array = jObject.getJSONObject("credits").getJSONArray("crew");
+				Set<String> actorIds = new HashSet<String>();
+
+				for (int i = 0; i < array.length(); i++) {
+					if (!actorIds.contains(array.getJSONObject(i).getString("id"))) {
+						actorIds.add(array.getJSONObject(i).getString("id"));
+
+						actors.add(new Actor(
+								array.getJSONObject(i).getString("name"),
+								array.getJSONObject(i).getString("job"),
+								array.getJSONObject(i).getString("id"),
+								baseUrl + NMJLib.getActorUrlSize(mContext) + array.getJSONObject(i).getString("profile_path")));
+					}
+				}
+
+				movie.setCrew(actors);
 			} catch (Exception e) {}
 
 			try {
@@ -509,6 +560,8 @@ public class TMDbMovieService extends MovieApiService {
 		try {
 			JSONObject jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "/credits?api_key=" + mTmdbApiKey);
 			JSONArray jArray = jObject.getJSONArray("cast");
+
+			System.out.println("Cast :" + jArray.toString());
 
 			Set<String> actorIds = new HashSet<String>();
 

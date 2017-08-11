@@ -77,9 +77,10 @@ public class MovieLoader {
             UNWATCHED = 6,
             COLLECTIONS = 7,
             LISTS = 8,
-            NOW_PLAYING = 9,
-            POPULAR = 10,
-            TOP_RATED = 11;
+            UPCOMING = 9,
+            NOW_PLAYING = 10,
+            POPULAR = 11,
+            TOP_RATED = 12;
 
     // For MovieSortType
     public static final int TITLE = 1,
@@ -287,8 +288,8 @@ public class MovieLoader {
                             object.getString("id"), //KEY_DATE_ADDED
                             object.getString("id"),
                             object.getString("id"), //RUNTIME
-                            object.getString("id"), //RUNTIME
-                            object.getString("thumbnail"),
+                            "0", //SHOW_ID
+                            object.getString("poster_path"),
                             true));
                 }
             }
@@ -633,6 +634,9 @@ public class MovieLoader {
                 case LISTS:
                     mMovieList.addAll(listFromJSON("lists"));
                     //mMovieList.addAll(listFromCursor(mDatabase.getWatchlist()));
+                    break;
+                case UPCOMING:
+                    mMovieList.addAll(listFromTMDB("upcoming"));
                     break;
                 case NOW_PLAYING:
                     mMovieList.addAll(listFromTMDB("now_playing"));

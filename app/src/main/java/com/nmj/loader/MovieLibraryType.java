@@ -26,6 +26,7 @@ public enum MovieLibraryType {
         UNWATCHED(MovieLoader.UNWATCHED),
         COLLECTIONS(MovieLoader.COLLECTIONS),
         LISTS(MovieLoader.LISTS),
+        UPCOMING(MovieLoader.UPCOMING),
         NOW_PLAYING(MovieLoader.NOW_PLAYING),
         POPULAR(MovieLoader.POPULAR),
         TOP_RATED(MovieLoader.TOP_RATED);
@@ -58,6 +59,8 @@ public enum MovieLibraryType {
                     return COLLECTIONS;
                 case MovieLoader.LISTS:
                     return LISTS;
+                case MovieLoader.UPCOMING:
+                    return UPCOMING;
                 case MovieLoader.NOW_PLAYING:
                     return NOW_PLAYING;
                 case MovieLoader.POPULAR:

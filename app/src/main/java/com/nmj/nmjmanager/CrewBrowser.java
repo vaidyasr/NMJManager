@@ -37,6 +37,7 @@ public class CrewBrowser extends NMJActivity {
 
         String movieId = getIntent().getExtras().getString("movieId");
         String title = getIntent().getExtras().getString("title");
+        String loadType = getIntent().getExtras().getString("loadType");
 
         mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
 
@@ -45,7 +46,7 @@ public class CrewBrowser extends NMJActivity {
         Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
         if (frag == null && savedInstanceState == null) {
             final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.content, ActorBrowserFragment.newInstance(movieId), TAG);
+            ft.replace(R.id.content, ActorBrowserFragment.newInstance(movieId, loadType), TAG);
             ft.commit();
         }
     }

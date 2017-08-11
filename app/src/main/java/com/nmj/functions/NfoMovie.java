@@ -292,7 +292,7 @@ public class NfoMovie {
 						}
 
 						String tempCast = sbActor.toString();
-						mMovie.setCast(tempCast.substring(0, tempCast.length() - 1));
+						mMovie.setCastString(tempCast.substring(0, tempCast.length() - 1));
 					}
 				}
 			}
@@ -314,13 +314,13 @@ public class NfoMovie {
 		// Create the movie entry
 		dbHelper.createMovie(TextUtils.isEmpty(mMovie.getId()) ? mFilepath : mMovie.getId(), mMovie.getTitle(), mMovie.getPlot(), mMovie.getImdbId(),
 				mMovie.getRating(), mMovie.getTagline(), mMovie.getReleasedate(), mMovie.getCertification(), mMovie.getRuntime(), mMovie.getTrailer(),
-				mMovie.getGenres(), "0", mMovie.getCast(), mMovie.getCollectionTitle(), mMovie.getCollectionId(), "0", "0", String.valueOf(System.currentTimeMillis()));
+				mMovie.getGenres(), "0", mMovie.getCastString(), mMovie.getCollectionTitle(), mMovie.getCollectionId(), "0", "0", String.valueOf(System.currentTimeMillis()));
 
 		// Create the filepath mapping
 		NMJManagerApplication.getMovieMappingAdapter().createFilepathMapping(mFilepath, TextUtils.isEmpty(mMovie.getId()) ? mFilepath : mMovie.getId());
 
 		com.nmj.functions.Movie temp = new com.nmj.functions.Movie(mContext, mMovie.getTitle(), mMovie.getPlot(), mMovie.getTagline(), mMovie.getId(), mMovie.getImdbId(), mMovie.getRating(),
-				mMovie.getReleasedate(), mMovie.getCertification(), mMovie.getRuntime(), mMovie.getTrailer(), mMovie.getGenres(), "0", mMovie.getCast(),
+				mMovie.getReleasedate(), mMovie.getCertification(), mMovie.getRuntime(), mMovie.getTrailer(), mMovie.getGenres(), "0", mMovie.getCastString(),
                 mMovie.getCollectionTitle(), mMovie.getCollectionId(), "0", "0", String.valueOf(System.currentTimeMillis()), "0", "", false);
 
 		if (mCallback != null)

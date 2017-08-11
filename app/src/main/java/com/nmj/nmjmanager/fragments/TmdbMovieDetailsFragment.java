@@ -73,7 +73,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
     private Picasso mPicasso;
     private Typeface mMediumItalic, mMedium, mBold, mCondensedRegular;
     private TMDbMovieService mMovieApiService;
-    private HorizontalCardLayout mActorsLayout, mSimilarMoviesLayout;
+    private HorizontalCardLayout mCastLayout, mCrewLayout, mSimilarMoviesLayout;
     private int mImageThumbSize, mImageThumbSpacing, mToolbarColor = 0;
     private Toolbar mToolbar;
     private FloatingActionButton mFab;
@@ -143,8 +143,9 @@ public class TmdbMovieDetailsFragment extends Fragment {
         mTagline = (TextView) v.findViewById(R.id.textView6);
         mCertification = (TextView) v.findViewById(R.id.textView11);
         mCover = (ImageView) v.findViewById(R.id.traktIcon);
-        mActorsLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout);
-        mSimilarMoviesLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra);
+        mCastLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout);
+        mCrewLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra);
+        mSimilarMoviesLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra_1);
         mScrollView = (ObservableScrollView) v.findViewById(R.id.observableScrollView);
         mFab = (FloatingActionButton) v.findViewById(R.id.fab);
 
@@ -282,25 +283,48 @@ public class TmdbMovieDetailsFragment extends Fragment {
                 mCertification.setText(R.string.stringNA);
             }
 
-            mActorsLayout.setTitle(R.string.detailsActors);
-            mActorsLayout.setSeeMoreVisibility(true);
-            mActorsLayout.getViewTreeObserver().addOnGlobalLayoutListener(
+            mCastLayout.setTitle(R.string.detailsCast);
+            mCastLayout.setSeeMoreVisibility(true);
+            mCastLayout.getViewTreeObserver().addOnGlobalLayoutListener(
                     new ViewTreeObserver.OnGlobalLayoutListener() {
                         @Override
                         public void onGlobalLayout() {
-                            if (mActorsLayout.getWidth() > 0) {
-                                final int numColumns = (int) Math.floor(mActorsLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
-                                mImageThumbSize = (mActorsLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
+                            if (mCastLayout.getWidth() > 0) {
+                                final int numColumns = (int) Math.floor(mCastLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
+                                mImageThumbSize = (mCastLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
 
-                                mActorsLayout.loadItems(mContext, mPicasso, numColumns, mImageThumbSize, mMovie.getActors(), HorizontalCardLayout.ACTORS, mToolbarColor);
-                                NMJLib.removeViewTreeObserver(mActorsLayout.getViewTreeObserver(), this);
+                                mCastLayout.loadItems(mContext, mPicasso, numColumns, mImageThumbSize, mMovie.getCast(), HorizontalCardLayout.ACTORS, mToolbarColor);
+                                NMJLib.removeViewTreeObserver(mCastLayout.getViewTreeObserver(), this);
                             }
                         }
                     });
-            mActorsLayout.setSeeMoreOnClickListener(new OnClickListener() {
+            mCastLayout.setSeeMoreOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     startActivity(IntentUtils.getCastBrowserMovies(mContext, mMovie.getTitle(), mMovie.getId(), mToolbarColor));
+                }
+            });
+
+            mCrewLayout.setVisibility(View.VISIBLE);
+            mCrewLayout.setTitle(R.string.detailsCrew);
+            mCrewLayout.setSeeMoreVisibility(true);
+            mCrewLayout.getViewTreeObserver().addOnGlobalLayoutListener(
+                    new ViewTreeObserver.OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
+                            if (mCrewLayout.getWidth() > 0) {
+                                final int numColumns = (int) Math.floor(mCrewLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
+                                mImageThumbSize = (mCrewLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
+
+                                mCrewLayout.loadItems(mContext, mPicasso, numColumns, mImageThumbSize, mMovie.getCrew(), HorizontalCardLayout.ACTORS, mToolbarColor);
+                                NMJLib.removeViewTreeObserver(mCrewLayout.getViewTreeObserver(), this);
+                            }
+                        }
+                    });
+            mCrewLayout.setSeeMoreOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(IntentUtils.getCrewBrowserMovies(mContext, mMovie.getTitle(), mMovie.getId(), mToolbarColor));
                 }
             });
 
@@ -349,7 +373,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
                         });
 
                         mPaletteLoader.addView(mDetailsArea);
-                        mPaletteLoader.addView(mActorsLayout.getSeeMoreView());
+                        mPaletteLoader.addView(mCastLayout.getSeeMoreView());
                         mPaletteLoader.addView(mSimilarMoviesLayout.getSeeMoreView());
                         mPaletteLoader.setFab(mFab);
 
@@ -360,7 +384,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
 
                         // Add views after configuration change
                         mPaletteLoader.addView(mDetailsArea);
-                        mPaletteLoader.addView(mActorsLayout.getSeeMoreView());
+                        mPaletteLoader.addView(mCastLayout.getSeeMoreView());
                         mPaletteLoader.addView(mSimilarMoviesLayout.getSeeMoreView());
                         mPaletteLoader.setFab(mFab);
 

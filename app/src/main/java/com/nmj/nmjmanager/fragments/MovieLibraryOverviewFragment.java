@@ -70,7 +70,7 @@ public class MovieLibraryOverviewFragment extends Fragment {
 
         private final String[] TITLES = {getString(R.string.choiceAllMovies), getString(R.string.choiceFavorites), getString(R.string.choiceNewReleases),
                 getString(R.string.chooserWatchList), getString(R.string.choiceWatchedMovies), getString(R.string.choiceUnwatchedMovies), getString(R.string.choiceCollections),
-                "Lists", "Now Playing", "Popular", "Top Rated"};
+                "Lists", "Upcoming", "Now Playing", "Popular", "Top Rated"};
 
         public PagerAdapter(FragmentManager fm) {
             super(fm);
@@ -101,10 +101,12 @@ public class MovieLibraryOverviewFragment extends Fragment {
                 case 7:
                     return MovieLibraryFragment.newInstance(MovieLoader.LISTS);
                 case 8:
-                    return MovieLibraryFragment.newInstance(MovieLoader.NOW_PLAYING);
+                    return MovieLibraryFragment.newInstance(MovieLoader.UPCOMING);
                 case 9:
-                    return MovieLibraryFragment.newInstance(MovieLoader.POPULAR);
+                    return MovieLibraryFragment.newInstance(MovieLoader.NOW_PLAYING);
                 case 10:
+                    return MovieLibraryFragment.newInstance(MovieLoader.POPULAR);
+                case 11:
                     return MovieLibraryFragment.newInstance(MovieLoader.TOP_RATED);
                 default:
                     return null;

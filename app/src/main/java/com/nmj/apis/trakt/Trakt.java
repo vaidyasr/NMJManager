@@ -46,7 +46,8 @@ public class Trakt {
 	private Trakt() {} // No instantiation
 	
 	public static String getApiKey(Context context) {
-		String key = context.getString(R.string.trakt_api_key);
+		//String key = context.getString(R.string.trakt_api_key);
+		String key = "123456";
 		if (TextUtils.isEmpty(key) || key.equals("add_your_own"))
 			throw new RuntimeException("You need to add a Trakt API key!");
 		return key;
