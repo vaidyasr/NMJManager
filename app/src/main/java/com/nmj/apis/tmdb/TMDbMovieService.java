@@ -4,11 +4,13 @@ import android.content.Context;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
+import com.google.common.cache.LoadingCache;
 import com.nmj.abstractclasses.MovieApiService;
 import com.nmj.apis.trakt.Trakt;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.Actor;
 import com.nmj.functions.CompleteActor;
+import com.nmj.functions.NMJCache;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.WebMovie;
 import com.nmj.nmjmanager.R;
@@ -556,12 +558,20 @@ public class TMDbMovieService extends MovieApiService {
         ArrayList<Actor> results = new ArrayList<Actor>();
 
 		String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
+		System.out.println("baseUrl: " + baseUrl);
 
 		try {
-			JSONObject jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "/credits?api_key=" + mTmdbApiKey);
-			JSONArray jArray = jObject.getJSONArray("cast");
-
-			System.out.println("Cast :" + jArray.toString());
+			JSONObject jObject;
+			LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
+			if (JSONCache.get(id) == "") {
+                jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+				JSONCache.put(id, jObject.toString());
+				System.out.println("Putting Cache");
+			} else {
+				jObject = new JSONObject(JSONCache.get(id));
+				System.out.println("Getting Cache");
+			}
+            JSONArray jArray = jObject.getJSONObject("credits").getJSONArray("cast");
 
 			Set<String> actorIds = new HashSet<String>();
 
@@ -589,8 +599,17 @@ public class TMDbMovieService extends MovieApiService {
         String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
         try {
-            JSONObject jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "/credits?api_key=" + mTmdbApiKey);
-            JSONArray jArray = jObject.getJSONArray("crew");
+			JSONObject jObject;
+			LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
+			if (JSONCache.get(id) == "") {
+                jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+                JSONCache.put(id, jObject.toString());
+				System.out.println("Putting Cache");
+			} else {
+				jObject = new JSONObject(JSONCache.get(id));
+				System.out.println("Getting Cache");
+			}
+            JSONArray jArray = jObject.getJSONObject("credits").getJSONArray("crew");
 
             Set<String> actorIds = new HashSet<String>();
 
@@ -617,8 +636,17 @@ public class TMDbMovieService extends MovieApiService {
 		String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
 		try {
-			JSONObject jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "/similar_movies?api_key=" + mTmdbApiKey);
-			JSONArray jArray = jObject.getJSONArray("results");
+            JSONObject jObject;
+            LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
+            if (JSONCache.get(id) == "") {
+                jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+                JSONCache.put(id, jObject.toString());
+                System.out.println("Putting Cache");
+            } else {
+                jObject = new JSONObject(JSONCache.get(id));
+                System.out.println("Getting Cache");
+            }
+            JSONArray jArray = jObject.getJSONObject("similar_movies").getJSONArray("results");
 
 			for (int i = 0; i < jArray.length(); i++) {
 				if (!NMJLib.isAdultContent(mContext, jArray.getJSONObject(i).getString("title")) && !NMJLib.isAdultContent(mContext, jArray.getJSONObject(i).getString("original_title"))) {

@@ -18,43 +18,30 @@ package com.nmj.loader;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.net.ParseException;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.os.AsyncTask;
-import android.widget.Toast;
 
-import com.google.common.collect.ArrayListMultimap;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.nmj.db.DbAdapterMovieMappings;
 import com.nmj.db.DbAdapterMovies;
-import com.nmj.functions.ColumnIndexCache;
-import com.nmj.functions.FileSource;
+
 import com.nmj.functions.Filepath;
 import com.nmj.functions.LibrarySectionAsyncTask;
-import com.nmj.functions.MediumMovie;
+import com.nmj.functions.NMJCache;
 import com.nmj.functions.NMJLib;
+import com.nmj.functions.NMJMovie;
 import com.nmj.functions.PreferenceKeys;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,9 +49,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
-import java.util.Arrays;
-
-import jcifs.smb.SmbFile;
 
 public class MovieLoader {
 
@@ -103,7 +87,7 @@ public class MovieLoader {
     private final DbAdapterMovies mDatabase;
 
     private MovieSortType mSortType;
-    private ArrayList<MediumMovie> mResults = new ArrayList<>();
+    private ArrayList<NMJMovie> mResults = new ArrayList<>();
     private HashSet<MovieFilter> mFilters = new HashSet<>();
     private MovieLoaderAsyncTask mAsyncTask;
     private boolean mShowingSearchResults = false;
@@ -251,182 +235,99 @@ public class MovieLoader {
         mAsyncTask.execute();
     }
 
-    private ArrayList<MediumMovie> listFromTMDB(String loadType) {
-        ArrayList<MediumMovie> list = new ArrayList<>();
+    /**
+     * Creates movie objects from a URL and adds them to a list.
+     *
+     * @param loadType
+     * @return List of movie objects from the supplied URL.
+     */
+    private ArrayList<NMJMovie> listFromTMDB(String loadType) {
+        ArrayList<NMJMovie> list = new ArrayList<>();
         String url = "http://api.themoviedb.org/3/movie/" + loadType + "?api_key=b626260be86175272e48fa6347e58100&language=en";
         try {
-            HttpGet httpGet = new HttpGet(url);
-            System.out.println("url " + url);
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpResponse response = httpclient.execute(httpGet);
-            // StatusLine stat = response.getStatusLine();
-            int status = response.getStatusLine().getStatusCode();
+            JSONObject jObject = NMJLib.getJSONObject(mContext, url);
+            JSONArray jArray = jObject.getJSONArray("results");
 
-            if (status == 200) {
-                HttpEntity entity = response.getEntity();
-                String data = EntityUtils.toString(entity);
-                System.out.println("finalResult " + data);
-
-                JSONObject jsono = new JSONObject(data);
-                JSONArray jarray = jsono.getJSONArray("results");
-
-                for (int i = 0; i < jarray.length(); i++) {
-                    JSONObject object = jarray.getJSONObject(i);
-                    System.out.println("TAG" + object.toString());
-                    list.add(new MediumMovie(mContext,
-                            object.getString("title"),
-                            object.getString("id"),
-                            object.getString("vote_average"),
-                            object.getString("release_date"),
-                            object.getString("id"), //KEY_GENRES
-                            object.getString("id"), //KEY_FAVOURITE
-                            object.getString("id"), //KEY_ACTORS
-                            object.getString("id"), //KEY_COLLECTION_ID
-                            object.getString("id"), //KEY_COLLECTION_ID
-                            object.getString("id"), //KEY_TO_WATCH
-                            object.getString("id"), //KEY_HAS_WATCHED
-                            object.getString("id"), //KEY_DATE_ADDED
-                            object.getString("id"),
-                            object.getString("id"), //RUNTIME
-                            "0", //SHOW_ID
-                            object.getString("poster_path"),
-                            true));
-                }
+            for (int i = 0; i < jArray.length(); i++) {
+                JSONObject dObject = jArray.getJSONObject(i);
+                list.add(new NMJMovie(mContext,
+                        dObject.getString("title"),
+                        dObject.getString("id"),
+                        dObject.getString("vote_average"),
+                        dObject.getString("release_date"),
+                        "", //KEY_GENRES
+                        "", //KEY_FAVOURITE
+                        "", //KEY_COLLECTION_ID
+                        "", //KEY_COLLECTION_ID
+                        "", //KEY_TO_WATCH
+                        "", //KEY_HAS_WATCHED
+                        "", //KEY_DATE_ADDED
+                        "", //CERTIFICATION
+                        "", //RUNTIME
+                        "0", //SHOW_ID
+                        dObject.getString("poster_path"),
+                        true));
             }
-        } catch (ParseException e1) {
-            e1.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
-    private ArrayList<MediumMovie> listFromJSON(String loadType) {
-        ArrayList<MediumMovie> list = new ArrayList<>();
-        String url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=Movies&VALUE=&searchtype=title";
-        try {
-            HttpGet httpGet = new HttpGet(url);
-            System.out.println("url " + url);
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpResponse response = httpclient.execute(httpGet);
-            // StatusLine stat = response.getStatusLine();
-            int status = response.getStatusLine().getStatusCode();
-
-            if (status == 200) {
-                HttpEntity entity = response.getEntity();
-                String data = EntityUtils.toString(entity);
-                System.out.println("finalResult " + data);
-
-                JSONObject jsono = new JSONObject(data);
-                JSONArray jarray = jsono.getJSONArray("data");
-
-                for (int i = 0; i < jarray.length(); i++) {
-                    JSONObject object = jarray.getJSONObject(i);
-                    System.out.println("TAG" + object.toString());
-                    list.add(new MediumMovie(mContext,
-                            object.getString("TITLE"),
-                            object.getString("CONTENT_TTID"),
-                            object.getString("RATING"),
-                            object.getString("RELEASE_DATE"),
-                            object.getString("RATING"), //KEY_GENRES
-                            object.getString("RATING"), //KEY_FAVOURITE
-                            object.getString("RATING"), //KEY_ACTORS
-                            object.getString("SHOW_ID"), //KEY_COLLECTION_ID
-                            object.getString("SHOW_ID"), //KEY_COLLECTION_ID
-                            object.getString("SHOW_ID"), //KEY_TO_WATCH
-                            object.getString("PLAY_COUNT"), //KEY_HAS_WATCHED
-                            object.getString("SHOW_ID"), //KEY_DATE_ADDED
-                            object.getString("PARENTAL_CONTROL"),
-                            object.getString("RUNTIME"), //RUNTIME
-                            object.getString("SHOW_ID"),
-                            object.getString("THUMBNAIL"),
-                            true));
-                }
-            }
-        } catch (ParseException e1) {
-            e1.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
         return list;
     }
 
     /**
-     * Creates movie objects from a Cursor and adds them to a list.
+     * Creates movie objects from a URL and adds them to a list.
      *
-     * @param cursor
-     * @return List of movie objects from the supplied Cursor.
+     * @param loadType
+     * @return List of movie objects from the supplied URL.
      */
-    /*private ArrayList<MediumMovie> listFromCursor(Cursor cursor) {
+    private ArrayList<NMJMovie> listFromJSON(String loadType) {
+        ArrayList<NMJMovie> list = new ArrayList<>();
+        String url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=Movies&VALUE=&searchtype=title";
 
-        // Normally we'd have to go through each movie and add filepaths mapped to that movie
-        // one by one. This is a hacky approach that gets all filepaths at once and creates a
-        // map of them. That way it's easy to get filepaths for a specific movie - and it's
-        // 2-3x faster with ~750 movies.
-        ArrayListMultimap<String, String> filepaths = ArrayListMultimap.create();
-        Cursor paths = NMJManagerApplication.getMovieMappingAdapter().getAllFilepaths(false);
-        if (paths != null) {
-            try {
-                while (paths.moveToNext()) {
-                    filepaths.put(paths.getString(paths.getColumnIndex(DbAdapterMovieMappings.KEY_TMDB_ID)),
-                            paths.getString(paths.getColumnIndex(DbAdapterMovieMappings.KEY_FILEPATH)));
-                }
-            } catch (Exception e) {
-            } finally {
-                paths.close();
-                NMJManagerApplication.setMovieFilepaths(filepaths);
+        try {
+            JSONObject jObject;
+            LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
+            if (JSONCache.get(loadType) == "") {
+                jObject = NMJLib.getJSONObject(mContext, url);
+                JSONCache.put(loadType, jObject.toString());
+                System.out.println("Putting Cache");
+            } else {
+                jObject = new JSONObject(JSONCache.get(loadType));
+                System.out.println("Getting Cache");
             }
-        }
+            JSONArray jArray = jObject.getJSONArray("data");
 
-        HashMap<String, String> collectionsMap = NMJManagerApplication.getCollectionsAdapter().getCollectionsMap();
-        ArrayList<MediumMovie> list = new ArrayList<MediumMovie>();
-
-        if (cursor != null) {
-            ColumnIndexCache cache = new ColumnIndexCache();
-
-            try {
-                while (cursor.moveToNext()) {
-                    list.add(new MediumMovie(mContext,
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TITLE)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TMDB_ID)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RATING)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RELEASEDATE)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_GENRES)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_FAVOURITE)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_ACTORS)),
-                            collectionsMap.get(cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_COLLECTION_ID))),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_COLLECTION_ID)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TO_WATCH)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_HAS_WATCHED)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_DATE_ADDED)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_CERTIFICATION)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RUNTIME)), true
-                    ));
-                }
-            } catch (Exception e) {
-            } finally {
-                cursor.close();
-                cache.clear();
+            for (int i = 0; i < jArray.length(); i++) {
+                JSONObject dObject = jArray.getJSONObject(i);
+                list.add(new NMJMovie(mContext,
+                        dObject.getString("TITLE"),
+                        dObject.getString("CONTENT_TTID"),
+                        dObject.getString("RATING"),
+                        dObject.getString("RELEASE_DATE"),
+                        dObject.getString("RATING"), //KEY_GENRES
+                        dObject.getString("RATING"), //KEY_FAVOURITE
+                        dObject.getString("SHOW_ID"), //KEY_COLLECTION_ID
+                        dObject.getString("SHOW_ID"), //KEY_COLLECTION_ID
+                        dObject.getString("SHOW_ID"), //KEY_TO_WATCH
+                        dObject.getString("PLAY_COUNT"), //KEY_HAS_WATCHED
+                        dObject.getString("SHOW_ID"), //KEY_DATE_ADDED
+                        dObject.getString("PARENTAL_CONTROL"),
+                        dObject.getString("RUNTIME"), //RUNTIME
+                        dObject.getString("SHOW_ID"),
+                        dObject.getString("THUMBNAIL"),
+                        true));
             }
+        } catch (Exception ignored) {
         }
 
-        mResults = list;
-        for (MediumMovie value : list) {
-            System.out.println(value);
-        }
         return list;
-    }*/
+    }
 
     /**
      * Get the results of the most recently loaded movies.
      *
      * @return List of movie objects.
      */
-    public ArrayList<MediumMovie> getResults() {
+    public ArrayList<NMJMovie> getResults() {
         return mResults;
     }
 
@@ -590,50 +491,41 @@ public class MovieLoader {
      */
     private class MovieLoaderAsyncTask extends LibrarySectionAsyncTask<Void, Void, Void> {
 
-        private final ArrayList<MediumMovie> mMovieList;
+        private final ArrayList<NMJMovie> mMovieList;
         private final String mSearchQuery;
 
         public MovieLoaderAsyncTask(String searchQuery) {
             // Lowercase in order to search more efficiently
             mSearchQuery = searchQuery.toLowerCase(Locale.getDefault());
 
-            mMovieList = new ArrayList<MediumMovie>();
+            mMovieList = new ArrayList<NMJMovie>();
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-
             switch (mLibraryType) {
                 case ALL_MOVIES:
-                    //mMovieList.addAll(listFromCursor(mDatabase.getAllMovies()));
                     mMovieList.addAll(listFromJSON("all"));
                     break;
                 case FAVORITES:
-                    //mMovieList.addAll(listFromCursor(mDatabase.getFavorites()));
                     mMovieList.addAll(listFromJSON("favorites"));
                     break;
                 case NEW_RELEASES:
-                    //mMovieList.addAll(listFromCursor(mDatabase.getNewReleases()));
                     mMovieList.addAll(listFromJSON("newReleases"));
                     break;
                 case WATCHLIST:
-                    //mMovieList.addAll(listFromCursor(mDatabase.getUnwatched()));
-                    mMovieList.addAll(listFromJSON("watchlist"));
+                    //mMovieList.addAll(listFromJSON("watchlist"));
                 case UNWATCHED:
-                    //mMovieList.addAll(listFromCursor(mDatabase.getUnwatched()));
                     mMovieList.addAll(listFromJSON("unwatched"));
                     break;
                 case WATCHED:
-                    //mMovieList.addAll(listFromCursor(mDatabase.getWatched()));
                     mMovieList.addAll(listFromJSON("watched"));
                     break;
                 case COLLECTIONS:
-                    //mMovieList.addAll(listFromCursor(mDatabase.getCollections()));
                     mMovieList.addAll(listFromJSON("collections"));
                     break;
                 case LISTS:
                     mMovieList.addAll(listFromJSON("lists"));
-                    //mMovieList.addAll(listFromCursor(mDatabase.getWatchlist()));
                     break;
                 case UPCOMING:
                     mMovieList.addAll(listFromTMDB("upcoming"));
@@ -798,7 +690,7 @@ public class MovieLoader {
             // If we've got a search query, we should search based on it
             if (!TextUtils.isEmpty(mSearchQuery)) {
 
-                ArrayList<MediumMovie> tempCollection = Lists.newArrayList();
+                ArrayList<NMJMovie> tempCollection = Lists.newArrayList();
 
                 if (mSearchQuery.startsWith("actor:")) {
                     for (int i = 0; i < mMovieList.size(); i++) {
@@ -881,4 +773,5 @@ public class MovieLoader {
                 mMovieList.clear();
         }
     }
+
 }

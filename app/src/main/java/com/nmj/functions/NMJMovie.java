@@ -30,24 +30,26 @@ public class NMJMovie extends NMJBaseMovie {
 
     private String PLOT, TAGLINE, IMDB_ID, TRAILER;
 
-    private String mGetPlot, mGetTagline;
+    private String THUMBNAIL, SHOW_ID;
 
-    public NMJMovie(Context context, String title, String plot, String tagline, String tmdbId, String imdbId, String rating, String releasedate,
-                    String certification, String runtime, String trailer, String genres, String favourite, String cast, String collection, String collectionId, String toWatch, String hasWatched,
-                    String date_added, String showId, boolean ignorePrefixes) {
+    public NMJMovie(Context context, String title, String tmdbId, String rating, String releasedate,String genres,
+                    String favourite, String collection, String collectionId, String toWatch, String hasWatched,
+                    String date_added, String certification, String runtime, String showId, String thumbnail, boolean ignorePrefixes) {
 
-        super(context, title, tmdbId, rating, releasedate, genres, favourite, cast, collection,
-                collectionId, toWatch, hasWatched, date_added, certification, runtime, showId, ignorePrefixes);
+        super(context, title, tmdbId, rating, releasedate, genres, favourite, collection,
+                collectionId, toWatch, hasWatched, date_added, certification, runtime, showId, thumbnail, ignorePrefixes);
 
         // Set up movie fields based on constructor
-        PLOT = plot;
-        TAGLINE = tagline;
+        //PLOT = plot;
+        //TAGLINE = tagline;
         mTmdbId = tmdbId;
-        IMDB_ID = imdbId;
-        TRAILER = trailer;
+        THUMBNAIL = thumbnail;
+        SHOW_ID = showId;
+        //IMDB_ID = imdbId;
+        //TRAILER = trailer;
 
         // getPlot()
-        if (TextUtils.isEmpty(PLOT)) {
+        /*if (TextUtils.isEmpty(PLOT)) {
             mGetPlot = mContext.getString(R.string.stringNoPlot);
         } else {
             mGetPlot = PLOT;
@@ -58,24 +60,24 @@ public class NMJMovie extends NMJBaseMovie {
             mGetTagline = "";
         } else {
             mGetTagline = TAGLINE;
-        }
+        }*/
     }
 
-    public String getPlot() {
-        return mGetPlot;
-    }
+    //public String getPlot() {
+     //   return mGetPlot;
+    //}
 
-    public String getTagline() {
-        return mGetTagline;
-    }
+    //public String getTagline() {
+    //    return mGetTagline;
+    //}
 
     public File getPoster() {
         return getThumbnail();
     }
 
-    public String getImdbId() {
-        return IMDB_ID;
-    }
+    //public String getImdbId() {
+    //    return IMDB_ID;
+    //}
 
     public String getRating() {
         if (!TextUtils.isEmpty(RATING))
@@ -83,8 +85,23 @@ public class NMJMovie extends NMJBaseMovie {
         return "0.0";
     }
 
-    public String getTrailer() {
-        return TRAILER;
+    //public String getTrailer() {
+    //    return TRAILER;
+    //}
+
+    public String getNMJThumbnail() {
+        return THUMBNAIL.replaceAll(" ", "%20");
+    }
+
+    public String getVideoType(){
+        if (getShowId() == "0")
+            return "tmdb";
+        else
+            return "nmj";
+    }
+
+    public String getShowId() {
+        return SHOW_ID;
     }
 
     public String getFavourite() {

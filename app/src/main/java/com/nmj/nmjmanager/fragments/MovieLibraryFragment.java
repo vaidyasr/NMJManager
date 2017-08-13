@@ -58,6 +58,7 @@ import com.github.ksoichiro.android.observablescrollview.ObservableGridView;
 import com.nmj.functions.CoverItem;
 import com.nmj.functions.MediumMovie;
 import com.nmj.functions.NMJLib;
+import com.nmj.functions.NMJMovie;
 import com.nmj.loader.MovieFilter;
 import com.nmj.loader.MovieLoader;
 import com.nmj.loader.MovieLibraryType;
@@ -229,7 +230,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
 
                     int id = item.getItemId();
 
-                    switch (id) {
+                    /*switch (id) {
                         case R.id.movie_add_fav:
                             MovieDatabaseUtils.setMoviesFavourite(mContext, mAdapter.getCheckedMovies(), true);
                             break;
@@ -248,7 +249,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                         case R.id.remove_from_watchlist:
                             MovieDatabaseUtils.setMoviesWatchlist(mContext, mAdapter.getCheckedMovies(), false);
                             break;
-                    }
+                    }*/
 
                     if (!(id == R.id.watched_menu ||
                             id == R.id.watchlist_menu ||
@@ -320,6 +321,18 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         if (mMovieLoader.getType() == MovieLibraryType.COLLECTIONS) {
             menu.findItem(R.id.sort).setVisible(false);
             menu.findItem(R.id.filters).setVisible(false);
+        }
+
+        if (mMovieLoader.getType() == MovieLibraryType.POPULAR ||
+                mMovieLoader.getType() == MovieLibraryType.TOP_RATED ||
+                mMovieLoader.getType() == MovieLibraryType.NOW_PLAYING ||
+                mMovieLoader.getType() == MovieLibraryType.UPCOMING) {
+            menu.findItem(R.id.menuSortDuration).setVisible(false);
+            menu.findItem(R.id.menuSortRating).setVisible(false);
+            menu.findItem(R.id.menuSortAdded).setVisible(false);
+            menu.findItem(R.id.filters).setVisible(false);
+            menu.findItem(R.id.update).setVisible(false);
+            menu.findItem(R.id.random).setVisible(false);
         }
 
         MenuItemCompat.setOnActionExpandListener(menu.findItem(R.id.search_textbox), new OnActionExpandListener() {
@@ -554,8 +567,8 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             return mChecked.size();
         }
 
-        public List<MediumMovie> getCheckedMovies() {
-            List<MediumMovie> movies = new ArrayList<>(mChecked.size());
+        public List<NMJMovie> getCheckedMovies() {
+            List<NMJMovie> movies = new ArrayList<>(mChecked.size());
             for (Integer i : mChecked)
                 movies.add(getItem(i));
             return movies;
@@ -574,7 +587,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         }
 
         @Override
-        public MediumMovie getItem(int position) {
+        public NMJMovie getItem(int position) {
             return mMovieLoader.getResults().get(position);
         }
 
@@ -585,7 +598,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
 
         @Override
         public View getView(int position, View convertView, ViewGroup container) {
-            final MediumMovie movie = getItem(position);
+            final NMJMovie movie = getItem(position);
             String mURL;
 
             CoverItem holder;
@@ -616,9 +629,9 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             //mPicasso.load(mMovieLoader.getType() == MovieLibraryType.COLLECTIONS ?
             //       movie.getCollectionPoster() : movie.getThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
 
-            System.out.println("baseUrl: " + baseUrl);
-            System.out.println("imageSizeUrl: " + imageSizeUrl);
-            System.out.println("Thumbnail: " + movie.getNMJThumbnail());
+            //System.out.println("baseUrl: " + baseUrl);
+            //System.out.println("Thumbnail: " + movie.getNMJThumbnail());
+            //System.out.println("Video Type:" + movie.getVideoType());
             if (movie.getVideoType() == "tmdb")
                 mURL = baseUrl + imageSizeUrl;
             else

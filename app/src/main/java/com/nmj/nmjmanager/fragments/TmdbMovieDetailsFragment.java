@@ -374,6 +374,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
 
                         mPaletteLoader.addView(mDetailsArea);
                         mPaletteLoader.addView(mCastLayout.getSeeMoreView());
+                        mPaletteLoader.addView(mCrewLayout.getSeeMoreView());
                         mPaletteLoader.addView(mSimilarMoviesLayout.getSeeMoreView());
                         mPaletteLoader.setFab(mFab);
 

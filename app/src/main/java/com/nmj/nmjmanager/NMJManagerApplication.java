@@ -26,6 +26,7 @@ import android.support.v7.graphics.Palette;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.nmj.abstractclasses.MovieApiService;
+import com.nmj.abstractclasses.MovieApiService;
 import com.nmj.abstractclasses.NMJApiService;
 import com.nmj.abstractclasses.TvShowApiService;
 import com.nmj.apis.thetvdb.TheTVDbService;
@@ -321,9 +322,9 @@ public class NMJManagerApplication extends Application {
 		return TMDbMovieService.getInstance(context);
 	}
 
-    public static NMJApiService getNMJService(Context context) {
-        return NMJMovieService.getInstance(context);
-    }
+	public static NMJApiService getNMJMovieService(Context context) {
+		return NMJMovieService.getInstance(context);
+	}
 
 	/**
 	 * This is used as an optimization to loading the movie library view.

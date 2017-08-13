@@ -136,6 +136,7 @@ import static com.nmj.functions.PreferenceKeys.TRAKT_USERNAME;
 
 @SuppressLint("NewApi")
 public class NMJLib {
+    private String showId, tmdbId, nmjdata, tmdbdata;
 
     public static final String TYPE = "type";
     public static final String MOVIE = "movie";
@@ -174,7 +175,6 @@ public class NMJLib {
     private static int mRuntimeInMinutes;
     private static String[] mAdultKeywords = new String[]{"adult", "sex", "porn", "explicit", "penis", "vagina", "asshole",
             "blowjob", "cock", "fuck", "dildo", "kamasutra", "masturbat", "squirt", "slutty", "cum", "cunt"};
-
     private NMJLib() {
     } // No instantiation
 
@@ -1222,7 +1222,7 @@ public class NMJLib {
                 response = client.newCall(request).execute();
             }
             String result = response.body().string();
-            System.out.println("Output: " + result);
+            //System.out.println("Output: " + result);
             return new JSONObject(result);
         } catch (Exception e) { // IOException and JSONException
             return new JSONObject();
@@ -2481,4 +2481,5 @@ public class NMJLib {
         } catch (Exception e) {
         }
     }
+
 }
