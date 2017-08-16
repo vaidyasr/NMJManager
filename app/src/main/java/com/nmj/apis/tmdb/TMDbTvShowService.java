@@ -404,6 +404,7 @@ public class TMDbTvShowService extends TvShowApiService {
 							jArray.getJSONObject(i).getString("name"),
 							jArray.getJSONObject(i).getString("character"),
                             jArray.getJSONObject(i).getString("id"),
+							"cast",
                             baseUrl + NMJLib.getActorUrlSize(mContext) + jArray.getJSONObject(i).getString("profile_path")));
                 }
             }
@@ -442,6 +443,7 @@ public class TMDbTvShowService extends TvShowApiService {
                             jArray.getJSONObject(i).getString("name"),
                             jArray.getJSONObject(i).getString("job"),
                             jArray.getJSONObject(i).getString("id"),
+							"crew",
 							baseUrl + NMJLib.getActorUrlSize(mContext) + jArray.getJSONObject(i).getString("profile_path")));
 				}
 			}

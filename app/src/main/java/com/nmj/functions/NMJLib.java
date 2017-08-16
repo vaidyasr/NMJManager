@@ -185,6 +185,13 @@ public class NMJLib {
         return key;
     }
 
+    public static String getTmdbApiURL(Context context) {
+        String key = context.getString(R.string.tmdb_api_url);
+        if (TextUtils.isEmpty(key) || key.equals("add_your_own"))
+            throw new RuntimeException("You need to add a TMDb URL!");
+        return key;
+    }
+
     public static String getTvdbApiKey(Context context) {
         String key = context.getString(R.string.tvdb_api_key);
         if (TextUtils.isEmpty(key) || key.equals("add_your_own"))
@@ -2260,7 +2267,7 @@ public class NMJLib {
         }
     }
 
-    public static String getPrettyRuntime(Context context, int timeInSeconds) {
+    public static String getPrettyRuntimeFromSeconds(Context context, int timeInSeconds) {
         if (timeInSeconds == 0) {
             return context.getString(R.string.stringNA);
         }
@@ -2269,6 +2276,25 @@ public class NMJLib {
         int secondsLeft = timeInSeconds - hours * 3600;
         int minutes = secondsLeft / 60;
         int seconds = secondsLeft - minutes * 60;
+
+        if (hours > 0) {
+            if (minutes == 0) {
+                return hours + " " + context.getResources().getQuantityString(R.plurals.hour, hours, hours);
+            } else {
+                return hours + " " + context.getResources().getQuantityString(R.plurals.hour_short, hours, hours) + " " + minutes + " " + context.getResources().getQuantityString(R.plurals.minute_short, minutes, minutes);
+            }
+        } else {
+            return minutes + " " + context.getResources().getQuantityString(R.plurals.minute, minutes, minutes);
+        }
+    }
+
+    public static String getPrettyRuntimeFromMinutes(Context context, int minutes) {
+        if (minutes == 0) {
+            return context.getString(R.string.stringNA);
+        }
+
+        int hours = (minutes / 60);
+        minutes = (minutes % 60);
 
         if (hours > 0) {
             if (minutes == 0) {

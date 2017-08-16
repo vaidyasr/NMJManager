@@ -69,7 +69,7 @@ public class ActorTvShowsFragment extends Fragment {
 	 */
 	public ActorTvShowsFragment() {}
 	
-	public static ActorTvShowsFragment newInstance(String actorId) { 
+	public static ActorTvShowsFragment newInstance(String actorId) {
 		ActorTvShowsFragment pageFragment = new ActorTvShowsFragment();
 		Bundle bundle = new Bundle();
 		bundle.putString("actorId", actorId);

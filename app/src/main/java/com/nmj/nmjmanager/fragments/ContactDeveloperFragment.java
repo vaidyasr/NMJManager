@@ -102,7 +102,7 @@ public class ContactDeveloperFragment extends Fragment {
 		if (!message.getText().toString().isEmpty() && message.getText().toString().length() > 5) {
 			try {
 				Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
-				String[] recipients = new String[]{"michell.bak@gmail.com"};
+				String[] recipients = new String[]{"vaidyasr@gmail.com"};
 				emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, recipients);
 				emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "NMJManager support");
 				emailIntent.putExtra(android.content.Intent.EXTRA_TEXT,

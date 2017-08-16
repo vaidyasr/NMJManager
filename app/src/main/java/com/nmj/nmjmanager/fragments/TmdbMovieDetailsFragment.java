@@ -149,6 +149,11 @@ public class TmdbMovieDetailsFragment extends Fragment {
         mScrollView = (ObservableScrollView) v.findViewById(R.id.observableScrollView);
         mFab = (FloatingActionButton) v.findViewById(R.id.fab);
 
+
+        mFab.setVisibility(View.INVISIBLE);
+
+        System.out.println("TMDB Called");
+
         mFab.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -258,7 +263,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
             }
 
             // Set the movie runtime
-            mRuntime.setText(NMJLib.getPrettyRuntime(getActivity(), Integer.parseInt(mMovie.getRuntime())));
+            mRuntime.setText(NMJLib.getPrettyRuntimeFromMinutes(getActivity(), Integer.parseInt(mMovie.getRuntime())));
 
             // Set the movie release date
             mReleaseDate.setTypeface(mMedium);

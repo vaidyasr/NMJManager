@@ -114,7 +114,7 @@ public class EditMovieFragment extends Fragment {
         }
 
         // Set runtime
-        mRuntime.setText(NMJLib.getPrettyRuntime(getActivity(), NMJLib.getInteger(mMovie.getRuntime())));
+        mRuntime.setText(NMJLib.getPrettyRuntimeFromMinutes(getActivity(), NMJLib.getInteger(mMovie.getRuntime())));
         mRuntime.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

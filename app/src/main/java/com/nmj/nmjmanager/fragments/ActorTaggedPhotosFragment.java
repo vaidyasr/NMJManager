@@ -55,7 +55,7 @@ public class ActorTaggedPhotosFragment extends Fragment {
 	 */
 	public ActorTaggedPhotosFragment() {}
 	
-	public static ActorTaggedPhotosFragment newInstance(String actorId) { 
+	public static ActorTaggedPhotosFragment newInstance(String actorId) {
 		ActorTaggedPhotosFragment pageFragment = new ActorTaggedPhotosFragment();
 		Bundle bundle = new Bundle();
 		bundle.putString("actorId", actorId);

@@ -118,7 +118,7 @@ public class EditTvShowFragment extends Fragment {
         }
 
         // Set runtime
-        mRuntime.setText(NMJLib.getPrettyRuntime(getActivity(), NMJLib.getInteger(mShow.getRuntime())));
+        mRuntime.setText(NMJLib.getPrettyRuntimeFromMinutes(getActivity(), NMJLib.getInteger(mShow.getRuntime())));
         mRuntime.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

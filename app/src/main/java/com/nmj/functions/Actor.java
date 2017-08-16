@@ -22,11 +22,12 @@ import com.nmj.utils.StringUtils;
 
 public class Actor {
 
-	private String mName, mCharacter, mId, mUrl;
+	private String mName, mCharacter, mId, mUrl, personType;
 
-	public Actor(String name, String character, String id, String url) {
+	public Actor(String name, String character, String id, String pType, String url) {
 		mName = name;
 		mCharacter = character;
+		personType = pType;
 		mId = id;
 		mUrl = url;
 	}
@@ -37,6 +38,10 @@ public class Actor {
 
 	public String getId() {
 		return mId;
+	}
+
+	public String getPersonType() {
+		return personType;
 	}
 
 	public String getUrl() {

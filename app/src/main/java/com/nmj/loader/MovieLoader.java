@@ -245,7 +245,16 @@ public class MovieLoader {
         ArrayList<NMJMovie> list = new ArrayList<>();
         String url = "http://api.themoviedb.org/3/movie/" + loadType + "?api_key=b626260be86175272e48fa6347e58100&language=en";
         try {
-            JSONObject jObject = NMJLib.getJSONObject(mContext, url);
+            JSONObject jObject;
+            LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
+            if (JSONCache.get(loadType) == "") {
+                jObject = NMJLib.getJSONObject(mContext, url);
+                JSONCache.put(loadType, jObject.toString());
+                System.out.println("Putting Cache");
+            } else {
+                jObject = new JSONObject(JSONCache.get(loadType));
+                System.out.println("Getting Cache");
+            }
             JSONArray jArray = jObject.getJSONArray("results");
 
             for (int i = 0; i < jArray.length(); i++) {
@@ -514,7 +523,8 @@ public class MovieLoader {
                     mMovieList.addAll(listFromJSON("newReleases"));
                     break;
                 case WATCHLIST:
-                    //mMovieList.addAll(listFromJSON("watchlist"));
+                    mMovieList.addAll(listFromJSON("watchlist"));
+                    break;
                 case UNWATCHED:
                     mMovieList.addAll(listFromJSON("unwatched"));
                     break;

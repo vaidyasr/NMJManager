@@ -28,49 +28,53 @@ import com.nmj.utils.ViewUtils;
 
 public class ActorBrowser extends NMJActivity {
 
-	private static String TAG = "ActorBrowserFragment";
+    private static String TAG = "ActorBrowserFragment";
     private int mToolbarColor;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		String movieId = getIntent().getExtras().getString("movieId");
-		String title = getIntent().getExtras().getString("title");
-		String loadType = getIntent().getExtras().getString("loadType");
+        String movieId = getIntent().getExtras().getString("movieId");
+        String title = getIntent().getExtras().getString("title");
+        String loadType = getIntent().getExtras().getString("loadType");
         mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
 
         getSupportActionBar().setSubtitle(title);
+        if (loadType.equals("cast"))
+            getSupportActionBar().setTitle(R.string.detailsCast);
+        else
+            getSupportActionBar().setTitle(R.string.detailsCrew);
 
-		Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
-		if (frag == null && savedInstanceState == null) {
-			final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-			ft.replace(R.id.content, ActorBrowserFragment.newInstance(movieId, loadType), TAG);
-			ft.commit();
-		}
-	}
+        Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
+        if (frag == null && savedInstanceState == null) {
+            final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.content, ActorBrowserFragment.newInstance(movieId, loadType), TAG);
+            ft.commit();
+        }
+    }
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			onBackPressed();
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
-	}
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
-	@Override
-	public void onStart() {
-		super.onStart();
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    @Override
+    public void onStart() {
+        super.onStart();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         ViewUtils.setToolbarAndStatusBarColor(getSupportActionBar(), getWindow(), mToolbarColor);
-	}
+    }
 
-	@Override
-	protected int getLayoutResource() {
-		return R.layout.empty_layout_with_toolbar;
-	}
+    @Override
+    protected int getLayoutResource() {
+        return R.layout.empty_layout_with_toolbar;
+    }
 }

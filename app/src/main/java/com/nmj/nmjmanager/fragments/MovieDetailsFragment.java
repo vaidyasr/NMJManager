@@ -359,7 +359,7 @@ public class MovieDetailsFragment extends Fragment {
         }
 
         // Set the movie runtime
-        mRuntime.setText(NMJLib.getPrettyRuntime(mContext, Integer.parseInt(mMovie.getRuntime())));
+        mRuntime.setText(NMJLib.getPrettyRuntimeFromMinutes(mContext, Integer.parseInt(mMovie.getRuntime())));
 
         // Set the movie release date
         mReleaseDate.setTypeface(mMedium);

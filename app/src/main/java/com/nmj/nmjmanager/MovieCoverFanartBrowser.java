@@ -38,7 +38,7 @@ import com.nmj.utils.ViewUtils;
 
 public class MovieCoverFanartBrowser extends NMJActivity  {
 
-	private String mTmdbId, mCollectionId, mBaseUrl = "", mJson = "", mCollection = "", mTmdbApiKey;
+	private String mTmdbId, mCollectionId, mBaseUrl = "", mJson = "", mCollection = "", mTmdbApiKey, mTmdbApiURL;
 	private ViewPager mViewPager;
 	private ProgressBar mProgressBar;
     private PagerSlidingTabStrip mTabs;
@@ -62,6 +62,7 @@ public class MovieCoverFanartBrowser extends NMJActivity  {
         mCollectionId = getIntent().getExtras().getString("collectionId");
         mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
 		mTmdbApiKey = NMJLib.getTmdbApiKey(this);
+		mTmdbApiURL = NMJLib.getTmdbApiURL(this);
 
         mProgressBar = (ProgressBar) findViewById(R.id.progressbar);
         mProgressBar.setVisibility(View.VISIBLE);
@@ -149,10 +150,10 @@ public class MovieCoverFanartBrowser extends NMJActivity  {
 			try {
                 mBaseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
-                mJson = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + params[0] + "/images?api_key=" + mTmdbApiKey).toString();
+                mJson = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + params[0] + "/images?api_key=" + mTmdbApiKey).toString();
 
 				if (NMJLib.isValidTmdbId(mCollectionId)) {
-                    mCollection = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/collection/" + params[1] + "/images?api_key=" + mTmdbApiKey).toString();
+                    mCollection = NMJLib.getJSONObject(mContext, mTmdbApiURL + "collection/" + params[1] + "/images?api_key=" + mTmdbApiKey).toString();
 				}
 
 				return mJson;

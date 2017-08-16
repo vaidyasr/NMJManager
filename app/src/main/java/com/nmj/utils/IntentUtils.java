@@ -33,10 +33,8 @@ import com.nmj.nmjmanager.ActorMovies;
 import com.nmj.nmjmanager.ActorPhotos;
 import com.nmj.nmjmanager.ActorTaggedPhotos;
 import com.nmj.nmjmanager.ActorTvShows;
-import com.nmj.nmjmanager.CastBrowser;
-import com.nmj.nmjmanager.CrewBrowser;
-import com.nmj.nmjmanager.CrewBrowserTv;
-import com.nmj.nmjmanager.CastBrowserTv;
+import com.nmj.nmjmanager.ActorBrowser;
+import com.nmj.nmjmanager.ActorBrowserTv;
 import com.nmj.nmjmanager.ImageViewer;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.MovieDetails;
@@ -61,10 +59,11 @@ public class IntentUtils {
 	 * @param thumbnail
 	 * @return
 	 */
-	public static Intent getActorIntent(Context context, String name, String id, String thumbnail) {
+	public static Intent getActorIntent(Context context, String name, String id, String personId, String thumbnail) {
 		Intent actorIntent = new Intent(context, ActorDetails.class);
 		actorIntent.putExtra("actorName", name);
 		actorIntent.putExtra("actorID", id);
+        actorIntent.putExtra("personId", personId);
 		actorIntent.putExtra("thumb", thumbnail);
 		return actorIntent;
 	}
@@ -76,7 +75,7 @@ public class IntentUtils {
 	 * @return
 	 */
 	public static Intent getActorIntent(Context context, Actor actor) {
-		return getActorIntent(context, actor.getName(), actor.getId(), actor.getUrl());
+		return getActorIntent(context, actor.getName(), actor.getId(), actor.getPersonType(), actor.getUrl());
 	}
 	
 	/**
@@ -87,7 +86,7 @@ public class IntentUtils {
 	 * @return
 	 */
 	public static Intent getCastBrowserMovies(Context context, String title, String movieId, int toolbarColor) {
-		Intent actorIntent = new Intent(context, CastBrowser.class);
+		Intent actorIntent = new Intent(context, ActorBrowser.class);
 		actorIntent.putExtra("title", title);
 		actorIntent.putExtra("movieId", movieId);
 		actorIntent.putExtra("loadType", "cast");
@@ -104,7 +103,7 @@ public class IntentUtils {
 	 * @return
 	 */
 	public static Intent getCrewBrowserMovies(Context context, String title, String movieId, int toolbarColor) {
-		Intent actorIntent = new Intent(context, CrewBrowser.class);
+		Intent actorIntent = new Intent(context, ActorBrowser.class);
 		actorIntent.putExtra("title", title);
 		actorIntent.putExtra("movieId", movieId);
 		actorIntent.putExtra("loadType", "crew");
@@ -120,7 +119,7 @@ public class IntentUtils {
 	 * @return
 	 */
 	public static Intent getCastBrowserTvShows(Context context, String title, String showId, int toolbarColor) {
-		Intent actorIntent = new Intent(context, CastBrowserTv.class);
+		Intent actorIntent = new Intent(context, ActorBrowserTv.class);
 		actorIntent.putExtra("title", title);
 		actorIntent.putExtra("showId", showId);
 		actorIntent.putExtra("loadType", "cast");
@@ -137,7 +136,7 @@ public class IntentUtils {
 	 * @return
 	 */
 	public static Intent getCrewBrowserTvShows(Context context, String title, String showId, int toolbarColor) {
-		Intent actorIntent = new Intent(context, CrewBrowserTv.class);
+		Intent actorIntent = new Intent(context, ActorBrowserTv.class);
 		actorIntent.putExtra("title", title);
 		actorIntent.putExtra("showId", showId);
 		actorIntent.putExtra("loadType", "crew");

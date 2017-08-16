@@ -12,7 +12,7 @@ import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.Actor;
 import com.nmj.functions.NMJCache;
 import com.nmj.functions.NMJLib;
-import com.nmj.functions.NMJMovie;
+import com.nmj.functions.Video;
 import com.nmj.functions.WebMovie;
 import com.nmj.nmjmanager.R;
 
@@ -34,11 +34,13 @@ public class NMJMovieService extends NMJApiService {
     private static NMJMovieService mService;
 
     private final String mTmdbApiKey;
+    private final String mTmdbApiURL;
     private final Context mContext;
 
     private NMJMovieService(Context context) {
         mContext = context;
         mTmdbApiKey = NMJLib.getTmdbApiKey(mContext);
+        mTmdbApiURL = NMJLib.getTmdbApiURL(mContext);
     }
 
     public static NMJMovieService getInstance(Context context) {
@@ -63,7 +65,7 @@ public class NMJMovieService extends NMJApiService {
         String serviceUrl = "";
 
         try {
-            serviceUrl = "https://api.themoviedb.org/3/search/movie?query=" + URLEncoder.encode(query, "utf-8") + "&language=" + language + "&api_key=" + mTmdbApiKey;
+            serviceUrl = mTmdbApiURL + "search/movie?query=" + URLEncoder.encode(query, "utf-8") + "&language=" + language + "&api_key=" + mTmdbApiKey;
         } catch (UnsupportedEncodingException e) {
         }
 
@@ -77,7 +79,7 @@ public class NMJMovieService extends NMJApiService {
         String serviceUrl = "";
 
         try {
-            serviceUrl = "https://api.themoviedb.org/3/search/movie?query=" + URLEncoder.encode(query, "utf-8") + "&language=" + language + "&year=" + year + "&api_key=" + mTmdbApiKey;
+            serviceUrl = mTmdbApiURL + "search/movie?query=" + URLEncoder.encode(query, "utf-8") + "&language=" + language + "&year=" + year + "&api_key=" + mTmdbApiKey;
         } catch (UnsupportedEncodingException e) {
         }
 
@@ -91,7 +93,7 @@ public class NMJMovieService extends NMJApiService {
         ArrayList<Movie> results = new ArrayList<Movie>();
 
         try {
-            JSONObject jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/find/" + imdbId + "?language=" + language + "&external_source=imdb_id&api_key=" + mTmdbApiKey);
+            JSONObject jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "find/" + imdbId + "?language=" + language + "&external_source=imdb_id&api_key=" + mTmdbApiKey);
 
             JSONArray array = jObject.getJSONArray("movie_results");
 
@@ -129,7 +131,7 @@ public class NMJMovieService extends NMJApiService {
 
             JSONObject jObject = null;
             if (TextUtils.isEmpty(json))
-                jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "?api_key=" + mTmdbApiKey + (language.equals("en") ? "" : "&language=" + language) + "&append_to_response=releases,trailers,credits,images");
+                jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "?api_key=" + mTmdbApiKey + (language.equals("en") ? "" : "&language=" + language) + "&append_to_response=releases,trailers,credits,images");
             else
                 jObject = new JSONObject(json);
 
@@ -148,7 +150,7 @@ public class NMJMovieService extends NMJApiService {
             movie.setRuntime(NMJLib.getStringFromJSONObject(jObject, "runtime", "0"));
 
             if (!language.equals("en")) { // This is a localized search - let's fill in the blanks
-                JSONObject englishResults = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases");
+                JSONObject englishResults = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases");
 
                 if (TextUtils.isEmpty(movie.getTitle()))
                     movie.setTitle(NMJLib.getStringFromJSONObject(englishResults, "title", ""));
@@ -181,7 +183,7 @@ public class NMJMovieService extends NMJApiService {
             }
 
             if (!TextUtils.isEmpty(movie.getCollectionId()) && json == null) {
-                JSONObject collection = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/collection/" + movie.getCollectionId() + "/images?api_key=" + mTmdbApiKey);
+                JSONObject collection = NMJLib.getJSONObject(mContext, mTmdbApiURL + "collection/" + movie.getCollectionId() + "/images?api_key=" + mTmdbApiKey);
                 JSONArray array = collection.getJSONArray("posters");
                 if (array.length() > 0)
                     movie.setCollectionImage(baseUrl + NMJLib.getImageUrlSize(mContext) + array.getJSONObject(0).getString("file_path"));
@@ -244,7 +246,7 @@ public class NMJMovieService extends NMJApiService {
                     movie.setBackdrop(baseUrl + NMJLib.getBackdropUrlSize(mContext) + array.getJSONObject(0).getString("file_path"));
                 } else { // Try with English set as the language, if no results are returned (usually caused by a server-side cache error)
                     try {
-                        jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "/images?api_key=" + mTmdbApiKey);
+                        jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "/images?api_key=" + mTmdbApiKey);
 
                         JSONArray array2 = jObject.getJSONArray("backdrops");
                         if (array2.length() > 0) {
@@ -306,10 +308,20 @@ public class NMJMovieService extends NMJApiService {
             // Get the base URL from the preferences
             String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
-            JSONObject jObject = NMJLib.getJSONObject(mContext, "http://pchportal.duckdns.org/NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&showid=" + id + "&title_type=1");
-
-            System.out.println("TAG" + jObject.toString());
-            System.out.println("TITLE: " + NMJLib.getStringFromJSONObject(jObject, "TITLE", ""));
+            JSONObject jObject = new JSONObject();
+            LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
+            String CacheId = "nmj_" + id;
+            try {
+            if (JSONCache.get(CacheId) == "") {
+                jObject = NMJLib.getJSONObject(mContext, "http://pchportal.duckdns.org/NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&showid=" + id + "&title_type=1");
+                JSONCache.put(CacheId, jObject.toString());
+                System.out.println("Putting Cache");
+            } else {
+                jObject = new JSONObject(JSONCache.get(CacheId));
+                System.out.println("Getting Cache");
+            }
+            }catch (Exception ignored) {
+            }
             movie.setTitle(NMJLib.getStringFromJSONObject(jObject, "TITLE", ""));
 
             movie.setPlot(NMJLib.getStringFromJSONObject(jObject, "CONTENT", ""));
@@ -330,21 +342,45 @@ public class NMJMovieService extends NMJApiService {
             }
 
             try {
+                JSONArray genre = jObject.getJSONArray("GENRE");
                 String genres = "";
-                for (int i = 0; i < jObject.getJSONArray("GENRE").length(); i++)
-                    genres = genres + jObject.getJSONArray("GENRE").getJSONObject(i).getString("name") + ", ";
+                for (int i = 0; i < genre.length(); i++)
+                    genres = genres + genre.get(i) + ", ";
                 movie.setGenres(genres.substring(0, genres.length() - 2));
             } catch (Exception e) {
             }
 
-            LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
+            try {
+                ArrayList<Video> videoDetails = new ArrayList<Video>();
+                JSONArray video = jObject.getJSONArray("VIDEO");
+                for (int i = 0; i < video.length(); i++) {
+                    videoDetails.add(new Video(video.getJSONObject(i).getString("SHOW_ID"),
+                            video.getJSONObject(i).getString("VIDEO_ID"),
+                            video.getJSONObject(i).getString("SIZE"),
+                            video.getJSONObject(i).getString("PATH")
+                            ));
+                    /*movie.setVideo(video.getJSONObject(i).getString("VIDEO_ID"));
+                    movie.setV.setVideoId();
+                    videos.setSize(video.getJSONObject(i).getString("SIZE"));
+                    videos.setPath(video.getJSONObject(i).getString("PATH"));
+                    videos.setWidth(video.getJSONObject(i).getString("WIDTH"));
+                    videos.setHeight(video.getJSONObject(i).getString("HEIGHT"));*/
+                    //videos.setWidth(video.getJSONObject(i).getString("WIDTH"));
+                    //videos.setWidth(video.getJSONObject(i).getString("WIDTH"));
+                }
+                movie.setVideo(videoDetails);
+
+            } catch (Exception e) {
+            }
+            //LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
             //System.out.println("Checking Cache: " + JSONCache.get(movie.getTmdbId()));
-            if (JSONCache.get(movie.getTmdbId()) == "") {
-                jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + movie.getTmdbId() + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
-                JSONCache.put(movie.getTmdbId(), jObject.toString());
+            CacheId = "movie_" + movie.getTmdbId();
+            if (JSONCache.get(CacheId) == "") {
+                jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + movie.getTmdbId() + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+                JSONCache.put(CacheId, jObject.toString());
                 System.out.println("Putting Cache");
             } else {
-                jObject = new JSONObject(JSONCache.get(movie.getTmdbId()));
+                jObject = new JSONObject(JSONCache.get(CacheId));
                 System.out.println("Getting Cache");
             }
             movie.setTagline(NMJLib.getStringFromJSONObject(jObject, "tagline", ""));
@@ -363,6 +399,7 @@ public class NMJMovieService extends NMJApiService {
                                 array.getJSONObject(i).getString("name"),
                                 array.getJSONObject(i).getString("character"),
                                 array.getJSONObject(i).getString("id"),
+                                "cast",
                                 baseUrl + NMJLib.getActorUrlSize(mContext) + array.getJSONObject(i).getString("profile_path")));
                     }
                 }
@@ -385,6 +422,7 @@ public class NMJMovieService extends NMJApiService {
                                 array.getJSONObject(i).getString("name"),
                                 array.getJSONObject(i).getString("job"),
                                 array.getJSONObject(i).getString("id"),
+                                "crew",
                                 baseUrl + NMJLib.getActorUrlSize(mContext) + array.getJSONObject(i).getString("profile_path")));
                     }
                 }
@@ -418,7 +456,7 @@ public class NMJMovieService extends NMJApiService {
                     movie.setBackdrop(baseUrl + NMJLib.getBackdropUrlSize(mContext) + array.getJSONObject(0).getString("file_path"));
                 } else { // Try with English set as the language, if no results are returned (usually caused by a server-side cache error)
                     try {
-                        jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + movie.getTmdbId() + "/images?api_key=" + mTmdbApiKey);
+                        jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + movie.getTmdbId() + "/images?api_key=" + mTmdbApiKey);
 
                         JSONArray array2 = jObject.getJSONArray("backdrops");
                         if (array2.length() > 0) {
@@ -445,7 +483,7 @@ public class NMJMovieService extends NMJApiService {
         String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
         try {
-            JSONObject jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "/images" + "?api_key=" + mTmdbApiKey);
+            JSONObject jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "/images" + "?api_key=" + mTmdbApiKey);
             JSONArray jArray = jObject.getJSONArray("posters");
             for (int i = 0; i < jArray.length(); i++) {
                 covers.add(baseUrl + NMJLib.getImageUrlSize(mContext) + NMJLib.getStringFromJSONObject(jArray.getJSONObject(i), "file_path", ""));
@@ -462,7 +500,7 @@ public class NMJMovieService extends NMJApiService {
         String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
         try {
-            JSONObject jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "/images" + "?api_key=" + mTmdbApiKey);
+            JSONObject jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "/images" + "?api_key=" + mTmdbApiKey);
             JSONArray jArray = jObject.getJSONArray("backdrops");
             for (int i = 0; i < jArray.length(); i++) {
                 covers.add(baseUrl + NMJLib.getBackdropThumbUrlSize(mContext) + NMJLib.getStringFromJSONObject(jArray.getJSONObject(i), "file_path", ""));
@@ -507,7 +545,7 @@ public class NMJMovieService extends NMJApiService {
         String serviceUrl = "";
 
         try {
-            serviceUrl = "https://api.themoviedb.org/3/search/movie?query=" + URLEncoder.encode(query, "utf-8") + "&language=" + language + "&search_type=ngram&api_key=" + mTmdbApiKey;
+            serviceUrl = mTmdbApiURL + "search/movie?query=" + URLEncoder.encode(query, "utf-8") + "&language=" + language + "&search_type=ngram&api_key=" + mTmdbApiKey;
         } catch (UnsupportedEncodingException e) {
         }
 
@@ -523,12 +561,13 @@ public class NMJMovieService extends NMJApiService {
         try {
             JSONObject jObject;
             LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
-            if (JSONCache.get(id) == "") {
-                jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
-                JSONCache.put(id, jObject.toString());
+            String CacheId = "movie_" + id;
+            if (JSONCache.get(CacheId) == "") {
+                jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+                JSONCache.put(CacheId, jObject.toString());
                 System.out.println("Putting Cache");
             } else {
-                jObject = new JSONObject(JSONCache.get(id));
+                jObject = new JSONObject(JSONCache.get(CacheId));
                 System.out.println("Getting Cache");
             }
             JSONArray jArray = jObject.getJSONObject("credits").getJSONArray("cast");
@@ -543,6 +582,7 @@ public class NMJMovieService extends NMJApiService {
                             jArray.getJSONObject(i).getString("name"),
                             jArray.getJSONObject(i).getString("character"),
                             jArray.getJSONObject(i).getString("id"),
+                            "cast",
                             baseUrl + NMJLib.getActorUrlSize(mContext) + jArray.getJSONObject(i).getString("profile_path")));
                 }
             }
@@ -561,12 +601,13 @@ public class NMJMovieService extends NMJApiService {
         try {
             JSONObject jObject;
             LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
-            if (JSONCache.get(id) == "") {
-                jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
-                JSONCache.put(id, jObject.toString());
+            String CacheId = "movie_" + id;
+            if (JSONCache.get(CacheId) == "") {
+                jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+                JSONCache.put(CacheId, jObject.toString());
                 System.out.println("Putting Cache");
             } else {
-                jObject = new JSONObject(JSONCache.get(id));
+                jObject = new JSONObject(JSONCache.get(CacheId));
                 System.out.println("Getting Cache");
             }
             JSONArray jArray = jObject.getJSONObject("credits").getJSONArray("crew");
@@ -581,6 +622,7 @@ public class NMJMovieService extends NMJApiService {
                             jArray.getJSONObject(i).getString("name"),
                             jArray.getJSONObject(i).getString("job"),
                             jArray.getJSONObject(i).getString("id"),
+                            "crew",
                             baseUrl + NMJLib.getActorUrlSize(mContext) + jArray.getJSONObject(i).getString("profile_path")));
                 }
             }
@@ -599,12 +641,13 @@ public class NMJMovieService extends NMJApiService {
         try {
             JSONObject jObject;
             LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
-            if (JSONCache.get(id) == "") {
-                jObject = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
-                JSONCache.put(id, jObject.toString());
+            String CacheId = "movie_" + id;
+            if (JSONCache.get(CacheId) == "") {
+                jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+                JSONCache.put(CacheId, jObject.toString());
                 System.out.println("Putting Cache");
             } else {
-                jObject = new JSONObject(JSONCache.get(id));
+                jObject = new JSONObject(JSONCache.get(CacheId));
                 System.out.println("Getting Cache");
             }
             JSONArray jArray = jObject.getJSONObject("similar_movies").getJSONArray("results");

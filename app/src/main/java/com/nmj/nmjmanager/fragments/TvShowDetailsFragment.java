@@ -321,7 +321,7 @@ public class TvShowDetailsFragment extends Fragment {
         }
 
         // Set the show runtime
-        textRuntime.setText(NMJLib.getPrettyRuntime(getActivity(), Integer.parseInt(thisShow.getRuntime())));
+        textRuntime.setText(NMJLib.getPrettyRuntimeFromMinutes(getActivity(), Integer.parseInt(thisShow.getRuntime())));
 
         // Set the show release date
         textReleaseDate.setTypeface(mMedium);

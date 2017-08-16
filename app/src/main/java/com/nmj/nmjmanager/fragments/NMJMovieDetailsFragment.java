@@ -26,6 +26,7 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
@@ -52,6 +53,7 @@ import com.nmj.apis.trakt.Trakt;
 import com.nmj.base.NMJActivity;
 import com.nmj.functions.FileSource;
 import com.nmj.functions.NMJLib;
+import com.nmj.functions.Video;
 import com.nmj.functions.PaletteLoader;
 import com.nmj.functions.SimpleAnimatorListener;
 import com.nmj.functions.TmdbTrailerSearch;
@@ -71,15 +73,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static com.nmj.functions.PreferenceKeys.SHOW_FILE_LOCATION;
+
 public class NMJMovieDetailsFragment extends Fragment {
 
     private Activity mContext;
-    private TextView mTitle, mPlot, mGenre, mRuntime, mReleaseDate, mRating, mTagline, mCertification;
+    private TextView mTitle, mPlot, mSrc, mGenre, mRuntime, mReleaseDate, mRating, mTagline, mCertification;
     private ImageView mBackground, mCover;
     private Movie mMovie;
+    private Video mVideo;
     private ObservableScrollView mScrollView;
     private View mProgressBar, mDetailsArea;
-    private boolean mRetained = false;
+    private boolean mRetained = false, mShowFileLocation;
     private Picasso mPicasso;
     private Typeface mMediumItalic, mMedium, mBold, mCondensedRegular;
     private NMJMovieService mMovieApiService;
@@ -113,6 +118,7 @@ public class NMJMovieDetailsFragment extends Fragment {
 
         mContext = getActivity();
 
+        mShowFileLocation = PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(SHOW_FILE_LOCATION, true);
         mMediumItalic = TypefaceUtils.getRobotoMediumItalic(mContext);
         mMedium = TypefaceUtils.getRobotoMedium(mContext);
         mBold = TypefaceUtils.getRobotoBold(mContext);
@@ -151,6 +157,7 @@ public class NMJMovieDetailsFragment extends Fragment {
         mBackground = (ImageView) v.findViewById(R.id.imageBackground);
         mTitle = (TextView) v.findViewById(R.id.movieTitle);
         mPlot = (TextView) v.findViewById(R.id.textView2);
+        mSrc = (TextView) v.findViewById(R.id.textView3);
         mGenre = (TextView) v.findViewById(R.id.textView7);
         mRuntime = (TextView) v.findViewById(R.id.textView9);
         mReleaseDate = (TextView) v.findViewById(R.id.textReleaseDate);
@@ -163,6 +170,11 @@ public class NMJMovieDetailsFragment extends Fragment {
         mSimilarMoviesLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra_1);
         mScrollView = (ObservableScrollView) v.findViewById(R.id.observableScrollView);
         mFab = (FloatingActionButton) v.findViewById(R.id.fab);
+
+        if(mMovie.getShowId().equals("0"))
+            mFab.setVisibility(View.INVISIBLE);
+        else
+            mFab.setVisibility(View.VISIBLE);
 
         mFab.setOnClickListener(new OnClickListener() {
             @Override
@@ -257,6 +269,14 @@ public class NMJMovieDetailsFragment extends Fragment {
 
             mPlot.setText(mMovie.getPlot());
 
+            // Set the movie file source
+            mSrc.setTypeface(mCondensedRegular);
+            if (mShowFileLocation) {
+                mSrc.setText(mMovie.getAllFilepaths());
+            } else {
+                mSrc.setVisibility(View.GONE);
+            }
+
             // Set movie tag line
             mTagline.setTypeface(mBold);
             if (mMovie.getTagline().equals("NOTAGLINE") || mMovie.getTagline().isEmpty())
@@ -273,7 +293,7 @@ public class NMJMovieDetailsFragment extends Fragment {
             }
 
             // Set the movie runtime
-            mRuntime.setText(NMJLib.getPrettyRuntime(getActivity(), Integer.parseInt(mMovie.getRuntime())));
+            mRuntime.setText(NMJLib.getPrettyRuntimeFromSeconds(getActivity(), Integer.parseInt(mMovie.getRuntime())));
 
             // Set the movie release date
             mReleaseDate.setTypeface(mMedium);

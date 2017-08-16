@@ -453,27 +453,7 @@
 
         <!-- Actor browser activity (movies) -->
         <activity
-            android:name="com.nmj.nmjmanager.CastBrowser"
-            android:exported="false"
-            android:label="@string/detailsCast">
-            <intent-filter>
-                <action android:name="android.intent.action.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <!-- Actor browser activity (movies) -->
-        <activity
-            android:name="com.nmj.nmjmanager.CrewBrowser"
-            android:exported="false"
-            android:label="@string/detailsCrew">
-            <intent-filter>
-                <action android:name="android.intent.action.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <!-- Actor browser activity (TV show) -->
-        <activity
-            android:name="com.nmj.nmjmanager.CastBrowserTv"
+            android:name="com.nmj.nmjmanager.ActorBrowser"
             android:exported="false"
             android:label="@string/detailsCast">
             <intent-filter>
@@ -483,9 +463,9 @@
 
         <!-- Actor browser activity (TV show) -->
         <activity
-            android:name="com.nmj.nmjmanager.CrewBrowserTv"
+            android:name="com.nmj.nmjmanager.ActorBrowserTv"
             android:exported="false"
-            android:label="@string/detailsCrew">
+            android:label="@string/detailsCast">
             <intent-filter>
                 <action android:name="android.intent.action.DEFAULT" />
             </intent-filter>

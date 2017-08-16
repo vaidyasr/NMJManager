@@ -20,8 +20,11 @@ import android.text.TextUtils;
 
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.Actor;
+import com.nmj.functions.Filepath;
+import com.nmj.functions.Video;
 import com.nmj.functions.WebMovie;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,11 +33,13 @@ public class Movie {
     private String showid = "", title = "", originalTitle = "", plot = "", thumbnail = "", poster = "", backdrop = "",
             rating = "0.0", tagline = "", releasedate = "", imdbId = "", certification = "", runtime = "0",
             trailer = "", genres = "", cast = "", crew = "", collectionTitle = "", collectionId = "",
-            collectionImage = "", year = "", tmdbId = "";
+            collectionImage = "", year = "", tmdbId = "", filepath = "";
+    private List<Video> mVideo= new ArrayList<>();
 
     private List<Actor> mCast = new ArrayList<Actor>();
     private List<Actor> mCrew = new ArrayList<Actor>();
     private List<WebMovie> mSimilarMovies = new ArrayList<WebMovie>();
+    private String mFilepaths = filepath;
 
     public Movie() {
         // Unidentified by default
@@ -244,4 +249,17 @@ public class Movie {
     public void setSimilarMovies(List<WebMovie> movies) {
         mSimilarMovies = movies;
     }
+
+    public String getAllFilepaths() {
+        StringBuilder sb = new StringBuilder();
+        String[] filepaths = mFilepaths.split(",");
+        for (int i = 0; i < filepaths.length; i++)
+            sb.append(filepaths[i]).append("\n");
+        return sb.toString().trim();
+    }
+
+    public void setVideo(List<Video> video) {
+        mVideo = video;
+    }
+
 }
