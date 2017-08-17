@@ -262,4 +262,8 @@ public class Movie {
         mVideo = video;
     }
 
+    public List<Video> getVideo() {
+        return mVideo;
+    }
+
 }

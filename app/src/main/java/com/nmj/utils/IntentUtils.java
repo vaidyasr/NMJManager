@@ -159,7 +159,7 @@ public class IntentUtils {
 	}
 	
 	public static Intent getTmdbMovieDetails(Context context, WebMovie movie) {
-		Intent movieDetailsIntent = new Intent(context, movie.isInLibrary() ? MovieDetails.class : TMDbMovieDetails.class);
+		Intent movieDetailsIntent = new Intent(context, movie.isInLibrary() ? NMJMovieDetails.class : TMDbMovieDetails.class);
 		movieDetailsIntent.putExtra("tmdbId", movie.getId());
 		//movieDetailsIntent.putExtra("showId", movie.getS());
 		movieDetailsIntent.putExtra("title", movie.getTitle());

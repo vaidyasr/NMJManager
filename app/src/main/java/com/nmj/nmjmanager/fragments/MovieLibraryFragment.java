@@ -283,27 +283,26 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             intent.putExtra("collectionId", mAdapter.getItem(position).getCollectionId());
             intent.putExtra("collectionTitle", mAdapter.getItem(position).getCollection());
             intent.setClass(mContext, MovieCollection.class);
-            startActivity(intent);
+            //startActivity(intent);
         } else if(mMovieLoader.getType() == MovieLibraryType.UPCOMING ||
                 mMovieLoader.getType() == MovieLibraryType.TOP_RATED ||
                 mMovieLoader.getType() == MovieLibraryType.POPULAR ||
                 mMovieLoader.getType() == MovieLibraryType.NOW_PLAYING) { // Collection
             intent.putExtra("tmdbId", mAdapter.getItem(position).getTmdbId());
             //intent.putExtra("collectionTitle", mAdapter.getItem(position).getCollection());
-            intent.setClass(mContext, TMDbMovieDetails.class);
-            startActivity(intent);
+            intent.setClass(mContext, NMJMovieDetails.class);
+            //startActivity(intent);
         }else {
             intent.putExtra("tmdbId", mAdapter.getItem(position).getTmdbId());
             intent.putExtra("showId", mAdapter.getItem(position).getShowId());
             intent.setClass(mContext, NMJMovieDetails.class);
-
-            if (view != null) {
-                Pair<View, String> pair = new Pair<>(view.findViewById(R.id.cover), "cover");
-                ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), pair);
-                ActivityCompat.startActivityForResult(getActivity(), intent, 0, options.toBundle());
-            } else {
-                startActivityForResult(intent, 0);
-            }
+        }
+        if (view != null) {
+            Pair<View, String> pair = new Pair<>(view.findViewById(R.id.cover), "cover");
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), pair);
+            ActivityCompat.startActivityForResult(getActivity(), intent, 0, options.toBundle());
+        } else {
+            startActivityForResult(intent, 0);
         }
     }
 

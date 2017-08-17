@@ -332,10 +332,10 @@ public class TMDbMovieService extends MovieApiService {
 				if (JSONCache.get(CacheId) == "") {
 					jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "?api_key=" + mTmdbApiKey + (language.equals("en") ? "" : "&language=" + language) + "&append_to_response=releases,trailers,credits,images,similar_movies");
 					JSONCache.put(CacheId, jObject.toString());
-					System.out.println("Putting Cache");
+                    System.out.println("Putting Cache in " + CacheId);
 				} else {
 					jObject = new JSONObject(JSONCache.get(CacheId));
-					System.out.println("Getting Cache");
+					System.out.println("Getting Cache from " + CacheId);
 				}
 			}catch (Exception ignored) {
 			}
@@ -586,10 +586,10 @@ public class TMDbMovieService extends MovieApiService {
 			if (JSONCache.get(CacheId) == "") {
                 jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
 				JSONCache.put(CacheId, jObject.toString());
-				System.out.println("Putting Cache");
+                System.out.println("Putting Cache in " + CacheId);
 			} else {
 				jObject = new JSONObject(JSONCache.get(CacheId));
-				System.out.println("Getting Cache");
+                System.out.println("Getting Cache from " + CacheId);
 			}
             JSONArray jArray = jObject.getJSONObject("credits").getJSONArray("cast");
 
@@ -626,10 +626,10 @@ public class TMDbMovieService extends MovieApiService {
 			if (JSONCache.get(CacheId) == "") {
                 jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
                 JSONCache.put(CacheId, jObject.toString());
-				System.out.println("Putting Cache");
+                System.out.println("Putting Cache in " + CacheId);
 			} else {
 				jObject = new JSONObject(JSONCache.get(CacheId));
-				System.out.println("Getting Cache");
+                System.out.println("Getting Cache from " + CacheId);
 			}
             JSONArray jArray = jObject.getJSONObject("credits").getJSONArray("crew");
 
@@ -665,10 +665,10 @@ public class TMDbMovieService extends MovieApiService {
             if (JSONCache.get(CacheId) == "") {
                 jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
                 JSONCache.put(CacheId, jObject.toString());
-                System.out.println("Putting Cache");
+                System.out.println("Putting Cache in " + CacheId);
             } else {
                 jObject = new JSONObject(JSONCache.get(CacheId));
-                System.out.println("Getting Cache");
+                System.out.println("Getting Cache from " + CacheId);
             }
             JSONArray jArray = jObject.getJSONObject("similar_movies").getJSONArray("results");
 
@@ -694,10 +694,10 @@ public class TMDbMovieService extends MovieApiService {
 			if (JSONCache.get(CacheId) == "") {
 				jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "person/" + actorId + "?api_key=" + mTmdbApiKey + "&append_to_response=movie_credits,tv_credits,images,tagged_images");
 				JSONCache.put(CacheId, jObject.toString());
-				System.out.println("Putting Cache");
+                System.out.println("Putting Cache in " + CacheId);
 			} else {
 				jObject = new JSONObject(JSONCache.get(CacheId));
-				System.out.println("Getting Cache");
+                System.out.println("Getting Cache from " + CacheId);
 			}
 		} catch (Exception ignored) {
 		}

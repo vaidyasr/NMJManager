@@ -250,10 +250,10 @@ public class MovieLoader {
             if (JSONCache.get(loadType) == "") {
                 jObject = NMJLib.getJSONObject(mContext, url);
                 JSONCache.put(loadType, jObject.toString());
-                System.out.println("Putting Cache");
+                System.out.println("Putting Cache in " + loadType);
             } else {
                 jObject = new JSONObject(JSONCache.get(loadType));
-                System.out.println("Getting Cache");
+                System.out.println("Getting Cache from " + loadType);
             }
             JSONArray jArray = jObject.getJSONArray("results");
 
@@ -298,10 +298,10 @@ public class MovieLoader {
             if (JSONCache.get(loadType) == "") {
                 jObject = NMJLib.getJSONObject(mContext, url);
                 JSONCache.put(loadType, jObject.toString());
-                System.out.println("Putting Cache");
+                System.out.println("Putting Cache in " + loadType);
             } else {
                 jObject = new JSONObject(JSONCache.get(loadType));
-                System.out.println("Getting Cache");
+                System.out.println("Getting Cache from " + loadType);
             }
             JSONArray jArray = jObject.getJSONArray("data");
 
