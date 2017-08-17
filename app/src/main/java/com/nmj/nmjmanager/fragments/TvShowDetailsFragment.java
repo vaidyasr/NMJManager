@@ -386,7 +386,7 @@ public class TvShowDetailsFragment extends Fragment {
         mActorsLayout.setSeeMoreOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(IntentUtils.getCastBrowserTvShows(mContext, thisShow.getTitle(), thisShow.getId(), mToolbarColor));
+                startActivity(IntentUtils.getActorBrowserTvShows(mContext, thisShow.getTitle(), thisShow.getId(), mToolbarColor, "cast"));
             }
         });
 

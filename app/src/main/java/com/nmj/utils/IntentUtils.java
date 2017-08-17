@@ -85,29 +85,12 @@ public class IntentUtils {
 	 * @param movieId
 	 * @return
 	 */
-	public static Intent getCastBrowserMovies(Context context, String title, String movieId, int toolbarColor) {
-		Intent actorIntent = new Intent(context, ActorBrowser.class);
+    public static Intent getActorBrowserMovies(Context context, String title, String movieId, int toolbarColor, String loadType) {
+        Intent actorIntent = new Intent(context, ActorBrowser.class);
 		actorIntent.putExtra("title", title);
 		actorIntent.putExtra("movieId", movieId);
-		actorIntent.putExtra("loadType", "cast");
-		actorIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
-		return actorIntent;
-	}
-
-	/**
-	 * Intent for the movie crew browser.
-	 *
-	 * @param context
-	 * @param title
-	 * @param movieId
-	 * @return
-	 */
-	public static Intent getCrewBrowserMovies(Context context, String title, String movieId, int toolbarColor) {
-		Intent actorIntent = new Intent(context, ActorBrowser.class);
-		actorIntent.putExtra("title", title);
-		actorIntent.putExtra("movieId", movieId);
-		actorIntent.putExtra("loadType", "crew");
-		actorIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
+        actorIntent.putExtra("loadType", loadType);
+        actorIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
 		return actorIntent;
 	}
 
@@ -118,31 +101,15 @@ public class IntentUtils {
 	 * @param showId
 	 * @return
 	 */
-	public static Intent getCastBrowserTvShows(Context context, String title, String showId, int toolbarColor) {
-		Intent actorIntent = new Intent(context, ActorBrowserTv.class);
+    public static Intent getActorBrowserTvShows(Context context, String title, String showId, int toolbarColor, String loadType) {
+        Intent actorIntent = new Intent(context, ActorBrowserTv.class);
 		actorIntent.putExtra("title", title);
 		actorIntent.putExtra("showId", showId);
-		actorIntent.putExtra("loadType", "cast");
-		actorIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
+        actorIntent.putExtra("loadType", loadType);
+        actorIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
 		return actorIntent;
 	}
 
-	/**
-	 * Intent for the TV show crew browser.
-	 *
-	 * @param context
-	 * @param title
-	 * @param showId
-	 * @return
-	 */
-	public static Intent getCrewBrowserTvShows(Context context, String title, String showId, int toolbarColor) {
-		Intent actorIntent = new Intent(context, ActorBrowserTv.class);
-		actorIntent.putExtra("title", title);
-		actorIntent.putExtra("showId", showId);
-		actorIntent.putExtra("loadType", "crew");
-		actorIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
-		return actorIntent;
-	}
 	/**
 	 * Intent for the similar movies browser.
 	 * @param context

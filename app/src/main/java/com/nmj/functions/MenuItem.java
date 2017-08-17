@@ -52,9 +52,17 @@ public class MenuItem {
 	public String getTitle() {
 		return mTitle;
 	}
+
+	public void setTitle(String title) {
+		this.mTitle = title;
+	}
 	
 	public int getCount() {
 		return mCount;
+	}
+
+	public void setCount(int count) {
+		this.mCount = count;
 	}
 	
 	public String getPackageName() {

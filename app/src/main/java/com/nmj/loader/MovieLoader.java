@@ -23,14 +23,15 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.widget.ListView;
 
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.nmj.db.DbAdapterMovieMappings;
-import com.nmj.db.DbAdapterMovies;
 
 import com.nmj.functions.Filepath;
 import com.nmj.functions.LibrarySectionAsyncTask;
+import com.nmj.functions.NMJAdapterMovies;
 import com.nmj.functions.NMJCache;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.NMJMovie;
@@ -84,8 +85,8 @@ public class MovieLoader {
     private final Context mContext;
     private final MovieLibraryType mLibraryType;
     private final OnLoadCompletedCallback mCallback;
-    private final DbAdapterMovies mDatabase;
-
+    private final NMJAdapterMovies mDatabase;
+    protected ListView mDrawerList;
     private MovieSortType mSortType;
     private ArrayList<NMJMovie> mResults = new ArrayList<>();
     private HashSet<MovieFilter> mFilters = new HashSet<>();
@@ -96,7 +97,7 @@ public class MovieLoader {
         mContext = context;
         mLibraryType = libraryType;
         mCallback = callback;
-        mDatabase = NMJManagerApplication.getMovieAdapter();
+        mDatabase = NMJManagerApplication.getNMJMovieAdapter();
 
         setupSortType();
     }
@@ -332,6 +333,38 @@ public class MovieLoader {
     }
 
     /**
+     * Creates movie objects from a URL and adds them to a list.
+     *
+     * @return List of movie objects from the supplied URL.
+     */
+    private void setLibrary() {
+        ArrayList<NMJMovie> list = new ArrayList<>();
+        String url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getCount&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db";
+
+        try {
+            JSONObject jObject = new JSONObject();
+            LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
+            if (JSONCache.get("libCount") == "") {
+                jObject = NMJLib.getJSONObject(mContext, url);
+                JSONCache.put("libCount", jObject.toString());
+                System.out.println("Putting Cache in libCount");
+            } else {
+                jObject = new JSONObject(JSONCache.get("libCount"));
+                System.out.println("Getting Cache from libCount");
+            }
+            mDatabase.setMovieCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("movies")));
+            mDatabase.setShowCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("shows")));
+            //mDatabase.setLibrary(jObject.getJSONObject("data").getJSONArray("library"));
+            //JSONArray jArray = jObject.getJSONArray("data");
+            //com.nmj.nmjmanager.Main.
+
+        } catch (Exception ignored) {
+        }
+        //return jObject;
+    }
+
+
+    /**
      * Get the results of the most recently loaded movies.
      *
      * @return List of movie objects.
@@ -501,6 +534,7 @@ public class MovieLoader {
     private class MovieLoaderAsyncTask extends LibrarySectionAsyncTask<Void, Void, Void> {
 
         private final ArrayList<NMJMovie> mMovieList;
+        private final NMJAdapterMovies mTotalCount = new NMJAdapterMovies();
         private final String mSearchQuery;
 
         public MovieLoaderAsyncTask(String searchQuery) {
@@ -512,6 +546,7 @@ public class MovieLoader {
 
         @Override
         protected Void doInBackground(Void... params) {
+            setLibrary();
             switch (mLibraryType) {
                 case ALL_MOVIES:
                     mMovieList.addAll(listFromJSON("all"));

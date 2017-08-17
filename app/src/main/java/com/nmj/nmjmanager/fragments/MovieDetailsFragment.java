@@ -402,7 +402,7 @@ public class MovieDetailsFragment extends Fragment {
         mActorsLayout.setSeeMoreOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(IntentUtils.getCastBrowserMovies(mContext, mMovie.getTitle(), mMovie.getTmdbId(), mToolbarColor));
+                startActivity(IntentUtils.getActorBrowserMovies(mContext, mMovie.getTitle(), mMovie.getTmdbId(), mToolbarColor, "cast"));
             }
         });
 

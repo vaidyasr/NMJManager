@@ -61,7 +61,7 @@ public class SplashScreen extends Activity {
 
 		// Initialize the PreferenceManager variable and preference variable(s)
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-		String startup = settings.getString(STARTUP_SELECTION, "1");
+        //String startup = settings.getString(STARTUP_SELECTION, "1");
 
 		if (settings.getBoolean(USE_ENGLISH_LANGUAGE, false)) {
 			Locale locale = new Locale("en");
@@ -87,11 +87,11 @@ public class SplashScreen extends Activity {
 
 		Intent i = new Intent();
 		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
-		if (startup.equals("0")) { // Welcome
-			i.setClass(getApplicationContext(), Welcome.class);
-		} else {
-			i.setClass(getApplicationContext(), Main.class);
-		}
+//		if (startup.equals("0")) { // Welcome
+//			i.setClass(getApplicationContext(), Welcome.class);
+//		} else {
+        i.setClass(getApplicationContext(), Main.class);
+//		}
 
 		startActivity(i);
 		

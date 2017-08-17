@@ -343,7 +343,7 @@ public class NMJMovieDetailsFragment extends Fragment {
             mCastLayout.setSeeMoreOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startActivity(IntentUtils.getCastBrowserMovies(mContext, mMovie.getTitle(), mMovie.getTmdbId(), mToolbarColor));
+                    startActivity(IntentUtils.getActorBrowserMovies(mContext, mMovie.getTitle(), mMovie.getTmdbId(), mToolbarColor, "cast"));
                 }
             });
 
@@ -366,7 +366,7 @@ public class NMJMovieDetailsFragment extends Fragment {
             mCrewLayout.setSeeMoreOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startActivity(IntentUtils.getCrewBrowserMovies(mContext, mMovie.getTitle(), mMovie.getTmdbId(), mToolbarColor));
+                    startActivity(IntentUtils.getActorBrowserMovies(mContext, mMovie.getTitle(), mMovie.getTmdbId(), mToolbarColor, "crew"));
                 }
             });
 
@@ -574,6 +574,7 @@ public class NMJMovieDetailsFragment extends Fragment {
             for (int i = 0; i < mMovie.getSimilarMovies().size(); i++) {
                 String id = mMovie.getSimilarMovies().get(i).getId();
                 mMovie.getSimilarMovies().get(i).setInLibrary(NMJManagerApplication.getMovieAdapter().movieExists(id));
+                //NMJManagerApplication.getMovieAdapter().get
             }
 
             return null;

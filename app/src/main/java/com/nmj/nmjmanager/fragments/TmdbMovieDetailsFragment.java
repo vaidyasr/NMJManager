@@ -306,7 +306,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
             mCastLayout.setSeeMoreOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startActivity(IntentUtils.getCastBrowserMovies(mContext, mMovie.getTitle(), mMovie.getId(), mToolbarColor));
+                    startActivity(IntentUtils.getActorBrowserMovies(mContext, mMovie.getTitle(), mMovie.getId(), mToolbarColor, "cast"));
                 }
             });
 
@@ -329,7 +329,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
             mCrewLayout.setSeeMoreOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startActivity(IntentUtils.getCrewBrowserMovies(mContext, mMovie.getTitle(), mMovie.getId(), mToolbarColor));
+                    startActivity(IntentUtils.getActorBrowserMovies(mContext, mMovie.getTitle(), mMovie.getId(), mToolbarColor, "crew"));
                 }
             });
 

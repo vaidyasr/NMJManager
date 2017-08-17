@@ -59,6 +59,7 @@ import com.nmj.db.DbAdapterMovies;
 import com.nmj.db.DbAdapterTvShows;
 import com.nmj.functions.BlurTransformation;
 import com.nmj.functions.MenuItem;
+import com.nmj.functions.NMJAdapterMovies;
 import com.nmj.functions.NMJLib;
 import com.nmj.nmjmanager.fragments.AccountsFragment;
 import com.nmj.nmjmanager.fragments.ContactDeveloperFragment;
@@ -86,17 +87,23 @@ import static com.nmj.functions.PreferenceKeys.TRAKT_USERNAME;
 public class Main extends NMJActivity {
 
     public static final int MOVIES = 1, SHOWS = 2, WEB_MOVIES = 3, WEB_VIDEOS = 4;
+    protected ListView mDrawerList;
     private int mNumMovies, mNumShows, selectedIndex, mStartup;
     private Typeface mTfMedium, mTfRegular;
     private DrawerLayout mDrawerLayout;
-    protected ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
-    private DbAdapterMovies mDbHelper;
+    private NMJAdapterMovies mDbHelper;
     private DbAdapterTvShows mDbHelperTv;
     private boolean mConfirmExit, mTriedOnce = false;
     private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
     private List<ApplicationInfo> mApplicationList;
     private Picasso mPicasso;
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateLibraryCounts();
+        }
+    };
 
     @Override
     protected int getLayoutResource() {
@@ -115,7 +122,7 @@ public class Main extends NMJActivity {
         mConfirmExit = settings.getBoolean(CONFIRM_BACK_PRESS, false);
         mStartup = Integer.valueOf(settings.getString(STARTUP_SELECTION, "1"));
 
-        mDbHelper = NMJManagerApplication.getMovieAdapter();
+        mDbHelper = NMJManagerApplication.getNMJMovieAdapter();
         mDbHelperTv = NMJManagerApplication.getTvDbAdapter();
 
         mTfMedium = TypefaceUtils.getRobotoMedium(getApplicationContext());
@@ -262,7 +269,7 @@ public class Main extends NMJActivity {
         outState.putInt("selectedIndex", selectedIndex);
     }
 
-    private void setupMenuItems(boolean refreshThirdPartyApps) {
+    public void setupMenuItems(boolean refreshThirdPartyApps) {
         mMenuItems.clear();
 
         // Menu header
@@ -313,13 +320,6 @@ public class Main extends NMJActivity {
         mMenuItems.add(new MenuItem(getString(R.string.menuAboutContact), MenuItem.SETTINGS_AREA, R.drawable.ic_help_grey600_24dp));
     }
 
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            updateLibraryCounts();
-        }
-    };
-
     protected void selectListIndex(int index) {
         if (mMenuItems.get(index).getType() == MenuItem.SECTION) {
             selectedIndex = mMenuItems.get(index).getFragment();
@@ -339,7 +339,7 @@ public class Main extends NMJActivity {
             @Override
             public void run() {
                 try {
-                    mNumMovies = mDbHelper.count();
+                    mNumMovies = mDbHelper.getMovieCount();
                     mNumShows = mDbHelperTv.count();
 
                     runOnUiThread(new Runnable() {
@@ -391,6 +391,33 @@ public class Main extends NMJActivity {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public void onBackPressed() {
+/*        if (mStartup == 0 && !mDrawerLayout.isDrawerOpen(findViewById(R.id.left_drawer)) && NMJLib.isTablet(this)) { // Welcome screen
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            i.setClass(getApplicationContext(), Welcome.class);
+            startActivity(i);
+            finish();
+            return;
+        }*/
+
+        if (!mDrawerLayout.isDrawerOpen(findViewById(R.id.left_drawer))) {
+            if (mConfirmExit) {
+                if (mTriedOnce) {
+                    finish();
+                } else {
+                    Toast.makeText(this, getString(R.string.pressBackToExit), Toast.LENGTH_SHORT).show();
+                    mTriedOnce = true;
+                }
+            } else {
+                finish();
+            }
+        } else {
+            mDrawerLayout.closeDrawers();
+        }
     }
 
     public class MenuAdapter extends BaseAdapter {
@@ -567,33 +594,6 @@ public class Main extends NMJActivity {
             }
 
             return convertView;
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (mStartup == 0 && !mDrawerLayout.isDrawerOpen(findViewById(R.id.left_drawer)) && NMJLib.isTablet(this)) { // Welcome screen
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            i.setClass(getApplicationContext(), Welcome.class);
-            startActivity(i);
-            finish();
-            return;
-        }
-
-        if (!mDrawerLayout.isDrawerOpen(findViewById(R.id.left_drawer))) {
-            if (mConfirmExit) {
-                if (mTriedOnce) {
-                    finish();
-                } else {
-                    Toast.makeText(this, getString(R.string.pressBackToExit), Toast.LENGTH_SHORT).show();
-                    mTriedOnce = true;
-                }
-            } else {
-                finish();
-            }
-        } else {
-            mDrawerLayout.closeDrawers();
         }
     }
 }

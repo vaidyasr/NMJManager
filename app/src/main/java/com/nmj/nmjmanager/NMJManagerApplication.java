@@ -43,12 +43,15 @@ import com.nmj.db.DbAdapterTvShowEpisodes;
 import com.nmj.db.DbAdapterTvShows;
 import com.nmj.functions.FileRequestTransformer;
 import com.nmj.functions.OkHttpDownloader;
+import com.nmj.functions.NMJAdapterMovies;
 import com.squareup.okhttp.Cache;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.otto.Bus;
 import com.squareup.picasso.Downloader;
 import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -70,6 +73,7 @@ public class NMJManagerApplication extends Application {
 	private static DbAdapterTvShowEpisodeMappings sDbTvShowEpisodeMappings;
 	private static DbAdapterSources sDbSources;
 	private static DbAdapterMovies sDbMovies;
+	private static NMJAdapterMovies sJSONMovies;
 	private static DbAdapterMovieMappings sDbMovieMapping;
 	private static DbAdapterCollections sDbCollections;
 	private static HashMap<String, String[]> sMap = new HashMap<String, String[]>();
@@ -108,6 +112,10 @@ public class NMJManagerApplication extends Application {
 
 	public static DbAdapterMovies getMovieAdapter() {
 		return sDbMovies;
+	}
+
+	public static NMJAdapterMovies getNMJMovieAdapter() {
+		return sJSONMovies;
 	}
 
 	public static DbAdapterMovieMappings getMovieMappingAdapter() {
@@ -371,7 +379,8 @@ public class NMJManagerApplication extends Application {
 
         // Database setup
         sDbMovies = new DbAdapterMovies(this);
-        sDbMovieMapping = new DbAdapterMovieMappings(this);
+		sJSONMovies = new NMJAdapterMovies();
+		sDbMovieMapping = new DbAdapterMovieMappings(this);
         sDbTvShowEpisode = new DbAdapterTvShowEpisodes(this);
         sDbTvShow = new DbAdapterTvShows(this);
         sDbTvShowEpisodeMappings = new DbAdapterTvShowEpisodeMappings(this);
