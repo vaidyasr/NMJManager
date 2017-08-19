@@ -30,6 +30,7 @@ import com.google.common.collect.Lists;
 import com.nmj.db.DbAdapterMovieMappings;
 
 import com.nmj.functions.Filepath;
+import com.nmj.functions.Library;
 import com.nmj.functions.LibrarySectionAsyncTask;
 import com.nmj.functions.NMJAdapterMovies;
 import com.nmj.functions.NMJCache;
@@ -315,7 +316,7 @@ public class MovieLoader {
                         dObject.getString("RELEASE_DATE"),
                         dObject.getString("RATING"), //KEY_GENRES
                         dObject.getString("RATING"), //KEY_FAVOURITE
-                        dObject.getString("SHOW_ID"), //KEY_COLLECTION_ID
+                        dObject.getString("TITLE"), //KEY_COLLECTION_ID
                         dObject.getString("SHOW_ID"), //KEY_COLLECTION_ID
                         dObject.getString("SHOW_ID"), //KEY_TO_WATCH
                         dObject.getString("PLAY_COUNT"), //KEY_HAS_WATCHED
@@ -338,11 +339,11 @@ public class MovieLoader {
      * @return List of movie objects from the supplied URL.
      */
     private void setLibrary() {
-        ArrayList<NMJMovie> list = new ArrayList<>();
+        ArrayList<Library> list = new ArrayList<>();
         String url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getCount&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db";
 
         try {
-            JSONObject jObject = new JSONObject();
+            JSONObject jObject;
             LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
             if (JSONCache.get("libCount") == "") {
                 jObject = NMJLib.getJSONObject(mContext, url);
@@ -354,13 +355,18 @@ public class MovieLoader {
             }
             mDatabase.setMovieCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("movies")));
             mDatabase.setShowCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("shows")));
-            //mDatabase.setLibrary(jObject.getJSONObject("data").getJSONArray("library"));
-            //JSONArray jArray = jObject.getJSONArray("data");
-            //com.nmj.nmjmanager.Main.
+            JSONArray jArray = jObject.getJSONObject("data").getJSONArray("library");
+
+            for (int i = 0; i < jArray.length(); i++) {
+                JSONObject dObject = jArray.getJSONObject(i);
+                list.add(new Library(dObject.getString("ID"),
+                        dObject.getString("PLAY_COUNT"),
+                        dObject.getString("CONTENT_TTID")));
+            }
+            mDatabase.setLibrary(list);
 
         } catch (Exception ignored) {
         }
-        //return jObject;
     }
 
 

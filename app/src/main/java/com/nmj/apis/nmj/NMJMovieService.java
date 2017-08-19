@@ -495,7 +495,7 @@ public class NMJMovieService extends NMJApiService {
 
             JSONObject jObject = new JSONObject();
             LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
-            String CacheId = "nmj_" + id;
+            String CacheId = "movie_" + id;
             try {
                 if (JSONCache.get(CacheId) == "") {
                     jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "?api_key=" + mTmdbApiKey + (language.equals("en") ? "" : "&language=" + language) + "&append_to_response=releases,trailers,credits,images,similar_movies");

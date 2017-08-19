@@ -179,6 +179,11 @@
     <string name="choiceFavorites">Favorites</string>
     <string name="choiceGenres">Genres</string>
     <string name="choiceCollections">Collections</string>
+    <string name="choiceLists">Lists</string>
+    <string name="choiceUpcoming">Upcoming</string>
+    <string name="choiceTopRated">Top Rated</string>
+    <string name="choiceNowPlaying">Now Playing</string>
+    <string name="choicePopular">Popular</string>
     <string name="choiceAvailableFiles">Available files</string>
     <string name="choiceAllShows">All shows</string>
     <string name="choiceYouTube">YouTube</string>

@@ -23,6 +23,8 @@ import android.text.TextUtils;
 
 import com.nmj.functions.Actor;
 import com.nmj.functions.IntentKeys;
+import com.nmj.functions.Library;
+import com.nmj.functions.NMJAdapterMovies;
 import com.nmj.functions.NMJMovie;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.WebMovie;
@@ -45,6 +47,7 @@ import com.nmj.nmjmanager.TvShowDetails;
 import com.nmj.nmjmanager.TvShowEpisodes;
 import com.nmj.nmjmanager.TvShowSeasons;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class IntentUtils {
@@ -126,9 +129,14 @@ public class IntentUtils {
 	}
 	
 	public static Intent getTmdbMovieDetails(Context context, WebMovie movie) {
+		NMJAdapterMovies mDatabase = NMJManagerApplication.getNMJMovieAdapter();
+		ArrayList<Library> list = mDatabase.getLibrary();
 		Intent movieDetailsIntent = new Intent(context, movie.isInLibrary() ? NMJMovieDetails.class : TMDbMovieDetails.class);
+		System.out.println("tmdbId: " + movie.getId());
 		movieDetailsIntent.putExtra("tmdbId", movie.getId());
-		//movieDetailsIntent.putExtra("showId", movie.getS());
+		if (movie.isInLibrary())
+			movieDetailsIntent.putExtra("showId", mDatabase.getShowIdByTmdbId(movie.getId()));
+		System.out.println("showId: " + mDatabase.getShowIdByTmdbId(movie.getId()));
 		movieDetailsIntent.putExtra("title", movie.getTitle());
 		return movieDetailsIntent;
 	}

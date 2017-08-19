@@ -512,7 +512,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
 
             for (int i = 0; i < mMovie.getSimilarMovies().size(); i++) {
                 String id = mMovie.getSimilarMovies().get(i).getId();
-                mMovie.getSimilarMovies().get(i).setInLibrary(NMJManagerApplication.getMovieAdapter().movieExists(id));
+                mMovie.getSimilarMovies().get(i).setInLibrary(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(id));
             }
 
             return null;

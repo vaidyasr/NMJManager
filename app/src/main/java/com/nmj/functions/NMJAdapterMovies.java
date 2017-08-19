@@ -22,11 +22,11 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class NMJAdapterMovies extends JSONObject {
+public class NMJAdapterMovies {
     // Database fields
     public static final String KEY_TMDB_ID = "tmdbid"; // Unidentified movies and .nfo files without TMDb ID use the filepath
     public int movieCount, showCount, musicCount;
-    ArrayList<JSONObject> mLibrary;
+    ArrayList<Library> mLibrary;
 
     public NMJAdapterMovies() {
     }
@@ -55,12 +55,37 @@ public class NMJAdapterMovies extends JSONObject {
         this.musicCount = count;
     }
 
-    public ArrayList<JSONObject> getLibrary() {
+    public ArrayList<Library> getLibrary() {
         return mLibrary;
     }
 
-    public void setLibrary(ArrayList<JSONObject> library) {
+    public void setLibrary(ArrayList<Library> library) {
         this.mLibrary = library;
+    }
+
+    public boolean movieExistsbyTmdbId(String movieId) {
+        for (int i = 0; i < mLibrary.size(); i++) {
+            if (mLibrary.get(i).getId().equals("tmdb" + movieId))
+                return true;
+        }
+        return false;
+    }
+
+    public boolean movieExistsbyTvdbId(String movieId) {
+        for (int i = 0; i < mLibrary.size(); i++) {
+            if (mLibrary.get(i).getId().equals("tvdb" + movieId))
+                return true;
+        }
+        return false;
+    }
+
+    public String getShowIdByTmdbId(String tmdbId) {
+        for (int i = 0; i < mLibrary.size(); i++) {
+            System.out.println("tmdbid final: " + tmdbId);
+            if (mLibrary.get(i).getId().equals("tmdb" + tmdbId))
+                return mLibrary.get(i).getShowId();
+        }
+        return "";
     }
 
 
@@ -214,18 +239,6 @@ public class NMJAdapterMovies extends JSONObject {
         }
         return cursor;
     }*/
-    public boolean movieExists(String movieId) {
-/*        Cursor cursor = mDatabase.query(DATABASE_TABLE, SELECT_ALL, KEY_TMDB_ID + " = ?", new String[]{movieId}, null, null, null, null);
-
-        if (cursor != null)
-            try {
-                return cursor.getCount() > 0;
-            } catch (SQLiteException e) {} finally {
-                cursor.close();
-            }*/
-
-        return false;
-    }
 
 /*    private ContentValues createContentValues(String tmdbid, String title,
                                               String plot, String imdbid, String rating, String tagline, String release,
@@ -280,9 +293,7 @@ public class NMJAdapterMovies extends JSONObject {
         return count;
     }*/
 
-    public int count() {
-        return 500;
-    }
+
 
 /*    public int countWatchlist() {
         Cursor c = mDatabase.query(DATABASE_TABLE, new String[] {KEY_TO_WATCH}, KEY_TO_WATCH + " = '1'", null, null, null, null);

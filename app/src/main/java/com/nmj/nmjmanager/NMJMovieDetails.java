@@ -90,7 +90,7 @@ public class NMJMovieDetails extends NMJActivity {
             Intent intent = new Intent();
             intent.setClass(getApplicationContext(), NMJMovieDetails.class);
             intent.putExtra("tmdbId", mMovieId);
-            intent.putExtra("showId", mMovieId);
+            intent.putExtra("showId", mShowId);
 
             // Start the Intent for result
             startActivity(intent);

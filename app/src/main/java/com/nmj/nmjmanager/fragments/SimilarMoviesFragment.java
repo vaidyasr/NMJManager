@@ -133,8 +133,8 @@ public class SimilarMoviesFragment extends Fragment {
 
 	private class ImageAdapter extends BaseAdapter {
 
-		private LayoutInflater inflater;
 		private final Context mContext;
+        private LayoutInflater inflater;
 
 		public ImageAdapter(Context context) {
 			mContext = context;
@@ -206,8 +206,8 @@ public class SimilarMoviesFragment extends Fragment {
 
 				for (int i = 0; i < mSimilarMovies.size(); i++) {
 					String id = mSimilarMovies.get(i).getId();
-					mSimilarMovies.get(i).setInLibrary(NMJManagerApplication.getMovieAdapter().movieExists(id));
-				}
+                    mSimilarMovies.get(i).setInLibrary(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(id));
+                }
 			} catch (Exception e) { e.printStackTrace(); }
 
 			return null;

@@ -164,9 +164,9 @@ public class ActorMoviesFragment extends Fragment {
 
 	private class ImageAdapter extends BaseAdapter {
 
-        private ArrayList<WebMovie> mMovies;
-		private LayoutInflater mInflater;
 		private final Context mContext;
+		private ArrayList<WebMovie> mMovies;
+		private LayoutInflater mInflater;
 
 		public ImageAdapter(Context context) {
 			mContext = context;
@@ -264,7 +264,7 @@ public class ActorMoviesFragment extends Fragment {
 
 			for (int i = 0; i < mActor.getMovies().size(); i++) {
 				String id = mActor.getMovies().get(i).getId();
-				mActor.getMovies().get(i).setInLibrary(NMJManagerApplication.getMovieAdapter().movieExists(id));
+				mActor.getMovies().get(i).setInLibrary(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(id));
 			}
 
 			return null;

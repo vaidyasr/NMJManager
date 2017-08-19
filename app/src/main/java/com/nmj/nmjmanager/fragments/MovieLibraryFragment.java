@@ -279,6 +279,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
 
     private void viewMovieDetails(int position, View view) {
         Intent intent = new Intent();
+
         if (mMovieLoader.getType() == MovieLibraryType.COLLECTIONS) { // Collection
             intent.putExtra("collectionId", mAdapter.getItem(position).getCollectionId());
             intent.putExtra("collectionTitle", mAdapter.getItem(position).getCollection());

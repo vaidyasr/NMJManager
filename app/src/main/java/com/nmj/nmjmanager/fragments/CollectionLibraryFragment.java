@@ -472,6 +472,8 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
                 holder.subtext.setVisibility(View.VISIBLE);
 
                 holder.text.setText(mMovie.getTitle());
+                System.out.println("Collection Title: " + mMovie.getTitle());
+                holder.text.setText("Test1234");
                 holder.subtext.setText(mMovie.getSubText(mCurrentSort));
             }
 

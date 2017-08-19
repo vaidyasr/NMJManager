@@ -380,7 +380,7 @@ public class ActorDetailsFragment extends Fragment {
 
             for (int i = 0; i < mActor.getMovies().size(); i++) {
                 String id = mActor.getMovies().get(i).getId();
-                mActor.getMovies().get(i).setInLibrary(NMJManagerApplication.getMovieAdapter().movieExists(id));
+                mActor.getMovies().get(i).setInLibrary(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(id));
             }
 
             for (int i = 0; i < mActor.getTvShows().size(); i++) {
