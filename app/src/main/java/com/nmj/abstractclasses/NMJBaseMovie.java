@@ -29,11 +29,11 @@ import java.io.File;
 
 public abstract class NMJBaseMovie extends BaseMovie {
 
-    protected String TO_WATCH, COLLECTION, COLLECTION_ID, RATING, FAVOURITE, HAS_WATCHED, RELEASEDATE, DATE_ADDED, GENRES, CAST, CERTIFICATION, RUNTIME;
+    protected String TO_WATCH, LIST_ID, COLLECTION_ID, RATING, FAVOURITE, HAS_WATCHED, RELEASEDATE, DATE_ADDED, GENRES, CAST, CERTIFICATION, RUNTIME;
     protected String mGetReleaseYear, mWeightedCompatibility, mDateAdded, mRuntime, mReleaseDate;
 
     public NMJBaseMovie(Context context, String title, String tmdbId, String rating, String releasedate,
-                        String genres, String favourite, String cast, String collection, String collectionId, String toWatch, String hasWatched,
+                        String genres, String favourite, String cast, String listId, String collectionId, String toWatch, String hasWatched,
                         String date_added, String certification, String runtime, String showId, boolean ignorePrefixes) {
         super(context, title, tmdbId, showId, ignorePrefixes);
 
@@ -42,7 +42,7 @@ public abstract class NMJBaseMovie extends BaseMovie {
         GENRES = genres;
         FAVOURITE = favourite;
         CAST = cast;
-        COLLECTION = collection;
+        LIST_ID = listId;
         COLLECTION_ID = collectionId;
         TO_WATCH = toWatch;
         HAS_WATCHED = hasWatched;
@@ -86,12 +86,12 @@ public abstract class NMJBaseMovie extends BaseMovie {
         return (!TO_WATCH.equals("0"));
     }
 
-    public String getCollection() {
-        return COLLECTION;
-    }
-
     public String getCollectionId() {
         return COLLECTION_ID;
+    }
+
+    public String getListId() {
+        return LIST_ID;
     }
 
     public File getCollectionPoster() {

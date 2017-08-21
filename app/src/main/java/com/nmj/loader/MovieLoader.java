@@ -17,11 +17,14 @@
 package com.nmj.loader;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.widget.ListView;
 
@@ -30,15 +33,16 @@ import com.google.common.collect.Lists;
 import com.nmj.db.DbAdapterMovieMappings;
 
 import com.nmj.functions.Filepath;
-import com.nmj.functions.Library;
 import com.nmj.functions.LibrarySectionAsyncTask;
 import com.nmj.functions.NMJAdapterMovies;
 import com.nmj.functions.NMJCache;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.NMJMovie;
 import com.nmj.functions.PreferenceKeys;
+import com.nmj.nmjmanager.Main;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
+import com.nmj.utils.LocalBroadcastUtils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -66,7 +70,8 @@ public class MovieLoader {
             UPCOMING = 9,
             NOW_PLAYING = 10,
             POPULAR = 11,
-            TOP_RATED = 12;
+            TOP_RATED = 12,
+            LIST_MOVIES = 13;
 
     // For MovieSortType
     public static final int TITLE = 1,
@@ -93,10 +98,15 @@ public class MovieLoader {
     private HashSet<MovieFilter> mFilters = new HashSet<>();
     private MovieLoaderAsyncTask mAsyncTask;
     private boolean mShowingSearchResults = false;
+    private String mListId, mListTmdbId;
 
-    public MovieLoader(Context context, MovieLibraryType libraryType, OnLoadCompletedCallback callback) {
+    public MovieLoader(Context context, MovieLibraryType libraryType, Intent intent, OnLoadCompletedCallback callback) {
         mContext = context;
         mLibraryType = libraryType;
+        if(libraryType == MovieLibraryType.LIST_MOVIES) {
+            mListId = intent.getStringExtra("listId");
+            mListTmdbId = intent.getStringExtra("listTmdbId");
+        }
         mCallback = callback;
         mDatabase = NMJManagerApplication.getNMJMovieAdapter();
 
@@ -292,18 +302,28 @@ public class MovieLoader {
      */
     private ArrayList<NMJMovie> listFromJSON(String loadType) {
         ArrayList<NMJMovie> list = new ArrayList<>();
-        String url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=Movies&VALUE=&searchtype=title";
+        String url;
+        if (mListId == null)
+            url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getVideos&drivepath=My_Book&dbpath=My_Book/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=Movies&VALUE=&searchtype=title";
+        else
+            url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getLists&drivepath=My_Book&sourceurl=My_Book&dbpath=My_Book/nmj_database/media.db&id=" + mListId + "&sortby=title&orderby=asc";
+
 
         try {
             JSONObject jObject;
             LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
-            if (JSONCache.get(loadType) == "") {
+            String CacheId;
+            if (mListId == null)
+                CacheId = "nmj_" + loadType;
+            else
+                CacheId = "list_" + mListId;
+            if (JSONCache.get(CacheId) == "") {
                 jObject = NMJLib.getJSONObject(mContext, url);
-                JSONCache.put(loadType, jObject.toString());
-                System.out.println("Putting Cache in " + loadType);
+                JSONCache.put(CacheId, jObject.toString());
+                System.out.println("Putting Cache in " + CacheId);
             } else {
-                jObject = new JSONObject(JSONCache.get(loadType));
-                System.out.println("Getting Cache from " + loadType);
+                jObject = new JSONObject(JSONCache.get(CacheId));
+                System.out.println("Getting Cache from " + CacheId);
             }
             JSONArray jArray = jObject.getJSONArray("data");
 
@@ -311,20 +331,20 @@ public class MovieLoader {
                 JSONObject dObject = jArray.getJSONObject(i);
                 list.add(new NMJMovie(mContext,
                         dObject.getString("TITLE"),
-                        dObject.getString("CONTENT_TTID"),
-                        dObject.getString("RATING"),
-                        dObject.getString("RELEASE_DATE"),
-                        dObject.getString("RATING"), //KEY_GENRES
-                        dObject.getString("RATING"), //KEY_FAVOURITE
-                        dObject.getString("TITLE"), //KEY_COLLECTION_ID
-                        dObject.getString("SHOW_ID"), //KEY_COLLECTION_ID
-                        dObject.getString("SHOW_ID"), //KEY_TO_WATCH
-                        dObject.getString("PLAY_COUNT"), //KEY_HAS_WATCHED
-                        dObject.getString("SHOW_ID"), //KEY_DATE_ADDED
-                        dObject.getString("PARENTAL_CONTROL"),
-                        dObject.getString("RUNTIME"), //RUNTIME
-                        dObject.getString("SHOW_ID"),
-                        dObject.getString("THUMBNAIL"),
+                        NMJLib.getStringFromJSONObject(dObject, "tmdbid", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "RATING", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "RELEASE_DATE", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "GENRES", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "FAVOURITE", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "LIST_ID", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "COLLECTION_ID", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "TO_WATCH", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "PLAY_COUNT", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "CREATE_TIME", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "PARENTAL_CONTROL", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "RUNTIME", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "SHOW_ID", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "POSTER", ""),
                         true));
             }
         } catch (Exception ignored) {
@@ -339,11 +359,11 @@ public class MovieLoader {
      * @return List of movie objects from the supplied URL.
      */
     private void setLibrary() {
-        ArrayList<Library> list = new ArrayList<>();
-        String url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getCount&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db";
+        ArrayList<NMJMovie> list = new ArrayList<>();
+        String url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getCount&drivepath=My_Book&dbpath=My_Book/nmj_database/media.db";
 
         try {
-            JSONObject jObject;
+            JSONObject jObject = new JSONObject();
             LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
             if (JSONCache.get("libCount") == "") {
                 jObject = NMJLib.getJSONObject(mContext, url);
@@ -355,18 +375,13 @@ public class MovieLoader {
             }
             mDatabase.setMovieCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("movies")));
             mDatabase.setShowCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("shows")));
-            JSONArray jArray = jObject.getJSONObject("data").getJSONArray("library");
-
-            for (int i = 0; i < jArray.length(); i++) {
-                JSONObject dObject = jArray.getJSONObject(i);
-                list.add(new Library(dObject.getString("ID"),
-                        dObject.getString("PLAY_COUNT"),
-                        dObject.getString("CONTENT_TTID")));
-            }
-            mDatabase.setLibrary(list);
+            //mDatabase.setLibrary(jObject.getJSONObject("data").getJSONArray("library"));
+            //JSONArray jArray = jObject.getJSONArray("data");
+            //com.nmj.nmjmanager.Main.
 
         } catch (Exception ignored) {
         }
+        //return jObject;
     }
 
 
@@ -553,6 +568,8 @@ public class MovieLoader {
         @Override
         protected Void doInBackground(Void... params) {
             setLibrary();
+
+
             switch (mLibraryType) {
                 case ALL_MOVIES:
                     mMovieList.addAll(listFromJSON("all"));
@@ -589,6 +606,10 @@ public class MovieLoader {
                     break;
                 case TOP_RATED:
                     mMovieList.addAll(listFromTMDB("top_rated"));
+                    break;
+                case LIST_MOVIES:
+                    mMovieList.addAll(listFromJSON("top_rated"));
+                    break;
                 default:
                     break;
             }
@@ -776,10 +797,12 @@ public class MovieLoader {
                         if (isCancelled())
                             return null;
 
-                        String lowerCaseTitle = (getType() == MovieLibraryType.COLLECTIONS) ?
-                                mMovieList.get(i).getCollection().toLowerCase(Locale.ENGLISH) :
+                        /*String lowerCaseTitle = (getType() == MovieLibraryType.COLLECTIONS) ?
+                                mMovieList.get(i).getCollectionTitle().toLowerCase(Locale.ENGLISH) :
                                 mMovieList.get(i).getTitle().toLowerCase(Locale.ENGLISH);
 
+*/
+                        String lowerCaseTitle = mMovieList.get(i).getTitle().toLowerCase(Locale.ENGLISH);
                         boolean foundInTitle = false;
 
                         if (lowerCaseTitle.contains(mSearchQuery) || p.matcher(lowerCaseTitle).replaceAll("").indexOf(mSearchQuery) != -1) {

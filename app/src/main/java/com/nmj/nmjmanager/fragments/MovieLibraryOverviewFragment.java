@@ -70,8 +70,8 @@ public class MovieLibraryOverviewFragment extends Fragment {
 
         private final String[] TITLES = {getString(R.string.choiceAllMovies), getString(R.string.choiceFavorites), getString(R.string.choiceNewReleases),
                 getString(R.string.chooserWatchList), getString(R.string.choiceWatchedMovies), getString(R.string.choiceUnwatchedMovies), getString(R.string.choiceCollections),
-                getString(R.string.choiceLists), getString(R.string.choiceUpcoming), getString(R.string.choiceNowPlaying),
-                getString(R.string.choicePopular), getString(R.string.choiceTopRated)};
+                getString(R.string.choiceLists), getString(R.string.choiceUpcoming), getString(R.string.choicePopular), getString(R.string.choiceNowPlaying),
+                getString(R.string.choiceTopRated)};
 
         public PagerAdapter(FragmentManager fm) {
             super(fm);

@@ -23,11 +23,11 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.MenuItem;
 
 import com.nmj.base.NMJActivity;
-import com.nmj.nmjmanager.fragments.CollectionLibraryFragment;
+import com.nmj.nmjmanager.fragments.ListLibraryFragment;
 
-public class MovieCollection extends NMJActivity {
+public class MovieList extends NMJActivity {
 	
-	private static String TAG = "CollectionLibraryFragment";
+	private static String TAG = "ListLibraryFragment";
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -38,16 +38,16 @@ public class MovieCollection extends NMJActivity {
 		Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
 		if (frag == null) {
 			final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-			ft.add(R.id.content, CollectionLibraryFragment.newInstance(getIntent().getExtras().getString("collectionId"),
-					getIntent().getExtras().getString("collectionTitle"),
-					getIntent().getExtras().getString("collectionTmdbId")), TAG);
+			ft.add(R.id.content, ListLibraryFragment.newInstance(getIntent().getExtras().getString("listId"),
+					getIntent().getExtras().getString("listTitle"),
+					getIntent().getExtras().getString("listTmdbId")), TAG);
 			ft.commit();
 		}
 		
-		setTitle(getIntent().getExtras().getString("collectionTitle"));
-		System.out.println("Collection Title : " + getIntent().getExtras().getString("collectionTitle"));
-		System.out.println("Collection Id : " + getIntent().getExtras().getString("collectionId"));
-		System.out.println("Collection TMDb Id : " + getIntent().getExtras().getString("collectionTmdbId"));
+		setTitle(getIntent().getExtras().getString("listTitle"));
+		System.out.println("List Title : " + getIntent().getExtras().getString("listTitle"));
+		System.out.println("List Id : " + getIntent().getExtras().getString("listId"));
+		System.out.println("List TmdbId : " + getIntent().getExtras().getString("listTmdbId"));
 	}
 
 	@Override

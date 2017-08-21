@@ -64,7 +64,7 @@ public enum MovieSortType {
 
                         case MovieLoader.COLLECTION_TITLE:
                             if (lhs != null && rhs != null)
-                                result = lhs.getCollection().compareToIgnoreCase(rhs.getCollection());
+                                result = lhs.getTitle().compareToIgnoreCase(rhs.getTitle());
                             break;
 
                         case MovieLoader.RELEASE:

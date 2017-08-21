@@ -35,15 +35,6 @@
         android:theme="@style/NMJManager.Theme" >
         <uses-library android:name="android.test.runner" />
 
-        <!-- Welcome activity -->
-        <activity
-            android:name="com.nmj.nmjmanager.Welcome"
-            android:exported="false" >
-            <intent-filter>
-                <action android:name="android.intent.action.DEFAULT" />
-            </intent-filter>
-        </activity>
-
         <!-- Show details activity -->
         <activity
             android:name="com.nmj.nmjmanager.TvShowDetails"
@@ -143,6 +134,15 @@
         <!-- Collection activity -->
         <activity
             android:name="com.nmj.nmjmanager.MovieCollection"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="android.intent.action.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- List activity -->
+        <activity
+            android:name="com.nmj.nmjmanager.MovieList"
             android:exported="false" >
             <intent-filter>
                 <action android:name="android.intent.action.DEFAULT" />

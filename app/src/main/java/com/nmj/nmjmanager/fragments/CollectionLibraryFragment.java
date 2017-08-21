@@ -48,6 +48,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.common.cache.LoadingCache;
 import com.nmj.db.DatabaseHelper;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.AsyncTask;
@@ -55,17 +56,25 @@ import com.nmj.functions.ColumnIndexCache;
 import com.nmj.functions.CoverItem;
 import com.nmj.functions.LibrarySectionAsyncTask;
 import com.nmj.functions.MediumMovie;
+import com.nmj.functions.NMJCache;
 import com.nmj.functions.NMJLib;
+import com.nmj.functions.NMJMovie;
 import com.nmj.functions.SQLiteCursorLoader;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.MovieDetails;
+import com.nmj.nmjmanager.NMJMovieDetails;
 import com.nmj.nmjmanager.R;
 import com.nmj.utils.LocalBroadcastUtils;
 import com.nmj.utils.TypefaceUtils;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 
 import static com.nmj.functions.PreferenceKeys.GRID_ITEM_SIZE;
 import static com.nmj.functions.PreferenceKeys.IGNORED_TITLE_PREFIXES;
@@ -74,9 +83,10 @@ import static com.nmj.functions.PreferenceKeys.SHOW_TITLES_IN_GRID;
 public class CollectionLibraryFragment extends Fragment implements OnSharedPreferenceChangeListener {
 
     private SharedPreferences mSharedPreferences;
+    private  Context mContext;
     private int mImageThumbSize, mImageThumbSpacing, mResizedWidth, mResizedHeight, mCurrentSort;
     private LoaderAdapter mAdapter;
-    private ArrayList<MediumMovie> mMovies = new ArrayList<MediumMovie>();
+    private ArrayList<NMJMovie> mMovies = new ArrayList<NMJMovie>();
     private ArrayList<Integer> mMovieKeys = new ArrayList<Integer>();
     private GridView mGridView = null;
     private ProgressBar mProgressBar;
@@ -84,7 +94,7 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
     private Picasso mPicasso;
     private Config mConfig;
     private MovieSectionLoader mMovieSectionLoader;
-    private String mCollectionId;
+    private String mCollectionId, mCollectionTmdbId;
     LoaderCallbacks<Cursor> loaderCallbacks = new LoaderCallbacks<Cursor>() {
         @Override
         public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
@@ -104,40 +114,49 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
 
                 @Override
                 protected Void doInBackground(Void... params) {
-
-                    ColumnIndexCache cache = new ColumnIndexCache();
-
+                    String url = "http://pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getCollections&drivepath=My_Book&sourceurl=undefined&dbpath=My_Book/nmj_database/media.db&id=" + mCollectionId + "&sortby=title&orderby=asc";
                     try {
-                        while (cursor.moveToNext()) {
-                            mMovies.add(new MediumMovie(getActivity(),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TITLE)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TMDB_ID)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RATING)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RELEASEDATE)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_GENRES)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_FAVOURITE)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_ACTORS)),
-                                    NMJManagerApplication.getCollectionsAdapter().getCollection(cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_COLLECTION_ID))),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_COLLECTION_ID)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TO_WATCH)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_HAS_WATCHED)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_DATE_ADDED)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_CERTIFICATION)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RUNTIME)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RUNTIME)),
-                                    cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_RUNTIME)),
-                                    mIgnorePrefixes
-                            ));
+                        JSONObject jObject;
+                        LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
+                        String CacheId = "collection_" + mCollectionId;
+                        if (JSONCache.get(mCollectionId) == "") {
+                            jObject = NMJLib.getJSONObject(mContext, url);
+                            JSONCache.put(CacheId, jObject.toString());
+                            System.out.println("Putting Cache in " + CacheId);
+                        } else {
+                            jObject = new JSONObject(JSONCache.get(CacheId));
+                            System.out.println("Getting Cache from " + CacheId);
                         }
-                    } catch (Exception e) {
-                    } finally {
-                        cursor.close();
-                        cache.clear();
+                        JSONArray jArray = jObject.getJSONArray("data");
+
+                        for (int i = 0; i < jArray.length(); i++) {
+                            JSONObject dObject = jArray.getJSONObject(i);
+                            System.out.println("Output: " + dObject.toString());
+                            mMovies.add(new NMJMovie(getActivity(),
+                                    dObject.getString("TITLE"),
+                                    dObject.getString("tmdbid"),
+                                    dObject.getString("RATING"),
+                                    dObject.getString("RELEASE_DATE"),
+                                    "",
+                                    "",
+                                    "",
+                                    "",
+                                    "",
+                                    dObject.getString("PLAY_COUNT"),
+                                    "",
+                                    "",
+                                    "",
+                                    dObject.getString("SHOW_ID"),
+                                    dObject.getString("POSTER"),
+                                    true));
+                        }
+                    } catch (Exception ignored) {
+
                     }
 
-                    for (int i = 0; i < mMovies.size(); i++)
+                    for (int i = 0; i < mMovies.size(); i++) {
                         mMovieKeys.add(i);
-
+                    }
                     return null;
                 }
 
@@ -160,6 +179,7 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            mContext = context;
             clearCaches();
             forceLoaderLoad();
         }
@@ -171,11 +191,12 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
     public CollectionLibraryFragment() {
     }
 
-    public static CollectionLibraryFragment newInstance(String collectionId, String collectionTitle) {
+    public static CollectionLibraryFragment newInstance(String collectionId, String collectionTitle, String collectionTmdbId) {
         CollectionLibraryFragment frag = new CollectionLibraryFragment();
         Bundle b = new Bundle();
         b.putString("collectionId", collectionId);
         b.putString("collectionTitle", collectionTitle);
+        b.putString("collectionTmdbId", collectionTmdbId);
         frag.setArguments(b);
         return frag;
     }
@@ -185,6 +206,7 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
         super.onCreate(savedInstanceState);
 
         mCollectionId = getArguments().getString("collectionId", "");
+        mCollectionTmdbId = getArguments().getString("collectionTmdbId", "");
         if (TextUtils.isEmpty(mCollectionId)) {
             getActivity().finish();
             return;
@@ -276,8 +298,9 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
 
     private void showDetails(int arg2) {
         Intent intent = new Intent();
-        intent.putExtra("tmdbId", mMovies.get(mMovieKeys.get(arg2)).getTmdbId());
-        intent.setClass(getActivity(), MovieDetails.class);
+        intent.putExtra("showId", mMovies.get(mMovieKeys.get(arg2)).getShowId());
+
+        intent.setClass(getActivity(), NMJMovieDetails.class);
         startActivityForResult(intent, 0);
     }
 
@@ -340,7 +363,7 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
                 break;
             case R.id.view_collection_online:
                 Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse("http://www.themoviedb.org/collection/" + mCollectionId));
+                i.setData(Uri.parse("http://www.themoviedb.org/collection/" + mCollectionTmdbId.replace("tmdb","")));
                 startActivity(i);
                 break;
         }
@@ -362,6 +385,19 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
         } else if (resultCode == 3) {
             notifyDataSetChanged();
         }
+    }
+
+    /**
+     * Creates movie objects from a URL and adds them to a list.
+     *
+     * @param collectionId
+     * @return List of movie objects from the supplied URL.
+     */
+    private ArrayList<NMJMovie> listFromJSON(String collectionId) {
+        ArrayList<NMJMovie> list = new ArrayList<>();
+
+
+        return list;
     }
 
     @Override
@@ -407,7 +443,7 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
         private LayoutInflater mInflater;
         private int mNumColumns = 0;
         private ArrayList<Integer> mMovieKeys = new ArrayList<Integer>();
-        private ArrayList<MediumMovie> mMovies = new ArrayList<MediumMovie>();
+        private ArrayList<NMJMovie> mMovies = new ArrayList<NMJMovie>();
 
         public LoaderAdapter(Context context) {
             mContext = context;
@@ -415,9 +451,9 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
         }
 
         // This is necessary in order to avoid random ArrayOutOfBoundsException when changing the items (i.e. during a library update)
-        public void setItems(ArrayList<Integer> movieKeys, ArrayList<MediumMovie> movies) {
+        public void setItems(ArrayList<Integer> movieKeys, ArrayList<NMJMovie> movies) {
             mMovieKeys = new ArrayList<Integer>(movieKeys);
-            mMovies = new ArrayList<MediumMovie>(movies);
+            mMovies = new ArrayList<NMJMovie>(movies);
             notifyDataSetChanged();
         }
 
@@ -444,7 +480,7 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
         @Override
         public View getView(int position, View convertView, ViewGroup container) {
 
-            final MediumMovie mMovie = mMovies.get(mMovieKeys.get(position));
+            final NMJMovie mMovie = mMovies.get(mMovieKeys.get(position));
 
             CoverItem holder;
             if (convertView == null) {
@@ -478,10 +514,11 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
             }
 
             holder.cover.setImageResource(R.color.card_background_dark);
+            String mURL = "http://pchportal.duckdns.org/NMJManagerTablet_web/My_Book/";
             if (mResizedWidth > 0)
-                mPicasso.load(mMovie.getThumbnail()).resize(mResizedWidth, mResizedHeight).config(mConfig).into(holder);
+                mPicasso.load(mURL + mMovie.getNMJThumbnail()).resize(mResizedWidth, mResizedHeight).config(mConfig).into(holder);
             else
-                mPicasso.load(mMovie.getThumbnail()).config(mConfig).into(holder);
+                mPicasso.load(mURL + mMovie.getNMJThumbnail()).config(mConfig).into(holder);
 
             return convertView;
         }
