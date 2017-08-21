@@ -29,7 +29,8 @@ public enum MovieLibraryType {
         UPCOMING(MovieLoader.UPCOMING),
         NOW_PLAYING(MovieLoader.NOW_PLAYING),
         POPULAR(MovieLoader.POPULAR),
-        TOP_RATED(MovieLoader.TOP_RATED);
+        TOP_RATED(MovieLoader.TOP_RATED),
+    LIST_MOVIES(MovieLoader.LIST_MOVIES);
 
         private final int mType;
 
@@ -67,6 +68,8 @@ public enum MovieLibraryType {
                     return POPULAR;
                 case MovieLoader.TOP_RATED:
                     return TOP_RATED;
+                case MovieLoader.LIST_MOVIES:
+                    return LIST_MOVIES;
                 default:
                     return ALL_MOVIES;
             }

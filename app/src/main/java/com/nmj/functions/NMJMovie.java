@@ -28,15 +28,15 @@ import java.util.Locale;
 
 public class NMJMovie extends NMJBaseMovie {
 
-    private String PLOT, TAGLINE, IMDB_ID, TRAILER;
+    private String PLOT, TAGLINE, IMDB_ID, TRAILER, TITLE;
 
-    private String THUMBNAIL, SHOW_ID;
+    private String THUMBNAIL, SHOW_ID, LIST_ID, COLLECTION_ID;
 
     public NMJMovie(Context context, String title, String tmdbId, String rating, String releasedate,String genres,
-                    String favourite, String collection, String collectionId, String toWatch, String hasWatched,
+                    String favourite, String listId, String collectionId, String toWatch, String hasWatched,
                     String date_added, String certification, String runtime, String showId, String thumbnail, boolean ignorePrefixes) {
 
-        super(context, title, tmdbId, rating, releasedate, genres, favourite, collection,
+        super(context, title, tmdbId, rating, releasedate, genres, favourite, listId,
                 collectionId, toWatch, hasWatched, date_added, certification, runtime, showId, thumbnail, ignorePrefixes);
 
         // Set up movie fields based on constructor
@@ -45,6 +45,9 @@ public class NMJMovie extends NMJBaseMovie {
         mTmdbId = tmdbId;
         THUMBNAIL = thumbnail;
         SHOW_ID = showId;
+        TITLE = title;
+        COLLECTION_ID = collectionId;
+        LIST_ID = listId;
         //IMDB_ID = imdbId;
         //TRAILER = trailer;
 
@@ -103,6 +106,10 @@ public class NMJMovie extends NMJBaseMovie {
     public String getShowId() {
         return SHOW_ID;
     }
+
+    public String getCollectionId(){ return COLLECTION_ID;}
+
+    public String getListId(){ return LIST_ID;}
 
     public String getFavourite() {
         return FAVOURITE;

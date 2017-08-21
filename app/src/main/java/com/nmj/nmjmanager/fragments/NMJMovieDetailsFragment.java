@@ -574,7 +574,7 @@ public class NMJMovieDetailsFragment extends Fragment {
             for (int i = 0; i < mMovie.getSimilarMovies().size(); i++) {
                 String id = mMovie.getSimilarMovies().get(i).getId();
                 mMovie.getSimilarMovies().get(i).setInLibrary(NMJManagerApplication.getMovieAdapter().movieExists(id));
-                //NMJManagerApplication.getMovieAdapter().get
+                NMJManagerApplication.getNMJMovieAdapter().movieExists(id);
             }
 
             return null;

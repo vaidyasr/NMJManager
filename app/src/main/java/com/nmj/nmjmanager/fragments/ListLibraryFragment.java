@@ -89,7 +89,7 @@ import static com.nmj.functions.PreferenceKeys.GRID_ITEM_SIZE;
 import static com.nmj.functions.PreferenceKeys.IGNORED_TITLE_PREFIXES;
 import static com.nmj.functions.PreferenceKeys.SHOW_TITLES_IN_GRID;
 
-public class MovieLibraryFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class ListLibraryFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private Context mContext;
     private String baseUrl, imageSizeUrl;
@@ -105,6 +105,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     private SearchView mSearchView;
     private View mEmptyLibraryLayout;
     private TextView mEmptyLibraryTitle, mEmptyLibraryDescription;
+    private String mListId, mListTmdbId;
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -128,12 +129,14 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     /**
      * Empty constructor as per the Fragment documentation
      */
-    public MovieLibraryFragment() {}
+    public ListLibraryFragment() {}
 
-    public static MovieLibraryFragment newInstance(int type) {
-        MovieLibraryFragment frag = new MovieLibraryFragment();
+    public static ListLibraryFragment newInstance(String listId, String listTitle, String listTmdbId) {
+        ListLibraryFragment frag = new ListLibraryFragment();
         Bundle b = new Bundle();
-        b.putInt("type", type);
+        b.putString("listId", listId);
+        b.putString("listTitle", listTitle);
+        b.putString("listTmdbId", listTmdbId);
         frag.setArguments(b);
         return frag;
     }
@@ -143,7 +146,8 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         super.onCreate(savedInstanceState);
 
         setHasOptionsMenu(true);
-
+        mListId = getArguments().getString("listId", "");
+        mListTmdbId = getArguments().getString("listTmdbId", "");
         mContext = getActivity().getApplicationContext();
 
         baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
@@ -204,7 +208,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         });
 
         // We only want to display the contextual menu if we're showing movies, not collections
-        if (getArguments().getInt("type") != MovieLoader.COLLECTIONS) {
+        System.out.println("Type " + getArguments().getInt("type"));
             mGridView.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE_MODAL);
             mGridView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
                 @Override
@@ -268,9 +272,11 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                     mAdapter.clearCheckedItems();
                 }
             });
-        }
+
         Intent intent = new Intent();
-        mMovieLoader = new MovieLoader(mContext, MovieLibraryType.fromInt(getArguments().getInt("type")), intent, mCallback);
+        intent.putExtra("listId", mListId);
+        intent.putExtra("listTmdbId", mListTmdbId);
+        mMovieLoader = new MovieLoader(mContext, MovieLibraryType.LIST_MOVIES, intent, mCallback);
         //mMovieLoader.setIgnorePrefixes(mIgnorePrefixes);
         mMovieLoader.load();
         showProgressBar();
@@ -280,29 +286,9 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
 
     private void viewMovieDetails(int position, View view) {
         Intent intent = new Intent();
-        if (mMovieLoader.getType() == MovieLibraryType.COLLECTIONS) { // Collection
-            intent.putExtra("collectionId", mAdapter.getItem(position).getCollectionId());
-            intent.putExtra("collectionTitle", mAdapter.getItem(position).getTitle());
-            intent.putExtra("collectionTmdbId", mAdapter.getItem(position).getTmdbId());
-            intent.setClass(mContext, MovieCollection.class);
-            //startActivity(intent);
-        } else if (mMovieLoader.getType() == MovieLibraryType.LISTS) { // Collection
-            intent.putExtra("listId", mAdapter.getItem(position).getListId());
-            intent.putExtra("listTitle", mAdapter.getItem(position).getTitle());
-            intent.putExtra("listTmdbId", mAdapter.getItem(position).getTmdbId());
-            intent.setClass(mContext, MovieList.class);
-            //startActivity(intent);
-        } else if(mMovieLoader.getType() == MovieLibraryType.UPCOMING ||
-                mMovieLoader.getType() == MovieLibraryType.TOP_RATED ||
-                mMovieLoader.getType() == MovieLibraryType.POPULAR ||
-                mMovieLoader.getType() == MovieLibraryType.NOW_PLAYING) { // Collection
-            intent.putExtra("tmdbId", mAdapter.getItem(position).getTmdbId());
-            intent.setClass(mContext, NMJMovieDetails.class);
-        }else {
             intent.putExtra("tmdbId", mAdapter.getItem(position).getTmdbId());
             intent.putExtra("showId", mAdapter.getItem(position).getShowId());
             intent.setClass(mContext, NMJMovieDetails.class);
-        }
         if (view != null) {
             Pair<View, String> pair = new Pair<>(view.findViewById(R.id.cover), "cover");
             ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), pair);
@@ -321,24 +307,11 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu, menu);
 
-        menu.findItem(R.id.random).setVisible(mMovieLoader.getType() != MovieLibraryType.COLLECTIONS);
+        menu.findItem(R.id.random).setVisible(mMovieLoader.getType() != MovieLibraryType.LISTS);
 
-        if (mMovieLoader.getType() == MovieLibraryType.COLLECTIONS || mMovieLoader.getType() == MovieLibraryType.LISTS) {
-            menu.findItem(R.id.sort).setVisible(false);
-            menu.findItem(R.id.filters).setVisible(false);
-        }
-
-        if (mMovieLoader.getType() == MovieLibraryType.POPULAR ||
-                mMovieLoader.getType() == MovieLibraryType.TOP_RATED ||
-                mMovieLoader.getType() == MovieLibraryType.NOW_PLAYING ||
-                mMovieLoader.getType() == MovieLibraryType.UPCOMING) {
-            menu.findItem(R.id.menuSortDuration).setVisible(false);
-            menu.findItem(R.id.menuSortRating).setVisible(false);
-            menu.findItem(R.id.menuSortAdded).setVisible(false);
-            menu.findItem(R.id.filters).setVisible(false);
-            menu.findItem(R.id.update).setVisible(false);
-            menu.findItem(R.id.random).setVisible(false);
-        }
+        menu.removeItem(R.id.update);
+        menu.removeItem(R.id.filters);
+        menu.removeItem(R.id.unidentifiedFiles);
 
         MenuItemCompat.setOnActionExpandListener(menu.findItem(R.id.search_textbox), new OnActionExpandListener() {
             @Override
@@ -380,12 +353,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         super.onOptionsItemSelected(item);
 
         switch (item.getItemId()) {
-            case R.id.update:
-                Intent intent = new Intent();
-                intent.setClass(mContext, Update.class);
-                intent.putExtra("isMovie", true);
-                startActivityForResult(intent, 0);
-                break;
             case R.id.menuSortAdded:
                 mMovieLoader.setSortType(MovieSortType.DATE_ADDED);
                 mMovieLoader.load();
@@ -411,44 +378,11 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 mMovieLoader.load();
                 showProgressBar();
                 break;
-            case R.id.genres:
-                mMovieLoader.showGenresFilterDialog(getActivity());
-                break;
-            case R.id.certifications:
-                mMovieLoader.showCertificationsFilterDialog(getActivity());
-                break;
-            case R.id.user_rating:
-                //mMovieLoader.showFoldersFilterDialog(getActivity());
-                break;
-            case R.id.index:
-                //mMovieLoader.showFileSourcesFilterDialog(getActivity());
-                break;
-            case R.id.release_year:
-                mMovieLoader.showReleaseYearFilterDialog(getActivity());
-                break;
-            case R.id.video_resolution:
-                //mMovieLoader.addFilter(new MovieFilter(MovieFilter.OFFLINE_FILES));
-                //mMovieLoader.load();
-                //showProgressBar();
-                break;
-            case R.id.others:
-                //mMovieLoader.addFilter(new MovieFilter(MovieFilter.AVAILABLE_FILES));
-                //mMovieLoader.load();
-                //showProgressBar();
-                break;
-            case R.id.clear_filters:
-                mMovieLoader.clearFilters();
-                mMovieLoader.load();
-                showProgressBar();
-                break;
             case R.id.random:
                 if (mAdapter.getCount() > 0) {
                     int random = new Random().nextInt(mAdapter.getCount());
                     viewMovieDetails(random, null);
                 }
-                break;
-            case R.id.unidentifiedFiles:
-                startActivity(new Intent(mContext, UnidentifiedMovies.class));
                 break;
         }
 
