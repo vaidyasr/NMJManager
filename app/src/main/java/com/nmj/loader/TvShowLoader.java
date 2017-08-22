@@ -24,6 +24,7 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import com.google.common.collect.Lists;
+import com.iainconnor.objectcache.CacheManager;
 import com.nmj.db.DbAdapterTvShowEpisodes;
 import com.nmj.db.DbAdapterTvShows;
 import com.nmj.functions.ColumnIndexCache;
@@ -31,10 +32,14 @@ import com.nmj.functions.FileSource;
 import com.nmj.functions.Filepath;
 import com.nmj.functions.LibrarySectionAsyncTask;
 import com.nmj.functions.NMJLib;
+import com.nmj.functions.NMJMovie;
 import com.nmj.functions.PreferenceKeys;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.nmjmanager.TvShow;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.text.ParseException;
@@ -56,7 +61,11 @@ public class TvShowLoader {
             FAVORITES = 2,
             RECENTLY_AIRED = 3,
             WATCHED = 4,
-            UNWATCHED = 5;
+            UNWATCHED = 5,
+            POPULAR = 6,
+            TOP_RATED = 7,
+            ON_TV = 8,
+            AIRING_TODAY = 9;
 
     // For TvShowSortType
     public static final int TITLE = 1,
@@ -80,7 +89,7 @@ public class TvShowLoader {
     private final DbAdapterTvShowEpisodes mTvShowEpisodeDatabase;
 
     private TvShowSortType mSortType;
-    private ArrayList<TvShow> mResults = new ArrayList<>();
+    private ArrayList<NMJMovie> mResults = new ArrayList<>();
     private HashSet<TvShowFilter> mFilters = new HashSet<>();
     private TvShowLoaderAsyncTask mAsyncTask;
     private boolean mIgnorePrefixes = false,
@@ -142,6 +151,16 @@ public class TvShowLoader {
     }
 
     /**
+     * Get the TV show sort type. Can be either <code>TITLE</code>,
+     * <code>FIRST_AIR_DATE</code>, <code>NEWEST_EPISODE</code>, <code>DURATION</code>,
+     * <code>RATING</code>, or <code>WEIGHTED_RATING</code>.
+     * @return TV show sort type
+     */
+    public TvShowSortType getSortType() {
+        return mSortType;
+    }
+
+    /**
      * Set the TV show sort type.
      * @param type
      */
@@ -176,16 +195,6 @@ public class TvShowLoader {
                 editor.apply();
             }
         }
-    }
-
-    /**
-     * Get the TV show sort type. Can be either <code>TITLE</code>,
-     * <code>FIRST_AIR_DATE</code>, <code>NEWEST_EPISODE</code>, <code>DURATION</code>,
-     * <code>RATING</code>, or <code>WEIGHTED_RATING</code>.
-     * @return TV show sort type
-     */
-    public TvShowSortType getSortType() {
-        return mSortType;
     }
 
     /**
@@ -233,49 +242,250 @@ public class TvShowLoader {
      * Get the results of the most recently loaded TV shows.
      * @return List of TV show objects.
      */
-    public ArrayList<TvShow> getResults() {
+    public ArrayList<NMJMovie> getResults() {
         return mResults;
     }
 
     /**
-     * Creates TV show objects from a Cursor and adds them to a list.
-     * @param cursor
-     * @return List of TV show objects from the supplied Cursor.
+     * Creates movie objects from a URL and adds them to a list.
+     *
+     * @param loadType
+     * @return List of movie objects from the supplied URL.
      */
-    private ArrayList<TvShow> listFromCursor(Cursor cursor) {
-        ArrayList<TvShow> list = new ArrayList<>();
+    private ArrayList<NMJMovie> listFromTMDB(String loadType) {
+        ArrayList<NMJMovie> list = new ArrayList<>();
+        String url = "http://api.themoviedb.org/3/movie/" + loadType + "?api_key=b626260be86175272e48fa6347e58100&language=en";
+        try {
+            JSONObject jObject;
+            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
 
-        if (cursor != null) {
-            ColumnIndexCache cache = new ColumnIndexCache();
+            if (!cacheManager.exists(loadType)) {
+                System.out.println("Putting Cache in " + loadType);
+                jObject = NMJLib.getJSONObject(mContext, url);
+                NMJLib.putCache(cacheManager, loadType, jObject.toString());
+            }
+            System.out.println("Getting Cache from " + loadType);
+            jObject = new JSONObject(NMJLib.getCache(cacheManager, loadType));
+            JSONArray jArray = jObject.getJSONArray("results");
 
-            try {
-                while (cursor.moveToNext()) {
-                    list.add(new TvShow(
-                            mContext,
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterTvShows.KEY_SHOW_ID)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterTvShows.KEY_SHOW_TITLE)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterTvShows.KEY_SHOW_PLOT)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterTvShows.KEY_SHOW_RATING)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterTvShows.KEY_SHOW_GENRES)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterTvShows.KEY_SHOW_ACTORS)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterTvShows.KEY_SHOW_CERTIFICATION)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterTvShows.KEY_SHOW_FIRST_AIRDATE)),
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterTvShows.KEY_SHOW_RUNTIME)),
-                            mIgnorePrefixes,
-                            cursor.getString(cache.getColumnIndex(cursor, DbAdapterTvShows.KEY_SHOW_FAVOURITE)),
-                            mTvShowEpisodeDatabase.getLatestEpisodeAirdate(cursor.getString(cache.getColumnIndex(cursor, DbAdapterTvShows.KEY_SHOW_ID)))
-                    ));
+            for (int i = 0; i < jArray.length(); i++) {
+                JSONObject dObject = jArray.getJSONObject(i);
+                list.add(new NMJMovie(mContext,
+                        dObject.getString("title"),
+                        dObject.getString("id"),
+                        dObject.getString("vote_average"),
+                        dObject.getString("release_date"),
+                        "", //KEY_GENRES
+                        "", //KEY_FAVOURITE
+                        "", //KEY_COLLECTION_ID
+                        "", //KEY_COLLECTION_ID
+                        "", //KEY_TO_WATCH
+                        "", //KEY_HAS_WATCHED
+                        "", //KEY_DATE_ADDED
+                        "", //CERTIFICATION
+                        "", //RUNTIME
+                        "0", //SHOW_ID
+                        dObject.getString("poster_path"),
+                        true));
+            }
+        } catch (Exception ignored) {
+        }
+        return list;
+    }
+
+    /**
+     * Creates movie objects from a URL and adds them to a list.
+     *
+     * @param loadType
+     * @return List of movie objects from the supplied URL.
+     */
+    private ArrayList<NMJMovie> listFromJSON(String loadType) {
+        ArrayList<NMJMovie> list = new ArrayList<>();
+        String url;
+        url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getVideos&drivepath=My_Book&dbpath=My_Book/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=Movies&VALUE=&searchtype=title";
+
+        try {
+            JSONObject jObject;
+            String CacheId;
+            CacheId = "nmj_" + loadType;
+
+            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
+
+            if (!cacheManager.exists(CacheId)) {
+                System.out.println("Putting Cache in " + CacheId);
+                jObject = NMJLib.getJSONObject(mContext, url);
+                NMJLib.putCache(cacheManager, CacheId, jObject.toString());
+            }
+            System.out.println("Getting Cache from " + CacheId);
+            jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
+            JSONArray jArray = jObject.getJSONArray("data");
+
+            for (int i = 0; i < jArray.length(); i++) {
+                JSONObject dObject = jArray.getJSONObject(i);
+                list.add(new NMJMovie(mContext,
+                        dObject.getString("TITLE"),
+                        NMJLib.getStringFromJSONObject(dObject, "tmdbid", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "RATING", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "RELEASE_DATE", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "GENRES", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "FAVOURITE", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "LIST_ID", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "COLLECTION_ID", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "TO_WATCH", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "PLAY_COUNT", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "CREATE_TIME", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "PARENTAL_CONTROL", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "RUNTIME", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "SHOW_ID", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "POSTER", ""),
+                        true));
+            }
+        } catch (Exception ignored) {
+        }
+
+        return list;
+    }
+
+    /**
+     * Show genres filter dialog.
+     * @param activity
+     */
+    public void showGenresFilterDialog(Activity activity) {
+        final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
+        String[] splitGenres;
+        for (int i = 0; i < mResults.size(); i++) {
+            if (!mResults.get(i).getGenres().isEmpty()) {
+                splitGenres = mResults.get(i).getGenres().split(",");
+                for (int j = 0; j < splitGenres.length; j++) {
+                    if (map.containsKey(splitGenres[j].trim())) {
+                        map.put(splitGenres[j].trim(), map.get(splitGenres[j].trim()) + 1);
+                    } else {
+                        map.put(splitGenres[j].trim(), 1);
+                    }
                 }
-            } catch (Exception e) {
-            } finally {
-                cursor.close();
-                cache.clear();
             }
         }
 
-        mResults = list;
+        createAndShowAlertDialog(activity, setupItemArray(map, false), R.string.selectGenre, TvShowFilter.GENRE);
+    }
 
-        return list;
+    /**
+     * Show certifications filter dialog.
+     *
+     * @param activity
+     */
+    public void showCertificationsFilterDialog(Activity activity) {
+        final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
+        for (int i = 0; i < mResults.size(); i++) {
+            String certification = mResults.get(i).getCertification();
+            if (!TextUtils.isEmpty(certification)) {
+                if (map.containsKey(certification.trim())) {
+                    map.put(certification.trim(), map.get(certification.trim()) + 1);
+                } else {
+                    map.put(certification.trim(), 1);
+                }
+            }
+        }
+
+        createAndShowAlertDialog(activity, setupItemArray(map, false), R.string.selectCertification, TvShowFilter.CERTIFICATION);
+    }
+
+    /**
+     * Show release year filter dialog.
+     *
+     * @param activity
+     */
+    public void showReleaseYearFilterDialog(Activity activity) {
+        final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
+        for (int i = 0; i < mResults.size(); i++) {
+            String year = mResults.get(i).getReleaseYear().trim();
+            if (!TextUtils.isEmpty(year)) {
+                if (map.containsKey(year)) {
+                    map.put(year, map.get(year) + 1);
+                } else {
+                    map.put(year, 1);
+                }
+            }
+        }
+
+        createAndShowAlertDialog(activity, setupItemArray(map, false), R.string.selectReleaseYear, TvShowFilter.RELEASE_YEAR);
+    }
+
+    /**
+     * Used to set up an array of items for the alert dialog.
+     *
+     * @param map
+     * @return List of dialog options.
+     */
+    private CharSequence[] setupItemArray(TreeMap<String, Integer> map, boolean addFilesPostfix) {
+        final CharSequence[] tempArray = map.keySet().toArray(new CharSequence[map.keySet().size()]);
+        for (int i = 0; i < tempArray.length; i++)
+            tempArray[i] = tempArray[i] + " (" + map.get(tempArray[i]) +
+                    (addFilesPostfix ? " " + mContext.getResources().getQuantityString(R.plurals.files, map.get(tempArray[i])) + ")" : ")");
+
+        return tempArray;
+    }
+
+    /**
+     * Shows an alert dialog and handles the user selection.
+     *
+     * @param activity
+     * @param temp
+     * @param title
+     * @param type
+     */
+    private void createAndShowAlertDialog(Activity activity, final CharSequence[] temp, int title, final int type) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle(title)
+                .setItems(temp, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Let's get what the user selected and remove the parenthesis at the end
+                        String selected = temp[which].toString();
+                        selected = selected.substring(0, selected.lastIndexOf("(")).trim();
+
+                        // Add filter
+                        TvShowFilter filter = new TvShowFilter(type);
+                        filter.setFilter(selected);
+                        addFilter(filter);
+
+                        // Re-load the library with the new filter
+                        load();
+
+                        // Dismiss the dialog
+                        dialog.dismiss();
+                    }
+                });
+        builder.show();
+    }
+
+    private void setupSortType() {
+        if (getType() == TvShowLibraryType.ALL_SHOWS) {
+
+            // Load the saved sort type and set it
+            String savedSortType = PreferenceManager.getDefaultSharedPreferences(mContext).getString(PreferenceKeys.SORTING_TVSHOWS, SORT_TITLE);
+
+            switch (savedSortType) {
+                case SORT_TITLE:
+                    setSortType(TvShowSortType.TITLE);
+                    break;
+                case SORT_RELEASE:
+                    setSortType(TvShowSortType.FIRST_AIR_DATE);
+                    break;
+                case SORT_RATING:
+                    setSortType(TvShowSortType.RATING);
+                    break;
+                case SORT_NEWEST_EPISODE:
+                    setSortType(TvShowSortType.NEWEST_EPISODE);
+                    break;
+                case SORT_DURATION:
+                    setSortType(TvShowSortType.DURATION);
+                    break;
+            }
+        } else if (getType() == TvShowLibraryType.RECENTLY_AIRED) {
+            setSortType(TvShowSortType.NEWEST_EPISODE);
+        } else {
+            setSortType(TvShowSortType.TITLE);
+        }
     }
 
     /**
@@ -284,14 +494,14 @@ public class TvShowLoader {
      */
     private class TvShowLoaderAsyncTask extends LibrarySectionAsyncTask<Void, Void, Void> {
 
-        private final ArrayList<TvShow> mTvShowList;
+        private final ArrayList<NMJMovie> mTvShowList;
         private final String mSearchQuery;
 
         public TvShowLoaderAsyncTask(String searchQuery) {
             // Lowercase in order to search more efficiently
             mSearchQuery = searchQuery.toLowerCase(Locale.getDefault());
 
-            mTvShowList = new ArrayList<TvShow>();
+            mTvShowList = new ArrayList<NMJMovie>();
         }
 
         @Override
@@ -299,13 +509,14 @@ public class TvShowLoader {
 
             switch (mLibraryType) {
                 case ALL_SHOWS:
-                    mTvShowList.addAll(listFromCursor(mTvShowDatabase.getAllShows()));
+                    mTvShowList.addAll(listFromJSON("all"));
                     break;
                 case FAVORITES:
-                    mTvShowList.addAll(listFromCursor(mTvShowDatabase.getAllFavorites()));
+                    mTvShowList.addAll(listFromJSON("favorites"));
                     break;
                 case RECENTLY_AIRED:
-                    mTvShowList.addAll(listFromCursor(mTvShowDatabase.getAllShows()));
+/*                    mTvShowList.addAll(listFromCursor(mTvShowDatabase.getAllShows()));
+
 
                     int listSize = mTvShowList.size();
 
@@ -332,8 +543,9 @@ public class TvShowLoader {
                         }
                     }
 
-                    break;
+                    break;*/
                 case UNWATCHED:
+/*
                     mTvShowList.addAll(listFromCursor(mTvShowDatabase.getAllShows()));
 
                     int size = mTvShowList.size();
@@ -345,9 +557,11 @@ public class TvShowLoader {
                             size--;
                         }
                     }
+*/
 
                     break;
                 case WATCHED:
+/*
                     mTvShowList.addAll(listFromCursor(mTvShowDatabase.getAllShows()));
 
                     int totalSize = mTvShowList.size();
@@ -359,6 +573,7 @@ public class TvShowLoader {
                             totalSize--;
                         }
                     }
+*/
 
                     break;
                 default:
@@ -373,11 +588,11 @@ public class TvShowLoader {
                     if (isCancelled())
                         return null;
 
-                    ArrayList<Filepath> paths = new ArrayList<>();
+/*                    ArrayList<Filepath> paths = new ArrayList<>();
                     for (String s : NMJManagerApplication.getTvShowEpisodeMappingsDbAdapter()
                             .getFilepathsForShow(mTvShowList.get(i).getId())) {
                         paths.add(new Filepath(s));
-                    }
+                    }*/
 
                     boolean condition = false;
 
@@ -507,8 +722,9 @@ public class TvShowLoader {
             // If we've got a search query, we should search based on it
             if (!TextUtils.isEmpty(mSearchQuery)) {
 
-                ArrayList<TvShow> tempCollection = Lists.newArrayList();
+                ArrayList<NMJMovie> tempCollection = Lists.newArrayList();
 
+/*
                 if (mSearchQuery.startsWith("actor:")) {
                     for (int i = 0; i < mTvShowList.size(); i++) {
                         if (isCancelled())
@@ -539,6 +755,7 @@ public class TvShowLoader {
                         }
                     }
                 }
+*/
 
                 // Clear the TV show list
                 mTvShowList.clear();
@@ -551,7 +768,7 @@ public class TvShowLoader {
             }
 
             // Sort
-            Collections.sort(mTvShowList, getSortType().getComparator());
+            //Collections.sort(mTvShowList, getSortType().getComparator());
 
             return null;
         }
@@ -563,144 +780,6 @@ public class TvShowLoader {
                 mCallback.onLoadCompleted();
             } else
                 mTvShowList.clear();
-        }
-    }
-
-    /**
-     * Show genres filter dialog.
-     * @param activity
-     */
-    public void showGenresFilterDialog(Activity activity) {
-        final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
-        String[] splitGenres;
-        for (int i = 0; i < mResults.size(); i++) {
-            if (!mResults.get(i).getGenres().isEmpty()) {
-                splitGenres = mResults.get(i).getGenres().split(",");
-                for (int j = 0; j < splitGenres.length; j++) {
-                    if (map.containsKey(splitGenres[j].trim())) {
-                        map.put(splitGenres[j].trim(), map.get(splitGenres[j].trim()) + 1);
-                    } else {
-                        map.put(splitGenres[j].trim(), 1);
-                    }
-                }
-            }
-        }
-
-        createAndShowAlertDialog(activity, setupItemArray(map, false), R.string.selectGenre, TvShowFilter.GENRE);
-    }
-
-    /**
-     * Show certifications filter dialog.
-     * @param activity
-     */
-    public void showCertificationsFilterDialog(Activity activity) {
-        final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
-        for (int i = 0; i < mResults.size(); i++) {
-            String certification = mResults.get(i).getCertification();
-            if (!TextUtils.isEmpty(certification)) {
-                if (map.containsKey(certification.trim())) {
-                    map.put(certification.trim(), map.get(certification.trim()) + 1);
-                } else {
-                    map.put(certification.trim(), 1);
-                }
-            }
-        }
-
-        createAndShowAlertDialog(activity, setupItemArray(map, false), R.string.selectCertification, TvShowFilter.CERTIFICATION);
-    }
-
-    /**
-     * Show release year filter dialog.
-     * @param activity
-     */
-    public void showReleaseYearFilterDialog(Activity activity) {
-        final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
-        for (int i = 0; i < mResults.size(); i++) {
-            String year = mResults.get(i).getReleaseYear().trim();
-            if (!TextUtils.isEmpty(year)) {
-                if (map.containsKey(year)) {
-                    map.put(year, map.get(year) + 1);
-                } else {
-                    map.put(year, 1);
-                }
-            }
-        }
-
-        createAndShowAlertDialog(activity, setupItemArray(map, false), R.string.selectReleaseYear, TvShowFilter.RELEASE_YEAR);
-    }
-
-    /**
-     * Used to set up an array of items for the alert dialog.
-     * @param map
-     * @return List of dialog options.
-     */
-    private CharSequence[] setupItemArray(TreeMap<String, Integer> map, boolean addFilesPostfix) {
-        final CharSequence[] tempArray = map.keySet().toArray(new CharSequence[map.keySet().size()]);
-        for (int i = 0; i < tempArray.length; i++)
-            tempArray[i] = tempArray[i] + " (" + map.get(tempArray[i]) +
-                    (addFilesPostfix ? " " + mContext.getResources().getQuantityString(R.plurals.files, map.get(tempArray[i])) + ")" : ")");
-
-        return tempArray;
-    }
-
-    /**
-     * Shows an alert dialog and handles the user selection.
-     * @param activity
-     * @param temp
-     * @param title
-     * @param type
-     */
-    private void createAndShowAlertDialog(Activity activity, final CharSequence[] temp, int title, final int type) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setTitle(title)
-                .setItems(temp, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Let's get what the user selected and remove the parenthesis at the end
-                        String selected = temp[which].toString();
-                        selected = selected.substring(0, selected.lastIndexOf("(")).trim();
-
-                        // Add filter
-                        TvShowFilter filter = new TvShowFilter(type);
-                        filter.setFilter(selected);
-                        addFilter(filter);
-
-                        // Re-load the library with the new filter
-                        load();
-
-                        // Dismiss the dialog
-                        dialog.dismiss();
-                    }
-                });
-        builder.show();
-    }
-
-    private void setupSortType() {
-        if (getType() == TvShowLibraryType.ALL_SHOWS) {
-
-            // Load the saved sort type and set it
-            String savedSortType = PreferenceManager.getDefaultSharedPreferences(mContext).getString(PreferenceKeys.SORTING_TVSHOWS, SORT_TITLE);
-
-            switch (savedSortType) {
-                case SORT_TITLE:
-                    setSortType(TvShowSortType.TITLE);
-                    break;
-                case SORT_RELEASE:
-                    setSortType(TvShowSortType.FIRST_AIR_DATE);
-                    break;
-                case SORT_RATING:
-                    setSortType(TvShowSortType.RATING);
-                    break;
-                case SORT_NEWEST_EPISODE:
-                    setSortType(TvShowSortType.NEWEST_EPISODE);
-                    break;
-                case SORT_DURATION:
-                    setSortType(TvShowSortType.DURATION);
-                    break;
-            }
-        } else if (getType() == TvShowLibraryType.RECENTLY_AIRED) {
-            setSortType(TvShowSortType.NEWEST_EPISODE);
-        } else {
-            setSortType(TvShowSortType.TITLE);
         }
     }
 }

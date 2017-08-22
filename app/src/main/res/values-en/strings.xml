@@ -135,6 +135,10 @@
     <string name="no_tv_shows_description_tablet">Select the <b>Update icon</b> from the menu to add TV Shows.</string>
     <string name="no_favorites_description_tv">Don\'t you like TV Shows?</string>
     <string name="recently_aired">Recently broadcast</string>
+    <string name="popular_shows">Popular</string>
+    <string name="toprated_shows">Top Rated</string>
+    <string name="ontv">On TV</string>
+    <string name="airing_today">Airing Today</string>
     <string name="recently_aired_description">Nothing has been broadcast in the last three months.</string>
     <string name="no_watched_tv_shows">No watched TV Shows</string>
     <string name="watched_tv_shows">Watched TV shows</string>

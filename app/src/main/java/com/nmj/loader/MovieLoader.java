@@ -21,35 +21,27 @@ import android.content.Intent;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 
-import net.sf.ehcache.CacheManager;
+/*import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
-import net.sf.ehcache.Cache;
+import net.sf.ehcache.Cache;*/
 
 import android.text.TextUtils;
 import android.widget.ListView;
 
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-
 //import com.iainconnor.objectcache.CacheManager;
-import com.anupcowkur.reservoir.Reservoir;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 //import com.iainconnor.objectcache.DiskCache;
 import com.nmj.db.DbAdapterMovieMappings;
 
 import com.nmj.functions.Filepath;
+import com.nmj.functions.Library;
 import com.nmj.functions.LibrarySectionAsyncTask;
 import com.nmj.functions.NMJAdapterMovies;
-import com.nmj.functions.NMJCache;
-import com.nmj.functions.NMJCache1;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.NMJMovie;
 import com.nmj.functions.PreferenceKeys;
@@ -59,12 +51,10 @@ import com.nmj.nmjmanager.R;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.iainconnor.objectcache.CacheManager;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.TreeMap;
@@ -119,7 +109,7 @@ public class MovieLoader {
         mContext = context;
         mLibraryType = libraryType;
 
-        if(libraryType == MovieLibraryType.LIST_MOVIES) {
+        if (libraryType == MovieLibraryType.LIST_MOVIES) {
             mListId = intent.getStringExtra("listId");
             mListTmdbId = intent.getStringExtra("listTmdbId");
         }
@@ -273,47 +263,16 @@ public class MovieLoader {
         ArrayList<NMJMovie> list = new ArrayList<>();
         String url = "http://api.themoviedb.org/3/movie/" + loadType + "?api_key=b626260be86175272e48fa6347e58100&language=en";
         try {
-            JSONObject jObject = new JSONObject();
-            ArrayList<String> strings = new ArrayList<String>();
-            //Reservoir.init(mContext, 100000000); //in bytes
-            //NMJCache1 JSONCache = new NMJCache1();
-            //DualCache<String> mCache;
-            String mCacheId = "dualCache";
-            Cache ehcache;
+            JSONObject jObject;
+            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
 
-            CacheManager cacheManager = CacheManager.getInstance();
-/*            if(cacheManager.cacheExists("testCache"))
-                ehcache = cacheManager.getCache( "testCache" );
-            else*/
-
-            cacheManager.addCache("testCache");
-            ehcache = cacheManager.getCache("testCache");
-            jObject = NMJLib.getJSONObject(mContext, url);
-            ehcache.put(new Element(loadType, jObject));
-
-            //LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
-/*            if (JSONCache.get(loadType) == "") {
-                jObject = NMJLib.getJSONObject(mContext, url);
-                JSONCache.put(loadType, jObject.toString());
+            if (!cacheManager.exists(loadType)) {
                 System.out.println("Putting Cache in " + loadType);
-            } else {
-                jObject = new JSONObject(JSONCache.get(loadType));
-                System.out.println("Getting Cache from " + loadType);
-            }*/
-/*
-            if (Reservoir.contains(loadType)) {
-                JSONCache = Reservoir.get(loadType, NMJCache1.class);
-                jObject = new JSONObject(JSONCache.getString());
-                System.out.println("Getting Cache from " + loadType);
-            } else {
                 jObject = NMJLib.getJSONObject(mContext, url);
-                JSONCache.setString(jObject.toString());
-                Reservoir.put(loadType, JSONCache);
-                System.out.println("Putting Cache in " + loadType);
+                NMJLib.putCache(cacheManager, loadType, jObject.toString());
             }
-*/
-            Element ele = ehcache.get(loadType);
-            System.out.println("Cache: " + ele.getObjectValue().toString());
+            System.out.println("Getting Cache from " + loadType);
+            jObject = new JSONObject(NMJLib.getCache(cacheManager, loadType));
             JSONArray jArray = jObject.getJSONArray("results");
 
             for (int i = 0; i < jArray.length(); i++) {
@@ -358,20 +317,21 @@ public class MovieLoader {
 
         try {
             JSONObject jObject;
-            LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
             String CacheId;
             if (mListId == null)
                 CacheId = "nmj_" + loadType;
             else
                 CacheId = "list_" + mListId;
-            if (JSONCache.get(CacheId) == "") {
-                jObject = NMJLib.getJSONObject(mContext, url);
-                JSONCache.put(CacheId, jObject.toString());
+
+            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
+
+            if (!cacheManager.exists(CacheId)) {
                 System.out.println("Putting Cache in " + CacheId);
-            } else {
-                jObject = new JSONObject(JSONCache.get(CacheId));
-                System.out.println("Getting Cache from " + CacheId);
+                jObject = NMJLib.getJSONObject(mContext, url);
+                NMJLib.putCache(cacheManager, CacheId, jObject.toString());
             }
+            System.out.println("Getting Cache from " + CacheId);
+            jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
             JSONArray jArray = jObject.getJSONArray("data");
 
             for (int i = 0; i < jArray.length(); i++) {
@@ -406,26 +366,24 @@ public class MovieLoader {
      * @return List of movie objects from the supplied URL.
      */
     private void setLibrary() {
-        ArrayList<NMJMovie> list = new ArrayList<>();
+        ArrayList<Library> list = new ArrayList<>();
         String url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getCount&drivepath=My_Book&dbpath=My_Book/nmj_database/media.db";
 
+        JSONObject jObject;
         try {
-            JSONObject jObject = new JSONObject();
-            LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
-            if (JSONCache.get("libCount") == "") {
-                jObject = NMJLib.getJSONObject(mContext, url);
-                JSONCache.put("libCount", jObject.toString());
-                System.out.println("Putting Cache in libCount");
-            } else {
-                jObject = new JSONObject(JSONCache.get("libCount"));
-                System.out.println("Getting Cache from libCount");
-            }
+            jObject = NMJLib.getJSONObject(mContext, url);
             mDatabase.setMovieCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("movies")));
             mDatabase.setShowCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("shows")));
-            //mDatabase.setLibrary(jObject.getJSONObject("data").getJSONArray("library"));
-            //JSONArray jArray = jObject.getJSONArray("data");
-            //com.nmj.nmjmanager.Main.
+            JSONArray jArray = jObject.getJSONObject("data").getJSONArray("library");
 
+            for (int i = 0; i < jArray.length(); i++) {
+                JSONObject dObject = jArray.getJSONObject(i);
+                list.add(new Library(dObject.getString("ID"),
+                        dObject.getString("PLAY_COUNT"),
+                        dObject.getString("CONTENT_TTID")));
+            }
+            mDatabase.setLibrary(list);
+            System.out.println("Library : " + list.toString());
         } catch (Exception ignored) {
         }
         //return jObject;
@@ -614,48 +572,69 @@ public class MovieLoader {
 
         @Override
         protected Void doInBackground(Void... params) {
-            setLibrary();
-
-
+            if (NMJManagerApplication.getNMJMovieAdapter().getLibrary() == null)
+                setLibrary();
             switch (mLibraryType) {
                 case ALL_MOVIES:
-                    mMovieList.addAll(listFromJSON("all"));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "all", ""));
+                    //mMovieList.addAll(listFromJSON("all"));
                     break;
                 case FAVORITES:
-                    mMovieList.addAll(listFromJSON("favorites"));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "favorites", ""));
+
+                    //mMovieList.addAll(listFromJSON("favorites"));
                     break;
                 case NEW_RELEASES:
-                    mMovieList.addAll(listFromJSON("newReleases"));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "newReleases", ""));
+
+                    //mMovieList.addAll(listFromJSON("newReleases"));
                     break;
                 case WATCHLIST:
-                    mMovieList.addAll(listFromJSON("watchlist"));
+                    //mMovieList.addAll(listFromJSON("watchlist"));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "watchlist", ""));
+
                     break;
                 case UNWATCHED:
-                    mMovieList.addAll(listFromJSON("unwatched"));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "unwatched", ""));
+
+                    //mMovieList.addAll(listFromJSON("unwatched"));
                     break;
                 case WATCHED:
-                    mMovieList.addAll(listFromJSON("watched"));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "watched", ""));
+                    //mMovieList.addAll(listFromJSON("watched"));
                     break;
                 case COLLECTIONS:
-                    mMovieList.addAll(listFromJSON("collections"));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "collections", ""));
+                    //mMovieList.addAll(listFromJSON("collections"));
                     break;
                 case LISTS:
-                    mMovieList.addAll(listFromJSON("lists"));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "lists", ""));
+                    //mMovieList.addAll(listFromJSON("lists"));
                     break;
                 case UPCOMING:
-                    mMovieList.addAll(listFromTMDB("upcoming"));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "movie", "upcoming", ""));
+
+                    //mMovieList.addAll(listFromTMDB("upcoming"));
                     break;
                 case NOW_PLAYING:
-                    mMovieList.addAll(listFromTMDB("now_playing"));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "movie", "now_playing", ""));
+
+                    //mMovieList.addAll(listFromTMDB("now_playing"));
                     break;
                 case POPULAR:
-                    mMovieList.addAll(listFromTMDB("popular"));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "movie", "popular", ""));
+
+                    //mMovieList.addAll(listFromTMDB("popular"));
                     break;
                 case TOP_RATED:
-                    mMovieList.addAll(listFromTMDB("top_rated"));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "movie", "top_rated", ""));
+
+                    //mMovieList.addAll(listFromTMDB("top_rated"));
                     break;
                 case LIST_MOVIES:
-                    mMovieList.addAll(listFromJSON("top_rated"));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "list", mListId));
+
+                    //mMovieList.addAll(listFromJSON("top_rated"));
                     break;
                 default:
                     break;

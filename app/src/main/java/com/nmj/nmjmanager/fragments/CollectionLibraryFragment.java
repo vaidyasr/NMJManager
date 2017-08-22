@@ -44,24 +44,19 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.google.common.cache.LoadingCache;
+import com.iainconnor.objectcache.CacheManager;
 import com.nmj.db.DatabaseHelper;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.AsyncTask;
-import com.nmj.functions.ColumnIndexCache;
 import com.nmj.functions.CoverItem;
 import com.nmj.functions.LibrarySectionAsyncTask;
-import com.nmj.functions.MediumMovie;
-import com.nmj.functions.NMJCache;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.NMJMovie;
 import com.nmj.functions.SQLiteCursorLoader;
 import com.nmj.nmjmanager.NMJManagerApplication;
-import com.nmj.nmjmanager.MovieDetails;
 import com.nmj.nmjmanager.NMJMovieDetails;
 import com.nmj.nmjmanager.R;
 import com.nmj.utils.LocalBroadcastUtils;
@@ -69,12 +64,10 @@ import com.nmj.utils.TypefaceUtils;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
 
 import static com.nmj.functions.PreferenceKeys.GRID_ITEM_SIZE;
 import static com.nmj.functions.PreferenceKeys.IGNORED_TITLE_PREFIXES;
@@ -117,16 +110,16 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
                     String url = "http://pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getCollections&drivepath=My_Book&sourceurl=undefined&dbpath=My_Book/nmj_database/media.db&id=" + mCollectionId + "&sortby=title&orderby=asc";
                     try {
                         JSONObject jObject;
-                        LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
                         String CacheId = "collection_" + mCollectionId;
-                        if (JSONCache.get(mCollectionId) == "") {
-                            jObject = NMJLib.getJSONObject(mContext, url);
-                            JSONCache.put(CacheId, jObject.toString());
+                        CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
+
+                        if (!cacheManager.exists(CacheId)) {
                             System.out.println("Putting Cache in " + CacheId);
-                        } else {
-                            jObject = new JSONObject(JSONCache.get(CacheId));
-                            System.out.println("Getting Cache from " + CacheId);
+                            jObject = NMJLib.getJSONObject(mContext, url);
+                            NMJLib.putCache(cacheManager, CacheId, jObject.toString());
                         }
+                        System.out.println("Getting Cache from " + CacheId);
+                        jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
                         JSONArray jArray = jObject.getJSONArray("data");
 
                         for (int i = 0; i < jArray.length(); i++) {
