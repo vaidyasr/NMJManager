@@ -54,6 +54,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+//import com.iainconnor.objectcache.DiskCache;
+//import com.iainconnor.objectcache.CacheManager;
+
 import com.nmj.base.NMJActivity;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.db.DbAdapterTvShows;
@@ -73,6 +76,7 @@ import com.nmj.utils.ViewUtils;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -98,6 +102,7 @@ public class Main extends NMJActivity {
     private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
     private List<ApplicationInfo> mApplicationList;
     private Picasso mPicasso;
+
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

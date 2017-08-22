@@ -8,7 +8,10 @@ import com.google.common.cache.LoadingCache;
 public class NMJCache {
     private static LoadingCache<String, String> tmdbCache;
 
+    //private String tmdbCache;
     static {
+
+
         tmdbCache = CacheBuilder.newBuilder()
                 .maximumSize(1000)
                 .expireAfterWrite(1, TimeUnit.HOURS)
@@ -23,6 +26,13 @@ public class NMJCache {
                 );
     }
 
+    /*    public String getString(){
+            return tmdbCache;
+        }
+
+        public void setString(String data){
+            this.tmdbCache = data;
+        }*/
     public static LoadingCache<String, String> getLoadingCache() {
         return tmdbCache;
     }

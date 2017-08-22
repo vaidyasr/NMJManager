@@ -24,30 +24,44 @@ import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.v4.content.LocalBroadcastManager;
+
+
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
+import net.sf.ehcache.Cache;
+
 import android.text.TextUtils;
 import android.widget.ListView;
 
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+
+//import com.iainconnor.objectcache.CacheManager;
+import com.anupcowkur.reservoir.Reservoir;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
+//import com.iainconnor.objectcache.DiskCache;
 import com.nmj.db.DbAdapterMovieMappings;
 
 import com.nmj.functions.Filepath;
 import com.nmj.functions.LibrarySectionAsyncTask;
 import com.nmj.functions.NMJAdapterMovies;
 import com.nmj.functions.NMJCache;
+import com.nmj.functions.NMJCache1;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.NMJMovie;
 import com.nmj.functions.PreferenceKeys;
-import com.nmj.nmjmanager.Main;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
-import com.nmj.utils.LocalBroadcastUtils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -99,10 +113,12 @@ public class MovieLoader {
     private MovieLoaderAsyncTask mAsyncTask;
     private boolean mShowingSearchResults = false;
     private String mListId, mListTmdbId;
+    //private DiskCache diskCache;
 
     public MovieLoader(Context context, MovieLibraryType libraryType, Intent intent, OnLoadCompletedCallback callback) {
         mContext = context;
         mLibraryType = libraryType;
+
         if(libraryType == MovieLibraryType.LIST_MOVIES) {
             mListId = intent.getStringExtra("listId");
             mListTmdbId = intent.getStringExtra("listTmdbId");
@@ -257,16 +273,47 @@ public class MovieLoader {
         ArrayList<NMJMovie> list = new ArrayList<>();
         String url = "http://api.themoviedb.org/3/movie/" + loadType + "?api_key=b626260be86175272e48fa6347e58100&language=en";
         try {
-            JSONObject jObject;
-            LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
-            if (JSONCache.get(loadType) == "") {
+            JSONObject jObject = new JSONObject();
+            ArrayList<String> strings = new ArrayList<String>();
+            //Reservoir.init(mContext, 100000000); //in bytes
+            //NMJCache1 JSONCache = new NMJCache1();
+            //DualCache<String> mCache;
+            String mCacheId = "dualCache";
+            Cache ehcache;
+
+            CacheManager cacheManager = CacheManager.getInstance();
+/*            if(cacheManager.cacheExists("testCache"))
+                ehcache = cacheManager.getCache( "testCache" );
+            else*/
+
+            cacheManager.addCache("testCache");
+            ehcache = cacheManager.getCache("testCache");
+            jObject = NMJLib.getJSONObject(mContext, url);
+            ehcache.put(new Element(loadType, jObject));
+
+            //LoadingCache<String, String> JSONCache = NMJCache.getLoadingCache();
+/*            if (JSONCache.get(loadType) == "") {
                 jObject = NMJLib.getJSONObject(mContext, url);
                 JSONCache.put(loadType, jObject.toString());
                 System.out.println("Putting Cache in " + loadType);
             } else {
                 jObject = new JSONObject(JSONCache.get(loadType));
                 System.out.println("Getting Cache from " + loadType);
+            }*/
+/*
+            if (Reservoir.contains(loadType)) {
+                JSONCache = Reservoir.get(loadType, NMJCache1.class);
+                jObject = new JSONObject(JSONCache.getString());
+                System.out.println("Getting Cache from " + loadType);
+            } else {
+                jObject = NMJLib.getJSONObject(mContext, url);
+                JSONCache.setString(jObject.toString());
+                Reservoir.put(loadType, JSONCache);
+                System.out.println("Putting Cache in " + loadType);
             }
+*/
+            Element ele = ehcache.get(loadType);
+            System.out.println("Cache: " + ele.getObjectValue().toString());
             JSONArray jArray = jObject.getJSONArray("results");
 
             for (int i = 0; i < jArray.length(); i++) {
