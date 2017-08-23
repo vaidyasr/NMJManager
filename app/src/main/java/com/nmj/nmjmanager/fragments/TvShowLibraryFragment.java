@@ -64,10 +64,11 @@ import com.nmj.loader.TvShowLoader;
 import com.nmj.loader.TvShowSortType;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
-import com.nmj.nmjmanager.TvShow;
+//import com.nmj.nmjmanager.TvShow;
 import com.nmj.nmjmanager.TvShowActorSearchActivity;
-import com.nmj.nmjmanager.TvShowDetails;
+import com.nmj.nmjmanager.NMJTvShowDetails;
 import com.nmj.nmjmanager.UnidentifiedTvShows;
+import com.nmj.apis.thetvdb.TvShow;
 import com.nmj.nmjmanager.Update;
 import com.nmj.utils.LocalBroadcastUtils;
 import com.nmj.utils.TvShowDatabaseUtils;
@@ -96,6 +97,7 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
     private boolean mShowTitles, mIgnorePrefixes, mLoading = true;
     private Picasso mPicasso;
     private Config mConfig;
+    private String baseUrl, imageSizeUrl;
     private TvShowLoader mTvShowLoader;
     private SearchView mSearchView;
     private View mEmptyLibraryLayout;
@@ -140,6 +142,9 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
         setHasOptionsMenu(true);
 
         mContext = getActivity().getApplicationContext();
+
+        baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
+        imageSizeUrl = NMJLib.getImageUrlSize(mContext);
 
         // Set OnSharedPreferenceChange listener
         PreferenceManager.getDefaultSharedPreferences(mContext).registerOnSharedPreferenceChangeListener(this);
@@ -220,7 +225,7 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
 
                 int id = item.getItemId();
 
-                switch (id) {
+/*                switch (id) {
                     case R.id.show_add_fav:
                         TvShowDatabaseUtils.setTvShowsFavourite(mContext, mAdapter.getCheckedShows(), true);
                         break;
@@ -233,7 +238,7 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
                     case R.id.show_unwatched:
                         TvShowDatabaseUtils.setTvShowsWatched(mContext, mAdapter.getCheckedShows(), false);
                         break;
-                }
+                }*/
 
                 if (!(id == R.id.watched_menu ||
                         id == R.id.favorite_menu)) {
@@ -261,8 +266,9 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
 
     private void viewTvShowDetails(int position, View view) {
         Intent intent = new Intent();
-        //intent.putExtra("showId", mAdapter.getItem(position).getId());
-        intent.setClass(mContext, TvShowDetails.class);
+        intent.putExtra("showId", mAdapter.getItem(position).getShowId());
+        intent.putExtra("movieId", mAdapter.getItem(position).getTmdbId());
+        intent.setClass(mContext, NMJTvShowDetails.class);
 
         if (view != null) {
             Pair<View, String> pair = new Pair<>(view.findViewById(R.id.cover), "cover");
@@ -536,6 +542,7 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
         @Override
         public View getView(int position, View convertView, ViewGroup container) {
             final NMJMovie show = getItem(position);
+            String mURL;
 
             CoverItem holder;
             if (convertView == null) {
@@ -561,7 +568,11 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
 
             holder.cover.setImageResource(R.color.card_background_dark);
 
-            mPicasso.load(show.getThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
+            if (show.getTitleType() == "tmdb")
+                mURL = baseUrl + imageSizeUrl;
+            else
+                mURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/";
+            mPicasso.load(mURL + show.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
 
             if (mChecked.contains(position)) {
                 holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));

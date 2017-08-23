@@ -322,7 +322,8 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu, menu);
 
-        menu.findItem(R.id.random).setVisible(mMovieLoader.getType() != MovieLibraryType.COLLECTIONS);
+        menu.findItem(R.id.random).setVisible(mMovieLoader.getType() != MovieLibraryType.COLLECTIONS &&
+                mMovieLoader.getType() != MovieLibraryType.LISTS);
 
         if (mMovieLoader.getType() == MovieLibraryType.COLLECTIONS || mMovieLoader.getType() == MovieLibraryType.LISTS) {
             menu.findItem(R.id.sort).setVisible(false);
@@ -642,7 +643,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             if (movie.getTitleType() == "tmdb")
                 mURL = baseUrl + imageSizeUrl;
             else
-                mURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/My_Book/";
+                mURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/";
             mPicasso.load(mURL + movie.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
             if (mChecked.contains(position)) {
                 holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));

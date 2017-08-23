@@ -297,7 +297,7 @@ public class NMJMovieService extends NMJApiService {
     public Movie getCompleteNMJMovie(String id) {
         Movie movie = new Movie();
         movie.setShowId(id);
-        String nmjImgURL = "http://pchportal.duckdns.org/NMJManagerTablet_web/My_Book/";
+        String nmjImgURL = "http://pchportal.duckdns.org/NMJManagerTablet_web/guerilla/";
 
         if (id.equals(DbAdapterMovies.UNIDENTIFIED_ID))
             return movie;
@@ -312,7 +312,7 @@ public class NMJMovieService extends NMJApiService {
             CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
             if (!cacheManager.exists(CacheId)) {
                 System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, "http://pchportal.duckdns.org/NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=My_Book&sourceurl=undefined&dbpath=My_Book/nmj_database/media.db&showid=" + id + "&title_type=1");
+                jObject = NMJLib.getJSONObject(mContext, "http://pchportal.duckdns.org/NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&showid=" + id + "&title_type=1");
                 NMJLib.putCache(cacheManager, CacheId, jObject.toString());
             }
             System.out.println("Getting Cache from " + CacheId);
@@ -855,7 +855,7 @@ public class NMJMovieService extends NMJApiService {
     }
 
 	/*public NMJMovie getNMJMovieDetails(final String showId) {
-        JSONObject json = NMJLib.getJSONObject(mContext, "http://pchportal.duckdns.org/NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=My_Book&sourceurl=undefined&dbpath=My_Book/nmj_database/media.db&showid=1416&title_type=1");
+        JSONObject json = NMJLib.getJSONObject(mContext, "http://pchportal.duckdns.org/NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&showid=1416&title_type=1");
 		//String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
         System.out.println("TAG" + json.toString());
 

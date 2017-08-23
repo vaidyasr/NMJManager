@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <com.astuetz.PagerSlidingTabStrip
         android:id="@+id/tabs"
         android:layout_width="match_parent"
         android:layout_height="@dimen/toolbar_tabs_height"
+        android:background="?attr/colorPrimary"
         app:pstsTabBackground="?android:attr/selectableItemBackground"
-        app:pstsTabPaddingLeftRight="16dp"
-        app:pstsIndicatorHeight="1dp"
-        app:pstsTabTextSize="15sp"
-        app:pstsIndicatorColor="?android:textColorPrimary"
-        android:textColor="?android:textColorPrimary"
-        android:background="?attr/colorPrimary" />
+        app:pstsTabPaddingLeftRight="16dp" />
 
     <FrameLayout
         android:id="@+id/layout"

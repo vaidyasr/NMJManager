@@ -247,108 +247,6 @@ public class TvShowLoader {
     }
 
     /**
-     * Creates movie objects from a URL and adds them to a list.
-     *
-     * @param loadType
-     * @return List of movie objects from the supplied URL.
-     */
-    private ArrayList<NMJMovie> listFromTMDB(String loadType) {
-        ArrayList<NMJMovie> list = new ArrayList<>();
-        String url = "http://api.themoviedb.org/3/movie/" + loadType + "?api_key=b626260be86175272e48fa6347e58100&language=en";
-        try {
-            JSONObject jObject;
-            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
-
-            if (!cacheManager.exists(loadType)) {
-                System.out.println("Putting Cache in " + loadType);
-                jObject = NMJLib.getJSONObject(mContext, url);
-                NMJLib.putCache(cacheManager, loadType, jObject.toString());
-            }
-            System.out.println("Getting Cache from " + loadType);
-            jObject = new JSONObject(NMJLib.getCache(cacheManager, loadType));
-            JSONArray jArray = jObject.getJSONArray("results");
-
-            for (int i = 0; i < jArray.length(); i++) {
-                JSONObject dObject = jArray.getJSONObject(i);
-                list.add(new NMJMovie(mContext,
-                        dObject.getString("title"),
-                        dObject.getString("id"),
-                        dObject.getString("vote_average"),
-                        dObject.getString("release_date"),
-                        "", //KEY_GENRES
-                        "", //KEY_FAVOURITE
-                        "", //KEY_COLLECTION_ID
-                        "", //KEY_COLLECTION_ID
-                        "", //KEY_TO_WATCH
-                        "", //KEY_HAS_WATCHED
-                        "", //KEY_DATE_ADDED
-                        "", //CERTIFICATION
-                        "", //RUNTIME
-                        "0", //SHOW_ID
-                        "0",
-                        dObject.getString("poster_path"),
-                        true));
-            }
-        } catch (Exception ignored) {
-        }
-        return list;
-    }
-
-    /**
-     * Creates movie objects from a URL and adds them to a list.
-     *
-     * @param loadType
-     * @return List of movie objects from the supplied URL.
-     */
-    private ArrayList<NMJMovie> listFromJSON(String loadType) {
-        ArrayList<NMJMovie> list = new ArrayList<>();
-        String url;
-        url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getVideos&drivepath=My_Book&dbpath=My_Book/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=Movies&VALUE=&searchtype=title";
-
-        try {
-            JSONObject jObject;
-            String CacheId;
-            CacheId = "nmj_" + loadType;
-
-            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
-
-            if (!cacheManager.exists(CacheId)) {
-                System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, url);
-                NMJLib.putCache(cacheManager, CacheId, jObject.toString());
-            }
-            System.out.println("Getting Cache from " + CacheId);
-            jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
-            JSONArray jArray = jObject.getJSONArray("data");
-
-            for (int i = 0; i < jArray.length(); i++) {
-                JSONObject dObject = jArray.getJSONObject(i);
-                list.add(new NMJMovie(mContext,
-                        dObject.getString("TITLE"),
-                        NMJLib.getStringFromJSONObject(dObject, "tmdbid", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "RATING", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "RELEASE_DATE", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "GENRES", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "FAVOURITE", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "LIST_ID", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "COLLECTION_ID", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "TO_WATCH", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "PLAY_COUNT", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "CREATE_TIME", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "PARENTAL_CONTROL", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "RUNTIME", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "SHOW_ID", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "TITLE_TYPE", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "POSTER", ""),
-                        true));
-            }
-        } catch (Exception ignored) {
-        }
-
-        return list;
-    }
-
-    /**
      * Show genres filter dialog.
      * @param activity
      */
@@ -511,72 +409,31 @@ public class TvShowLoader {
 
             switch (mLibraryType) {
                 case ALL_SHOWS:
-                    mTvShowList.addAll(listFromJSON("all"));
+                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "TV Shows", "all", ""));
                     break;
                 case FAVORITES:
-                    mTvShowList.addAll(listFromJSON("favorites"));
+                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "TV Shows", "favorites", ""));
                     break;
                 case RECENTLY_AIRED:
-/*                    mTvShowList.addAll(listFromCursor(mTvShowDatabase.getAllShows()));
-
-
-                    int listSize = mTvShowList.size();
-
-                    long now = System.currentTimeMillis();
-
-                    Calendar cal = Calendar.getInstance();
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
-                    for (int i = 0; i < listSize; i++) {
-                        String latestEpisode = mTvShowEpisodeDatabase.getLatestEpisodeAirdate(mTvShowList.get(i).getId());
-
-                        try {
-                            cal.setTime(sdf.parse(latestEpisode));
-                            cal.add(Calendar.MONTH, 3);
-                            if (cal.getTimeInMillis() < now) {
-                                mTvShowList.remove(i);
-                                i--;
-                                listSize--;
-                            }
-                        } catch (ParseException e) {
-                            mTvShowList.remove(i);
-                            i--;
-                            listSize--;
-                        }
-                    }
-
-                    break;*/
+                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "TV Shows", "newReleases", ""));
+                    break;
                 case UNWATCHED:
-/*
-                    mTvShowList.addAll(listFromCursor(mTvShowDatabase.getAllShows()));
-
-                    int size = mTvShowList.size();
-
-                    for (int i = 0; i < size; i++) {
-                        if (!mTvShowEpisodeDatabase.hasUnwatchedEpisodes(mTvShowList.get(i).getId())) {
-                            mTvShowList.remove(i);
-                            i--;
-                            size--;
-                        }
-                    }
-*/
-
+                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "TV Shows", "unwatched", ""));
                     break;
                 case WATCHED:
-/*
-                    mTvShowList.addAll(listFromCursor(mTvShowDatabase.getAllShows()));
-
-                    int totalSize = mTvShowList.size();
-
-                    for (int i = 0; i < totalSize; i++) {
-                        if (mTvShowEpisodeDatabase.hasUnwatchedEpisodes(mTvShowList.get(i).getId())) {
-                            mTvShowList.remove(i);
-                            i--;
-                            totalSize--;
-                        }
-                    }
-*/
-
+                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "TV Shows", "watched", ""));
+                    break;
+                case POPULAR:
+                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "tv", "popular", ""));
+                    break;
+                case TOP_RATED:
+                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "tv", "top_rated", ""));
+                    break;
+                case ON_TV:
+                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "tv", "on_the_air", ""));
+                    break;
+                case AIRING_TODAY:
+                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "tv", "airing_today", ""));
                     break;
                 default:
                     break;

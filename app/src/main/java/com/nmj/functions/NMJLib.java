@@ -189,8 +189,8 @@ public class NMJLib {
     }
 
     public static String getNMJServer(){
-        //String url = "http://www.pchportal.duckdns.org/";
-        String url = "http://192.168.1.108/";
+        String url = "http://www.pchportal.duckdns.org/";
+        //String url = "http://192.168.1.108/";
 
         return url;
     }
@@ -2366,7 +2366,7 @@ public class NMJLib {
 
     public static DiskCache getDiskCache(Context context) {
         String cachePath = context.getCacheDir().getPath();
-        File cacheFile = new File(cachePath + File.separator + BuildConfig.PACKAGE_NAME);
+        File cacheFile = new File(cachePath + File.separator + BuildConfig.APPLICATION_ID);
         DiskCache diskCache;
         try {
             diskCache = new DiskCache(cacheFile, BuildConfig.VERSION_CODE, 1024 * 1024 * 10);
@@ -2392,18 +2392,18 @@ public class NMJLib {
      * @param loadType
      * @return List of movie objects from the supplied URL.
      */
-    public static ArrayList<NMJMovie> getMovieFromJSON(Context mContext, String videoType, String loadType, String id) {
+    public static ArrayList<NMJMovie> getVideoFromJSON(Context mContext, String videoType, String loadType, String id) {
         ArrayList<NMJMovie> list = new ArrayList<>();
         String url;
         System.out.println("LoadType: " + loadType);
         if (id != null && loadType.equals("list"))
-            url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getLists&drivepath=My_Book&sourceurl=My_Book&dbpath=My_Book/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
+            url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getLists&drivepath=guerilla&sourceurl=guerilla&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
         else if (id != null && loadType.equals("collection"))
-            url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getCollections&drivepath=My_Book&sourceurl=undefined&dbpath=My_Book/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
-        else if (videoType.equals("movie"))
+            url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getCollections&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
+        else if (videoType.equals("movie") || videoType.equals("tv"))
             url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" + getTmdbApiKey(mContext) + "&language=en";
         else
-            url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getVideos&drivepath=My_Book&dbpath=My_Book/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
+            url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
 
         try {
             JSONObject jObject;
@@ -2420,23 +2420,34 @@ public class NMJLib {
 
             if (!cacheManager.exists(CacheId)) {
                 System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, url);
+                jObject = NMJLib.getJSONObject(mContext, url.replace(" ", "%20"));
                 NMJLib.putCache(cacheManager, CacheId, jObject.toString());
             }
             System.out.println("Getting Cache from " + CacheId);
             jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
-            if (videoType.equals("movie"))
+            if (videoType.equals("movie") || videoType.equals("tv"))
                 jArray = jObject.getJSONArray("results");
             else
                 jArray = jObject.getJSONArray("data");
 
             for (int i = 0; i < jArray.length(); i++) {
                 JSONObject dObject = jArray.getJSONObject(i);
+                String title, release_date;
+                if (videoType.equals("movie")) {
+                    title = NMJLib.getStringFromJSONObject(dObject, "title", "");
+                    release_date = NMJLib.getStringFromJSONObject(dObject, "release_date", "");
+                } else if (videoType.equals("tv")) {
+                    title = NMJLib.getStringFromJSONObject(dObject, "name", "");
+                    release_date = NMJLib.getStringFromJSONObject(dObject, "first_air_date", "");
+                } else {
+                    title = NMJLib.getStringFromJSONObject(dObject, "TITLE", "");
+                    release_date = NMJLib.getStringFromJSONObject(dObject, "RELEASE_DATE", "");
+                }
                 list.add(new NMJMovie(mContext,
-                        (NMJLib.getStringFromJSONObject(dObject, "TITLE", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "title", "") : NMJLib.getStringFromJSONObject(dObject, "TITLE", ""),
+                        title,
                         (NMJLib.getStringFromJSONObject(dObject, "tmdbid", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "id", "") : NMJLib.getStringFromJSONObject(dObject, "tmdbid", ""),
                         (NMJLib.getStringFromJSONObject(dObject, "RATING", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "vote_average", "") : NMJLib.getStringFromJSONObject(dObject, "RATING", ""),
-                        (NMJLib.getStringFromJSONObject(dObject, "RELEASE_DATE", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "release_date", "") : NMJLib.getStringFromJSONObject(dObject, "RELEASE_DATE", ""),
+                        release_date,
                         NMJLib.getStringFromJSONObject(dObject, "GENRES", ""),
                         NMJLib.getStringFromJSONObject(dObject, "FAVOURITE", ""),
                         NMJLib.getStringFromJSONObject(dObject, "LIST_ID", ""),

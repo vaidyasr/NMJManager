@@ -39,10 +39,6 @@ public enum MovieLibraryType {
             mType = type;
         }
 
-        public int getType() {
-            return mType;
-        }
-
         public static MovieLibraryType fromInt(int type) {
             switch (type) {
                 case MovieLoader.ALL_MOVIES:
@@ -71,8 +67,14 @@ public enum MovieLibraryType {
                     return TOP_RATED;
                 case MovieLoader.LIST_MOVIES:
                     return LIST_MOVIES;
+                case MovieLoader.COLLECTION_MOVIES:
+                    return COLLECTION_MOVIES;
                 default:
                     return ALL_MOVIES;
             }
+        }
+
+    public int getType() {
+        return mType;
         }
     }

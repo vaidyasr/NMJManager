@@ -16,113 +16,127 @@
 
 package com.nmj.nmjmanager.fragments;
 
-import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.database.Cursor;
 import android.graphics.Bitmap.Config;
-import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.util.Pair;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v4.view.MenuItemCompat.OnActionExpandListener;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.SearchView;
-import android.support.v7.widget.SearchView.OnQueryTextListener;
-import android.view.ActionMode;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.net.URLEncoder;
-
-import com.github.ksoichiro.android.observablescrollview.ObservableGridView;
+import com.nmj.db.DatabaseHelper;
+import com.nmj.db.DbAdapterMovies;
+import com.nmj.functions.AsyncTask;
+import com.nmj.functions.ColumnIndexCache;
 import com.nmj.functions.CoverItem;
-import com.nmj.functions.MediumMovie;
-import com.nmj.functions.NMJLib;
+import com.nmj.functions.LibrarySectionAsyncTask;
 import com.nmj.functions.NMJMovie;
-import com.nmj.loader.MovieFilter;
-import com.nmj.loader.MovieLoader;
-import com.nmj.loader.MovieLibraryType;
-import com.nmj.loader.MovieSortType;
-import com.nmj.loader.OnLoadCompletedCallback;
-import com.nmj.nmjmanager.MovieDetails;
+import com.nmj.functions.NMJLib;
+import com.nmj.functions.SQLiteCursorLoader;
 import com.nmj.nmjmanager.NMJManagerApplication;
-import com.nmj.nmjmanager.MovieCollection;
-import com.nmj.nmjmanager.MovieList;
+import com.nmj.nmjmanager.MovieDetails;
 import com.nmj.nmjmanager.NMJMovieDetails;
 import com.nmj.nmjmanager.R;
-import com.nmj.nmjmanager.TMDbMovieDetails;
-import com.nmj.nmjmanager.UnidentifiedMovies;
-import com.nmj.nmjmanager.Update;
 import com.nmj.utils.LocalBroadcastUtils;
-import com.nmj.utils.MovieDatabaseUtils;
 import com.nmj.utils.TypefaceUtils;
-import com.nmj.utils.ViewUtils;
+import com.nmj.nmjmanager.NMJManagerApplication;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 import static com.nmj.functions.PreferenceKeys.GRID_ITEM_SIZE;
 import static com.nmj.functions.PreferenceKeys.IGNORED_TITLE_PREFIXES;
 import static com.nmj.functions.PreferenceKeys.SHOW_TITLES_IN_GRID;
 
-public class CollectionLibraryFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class CollectionLibraryFragment extends Fragment implements OnSharedPreferenceChangeListener {
 
-    private Context mContext;
-    private String baseUrl, imageSizeUrl;
     private SharedPreferences mSharedPreferences;
-    private int mImageThumbSize, mImageThumbSpacing;
+    private int mImageThumbSize, mImageThumbSpacing, mResizedWidth, mResizedHeight, mCurrentSort;
     private LoaderAdapter mAdapter;
-    private ObservableGridView mGridView;
+    private ArrayList<NMJMovie> mMovies = new ArrayList<NMJMovie>();
+    private ArrayList<Integer> mMovieKeys = new ArrayList<Integer>();
+    private GridView mGridView = null;
     private ProgressBar mProgressBar;
-    private boolean mShowTitles, mIgnorePrefixes, mLoading = true;
+    private boolean mIgnorePrefixes, mLoading, mShowTitles;
     private Picasso mPicasso;
     private Config mConfig;
-    private MovieLoader mMovieLoader;
-    private SearchView mSearchView;
-    private View mEmptyLibraryLayout;
-    private TextView mEmptyLibraryTitle, mEmptyLibraryDescription;
+    private MovieSectionLoader mMovieSectionLoader;
     private String mCollectionId, mCollectionTmdbId;
+    LoaderCallbacks<Cursor> loaderCallbacks = new LoaderCallbacks<Cursor>() {
+        @Override
+        public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
+            mLoading = true;
+            return new SQLiteCursorLoader(getActivity(), DatabaseHelper.getHelper(getActivity()).getWritableDatabase(), DbAdapterMovies.DATABASE_TABLE,
+                    DbAdapterMovies.SELECT_ALL, DbAdapterMovies.KEY_COLLECTION_ID + " = '" + mCollectionId + "'", null, null, null, null);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> arg0, final Cursor cursor) {
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected void onPreExecute() {
+                    mMovies.clear();
+                    mMovieKeys.clear();
+                }
+
+                @Override
+                protected Void doInBackground(Void... params) {
+                    mMovies = NMJLib.getVideoFromJSON(NMJManagerApplication.getContext(), "Movies", "collection", mCollectionId);
+
+                    for (int i = 0; i < mMovies.size(); i++)
+                        mMovieKeys.add(i);
+
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(Void result) {
+                    showMovieSection(0);
+
+                    mLoading = false;
+                }
+            }.execute();
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> arg0) {
+            mMovies.clear();
+            mMovieKeys.clear();
+            notifyDataSetChanged();
+        }
+    };
+    private Context mContext;
+    private String baseUrl, imageSizeUrl;
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (mMovieLoader != null) {
-                if (intent.filterEquals(new Intent("NMJManager-movie-actor-search"))) {
-                    mMovieLoader.search("actor: " + intent.getStringExtra("intent_extra_data_key"));
-                } else {
-                    mMovieLoader.load();
-                }
-                showProgressBar();
-            }
-        }
-    };
-    private OnLoadCompletedCallback mCallback = new OnLoadCompletedCallback() {
-        @Override
-        public void onLoadCompleted() {
-            mAdapter.notifyDataSetChanged();
+            clearCaches();
+            forceLoaderLoad();
         }
     };
 
@@ -131,8 +145,9 @@ public class CollectionLibraryFragment extends Fragment implements SharedPrefere
      */
     public CollectionLibraryFragment() {}
 
-    public static ListLibraryFragment newInstance(String collectionId, String collectionTitle, String collectionTmdbId) {
-        ListLibraryFragment frag = new ListLibraryFragment();
+    public static CollectionLibraryFragment newInstance(String collectionId, String collectionTitle,
+                                                        String collectionTmdbId) {
+        CollectionLibraryFragment frag = new CollectionLibraryFragment();
         Bundle b = new Bundle();
         b.putString("collectionId", collectionId);
         b.putString("collectionTitle", collectionTitle);
@@ -145,16 +160,18 @@ public class CollectionLibraryFragment extends Fragment implements SharedPrefere
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setHasOptionsMenu(true);
         mCollectionId = getArguments().getString("collectionId", "");
         mCollectionTmdbId = getArguments().getString("collectionTmdbId", "");
-        mContext = getActivity().getApplicationContext();
+        if (TextUtils.isEmpty(mCollectionId)) {
+            getActivity().finish();
+            return;
+        }
 
-        baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
-        imageSizeUrl = NMJLib.getImageUrlSize(mContext);
+        setRetainInstance(true);
+        setHasOptionsMenu(true);
 
         // Set OnSharedPreferenceChange listener
-        PreferenceManager.getDefaultSharedPreferences(mContext).registerOnSharedPreferenceChangeListener(this);
+        PreferenceManager.getDefaultSharedPreferences(getActivity()).registerOnSharedPreferenceChangeListener(this);
 
         // Initialize the PreferenceManager variable and preference variable(s)
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -162,190 +179,134 @@ public class CollectionLibraryFragment extends Fragment implements SharedPrefere
         mIgnorePrefixes = mSharedPreferences.getBoolean(IGNORED_TITLE_PREFIXES, false);
         mShowTitles = mSharedPreferences.getBoolean(SHOW_TITLES_IN_GRID, true);
 
-        mImageThumbSize = ViewUtils.getGridViewThumbSize(mContext);
+        String thumbnailSize = mSharedPreferences.getString(GRID_ITEM_SIZE, getString(R.string.normal));
+        if (thumbnailSize.equals(getString(R.string.large)))
+            mImageThumbSize = (int) (getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size) * 1.33);
+        else if (thumbnailSize.equals(getString(R.string.normal)))
+            mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size) * 1;
+        else
+            mImageThumbSize = (int) (getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size) * 0.75);
         mImageThumbSpacing = getResources().getDimensionPixelSize(R.dimen.image_thumbnail_spacing);
 
-        mPicasso = NMJManagerApplication.getPicasso(mContext);
+        mPicasso = NMJManagerApplication.getPicasso(getActivity());
         mConfig = NMJManagerApplication.getBitmapConfig();
+        mContext = getActivity().getApplicationContext();
 
-        mAdapter = new LoaderAdapter(mContext);
+        baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
+        imageSizeUrl = NMJLib.getImageUrlSize(mContext);
 
-        LocalBroadcastManager.getInstance(mContext).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_MOVIE_LIBRARY));
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter("NMJManager-movie-actor-search"));
+        mAdapter = new LoaderAdapter(getActivity());
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
-        // Unregister since the activity is about to be closed.
-        LocalBroadcastManager.getInstance(mContext).unregisterReceiver(mMessageReceiver);
-        PreferenceManager.getDefaultSharedPreferences(mContext).unregisterOnSharedPreferenceChangeListener(this);
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_MOVIE_LIBRARY));
+    }
+
+    private void clearCaches() {
+        if (isAdded())
+            NMJManagerApplication.clearLruCache(getActivity());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.image_grid_fragment, container, false);
+        return inflater.inflate(R.layout.image_grid_fragment, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View v, Bundle savedInstanceState) {
+        super.onViewCreated(v, savedInstanceState);
 
         mProgressBar = (ProgressBar) v.findViewById(R.id.progress);
+        if (mMovieKeys.size() > 0)
+            mProgressBar.setVisibility(View.GONE);
 
-        mEmptyLibraryLayout = v.findViewById(R.id.empty_library_layout);
-        mEmptyLibraryTitle = (TextView) v.findViewById(R.id.empty_library_title);
-        mEmptyLibraryTitle.setTypeface(TypefaceUtils.getRobotoCondensedRegular(mContext));
-        mEmptyLibraryDescription = (TextView) v.findViewById(R.id.empty_library_description);
-        mEmptyLibraryDescription.setTypeface(TypefaceUtils.getRobotoLight(mContext));
+        mAdapter = new LoaderAdapter(getActivity());
 
-        mAdapter = new LoaderAdapter(mContext);
-
-        mGridView = (ObservableGridView) v.findViewById(R.id.gridView);
+        mGridView = (GridView) v.findViewById(R.id.gridView);
         mGridView.setAdapter(mAdapter);
         mGridView.setColumnWidth(mImageThumbSize);
+
+        // Calculate the total column width to set item heights by factor 1.5
+        mGridView.getViewTreeObserver().addOnGlobalLayoutListener(
+                new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        if (mAdapter.getNumColumns() == 0) {
+                            final int numColumns = (int) Math.floor(mGridView.getWidth() / (mImageThumbSize + mImageThumbSpacing));
+                            if (numColumns > 0) {
+                                mAdapter.setNumColumns(numColumns);
+                                mResizedWidth = (int) (((mGridView.getWidth() - (numColumns * mImageThumbSpacing))
+                                        / numColumns) * 1.1); // * 1.1 is a hack to make images look slightly less blurry
+                                mResizedHeight = (int) (mResizedWidth * 1.5);
+                            }
+
+                            NMJLib.removeViewTreeObserver(mGridView.getViewTreeObserver(), this);
+                        }
+                    }
+                });
         mGridView.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-                viewMovieDetails(arg2, arg1);
+                showDetails(arg2);
             }
         });
-
-        // We only want to display the contextual menu if we're showing movies, not collections
-        System.out.println("Type " + getArguments().getInt("type"));
-            mGridView.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE_MODAL);
-            mGridView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
-                @Override
-                public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-                    mAdapter.setItemChecked(position, checked);
-
-                    mode.setTitle(String.format(getString(R.string.selected),
-                            mAdapter.getCheckedItemCount()));
-                }
-
-                @Override
-                public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                    getActivity().getMenuInflater().inflate(R.menu.movie_library_cab, menu);
-                    return true;
-                }
-
-                @Override
-                public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                    return false;
-                }
-
-                @Override
-                public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-
-                    int id = item.getItemId();
-
-                    /*switch (id) {
-                        case R.id.movie_add_fav:
-                            MovieDatabaseUtils.setMoviesFavourite(mContext, mAdapter.getCheckedMovies(), true);
-                            break;
-                        case R.id.movie_remove_fav:
-                            MovieDatabaseUtils.setMoviesFavourite(mContext, mAdapter.getCheckedMovies(), false);
-                            break;
-                        case R.id.movie_watched:
-                            MovieDatabaseUtils.setMoviesWatched(mContext, mAdapter.getCheckedMovies(), true);
-                            break;
-                        case R.id.movie_unwatched:
-                            MovieDatabaseUtils.setMoviesWatched(mContext, mAdapter.getCheckedMovies(), false);
-                            break;
-                        case R.id.add_to_watchlist:
-                            MovieDatabaseUtils.setMoviesWatchlist(mContext, mAdapter.getCheckedMovies(), true);
-                            break;
-                        case R.id.remove_from_watchlist:
-                            MovieDatabaseUtils.setMoviesWatchlist(mContext, mAdapter.getCheckedMovies(), false);
-                            break;
-                    }*/
-
-                    if (!(id == R.id.watched_menu ||
-                            id == R.id.watchlist_menu ||
-                            id == R.id.favorite_menu)) {
-                        mode.finish();
-
-                        LocalBroadcastUtils.updateMovieLibrary(mContext);
-                    }
-
-                    return true;
-                }
-
-                @Override
-                public void onDestroyActionMode(ActionMode mode) {
-                    mAdapter.clearCheckedItems();
-                }
-            });
-
-        Intent intent = new Intent();
-        intent.putExtra("collectionId", mCollectionId);
-        intent.putExtra("collectionTmdbId", mCollectionTmdbId);
-        mMovieLoader = new MovieLoader(mContext, MovieLibraryType.COLLECTION_MOVIES, intent, mCallback);
-        //mMovieLoader.setIgnorePrefixes(mIgnorePrefixes);
-        mMovieLoader.load();
-        showProgressBar();
-
-        return v;
     }
 
-    private void viewMovieDetails(int position, View view) {
+    private void showDetails(int arg2) {
         Intent intent = new Intent();
-            intent.putExtra("tmdbId", mAdapter.getItem(position).getTmdbId());
-            intent.putExtra("showId", mAdapter.getItem(position).getShowId());
-            intent.setClass(mContext, NMJMovieDetails.class);
-        if (view != null) {
-            Pair<View, String> pair = new Pair<>(view.findViewById(R.id.cover), "cover");
-            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), pair);
-            ActivityCompat.startActivityForResult(getActivity(), intent, 0, options.toBundle());
-        } else {
-            startActivityForResult(intent, 0);
-        }
+        intent.putExtra("tmdbId", mMovies.get(mMovieKeys.get(arg2)).getTmdbId());
+        intent.putExtra("showId", mMovies.get(mMovieKeys.get(arg2)).getShowId());
+        intent.setClass(getActivity(), NMJMovieDetails.class);
+        startActivityForResult(intent, 0);
     }
 
-    private void onSearchViewCollapsed() {
-        mMovieLoader.load();
-        showProgressBar();
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (mMovies.size() == 0)
+            forceLoaderLoad();
+
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void onDestroy() {
+        // Unregister since the activity is about to be closed.
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
+        PreferenceManager.getDefaultSharedPreferences(getActivity()).unregisterOnSharedPreferenceChangeListener(this);
+
+        super.onDestroy();
+    }
+
+    private void notifyDataSetChanged() {
+        if (mAdapter != null)
+            mAdapter.setItems(mMovieKeys, mMovies);
+    }
+
+    private void showMovieSection(int position) {
+        if (mMovieSectionLoader != null)
+            mMovieSectionLoader.cancel(true);
+        mMovieSectionLoader = new MovieSectionLoader(position);
+        mMovieSectionLoader.execute();
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
         inflater.inflate(R.menu.menu, menu);
 
-        menu.findItem(R.id.random).setVisible(mMovieLoader.getType() != MovieLibraryType.LISTS);
-
         menu.removeItem(R.id.update);
+        menu.removeItem(R.id.search_textbox);
         menu.removeItem(R.id.filters);
+        menu.removeItem(R.id.sort);
         menu.removeItem(R.id.unidentifiedFiles);
 
-        MenuItemCompat.setOnActionExpandListener(menu.findItem(R.id.search_textbox), new OnActionExpandListener() {
-            @Override
-            public boolean onMenuItemActionExpand(MenuItem item) {
-                return true;
-            }
-
-            @Override
-            public boolean onMenuItemActionCollapse(MenuItem item) {
-                onSearchViewCollapsed();
-                return true;
-            }
-        });
-
-        mSearchView = (SearchView) menu.findItem(R.id.search_textbox).getActionView();
-        mSearchView.setOnQueryTextListener(new OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                if (newText.length() > 0) {
-                    mMovieLoader.search(newText);
-                    showProgressBar();
-                } else {
-                    onSearchViewCollapsed();
-                }
-                return true;
-            }
-            @Override
-            public boolean onQueryTextSubmit(String query) { return false; }
-        });
-
-        SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
-        mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
-
-        super.onCreateOptionsMenu(menu, inflater);
+        menu.findItem(R.id.view_collection_online).setVisible(true);
     }
 
     @Override
@@ -353,181 +314,108 @@ public class CollectionLibraryFragment extends Fragment implements SharedPrefere
         super.onOptionsItemSelected(item);
 
         switch (item.getItemId()) {
-            case R.id.menuSortAdded:
-                mMovieLoader.setSortType(MovieSortType.DATE_ADDED);
-                mMovieLoader.load();
-                showProgressBar();
-                break;
-            case R.id.menuSortRating:
-                mMovieLoader.setSortType(MovieSortType.RATING);
-                mMovieLoader.load();
-                showProgressBar();
-                break;
-            case R.id.menuSortRelease:
-                mMovieLoader.setSortType(MovieSortType.RELEASE);
-                mMovieLoader.load();
-                showProgressBar();
-                break;
-            case R.id.menuSortTitle:
-                mMovieLoader.setSortType(MovieSortType.TITLE);
-                mMovieLoader.load();
-                showProgressBar();
-                break;
-            case R.id.menuSortDuration:
-                mMovieLoader.setSortType(MovieSortType.DURATION);
-                mMovieLoader.load();
-                showProgressBar();
-                break;
             case R.id.random:
-                if (mAdapter.getCount() > 0) {
-                    int random = new Random().nextInt(mAdapter.getCount());
-                    viewMovieDetails(random, null);
+                if (mMovieKeys.size() > 0) {
+                    int random = new Random().nextInt(mMovieKeys.size());
+                    showDetails(random);
                 }
+                break;
+            case R.id.view_collection_online:
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse("http://www.themoviedb.org/collection/" + mCollectionId));
+                startActivity(i);
                 break;
         }
 
         return true;
     }
 
-    private void hideProgressBar() {
-        mGridView.setVisibility(View.VISIBLE);
-        mProgressBar.setVisibility(View.GONE);
-        mLoading = false;
+    private void setProgressBarVisible(boolean visible) {
+        mProgressBar.setVisibility(visible ? View.VISIBLE : View.GONE);
+        mGridView.setVisibility(visible ? View.GONE : View.VISIBLE);
     }
 
-    private void showProgressBar() {
-        mGridView.setVisibility(View.GONE);
-        mProgressBar.setVisibility(View.VISIBLE);
-        mLoading = true;
-    }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-    private void showEmptyView() {
-        mGridView.setVisibility(View.GONE);
-        mProgressBar.setVisibility(View.GONE);
-        mEmptyLibraryLayout.setVisibility(View.VISIBLE);
-
-        if (mMovieLoader.isShowingSearchResults()) {
-            mEmptyLibraryTitle.setText(R.string.no_search_results);
-            mEmptyLibraryDescription.setText(R.string.no_search_results_description);
-        } else {
-            switch (mMovieLoader.getType()) {
-                case ALL_MOVIES:
-                    mEmptyLibraryTitle.setText(R.string.no_movies);
-                    mEmptyLibraryDescription.setText(NMJLib.isTablet(mContext) ?
-                            R.string.no_movies_description_tablet : R.string.no_movies_description);
-                    break;
-                case FAVORITES:
-                    mEmptyLibraryTitle.setText(R.string.no_favorites);
-                    mEmptyLibraryDescription.setText(R.string.no_favorites_description);
-                    break;
-                case NEW_RELEASES:
-                    mEmptyLibraryTitle.setText(R.string.no_new_releases);
-                    mEmptyLibraryDescription.setText(R.string.no_new_releases_description);
-                    break;
-                case WATCHLIST:
-                    mEmptyLibraryTitle.setText(R.string.empty_watchlist);
-                    mEmptyLibraryDescription.setText(R.string.empty_watchlist_description);
-                    break;
-                case WATCHED:
-                    mEmptyLibraryTitle.setText(R.string.no_watched_movies);
-                    mEmptyLibraryDescription.setText(R.string.no_watched_movies_description);
-                    break;
-                case UNWATCHED:
-                    mEmptyLibraryTitle.setText(R.string.no_unwatched_movies);
-                    mEmptyLibraryDescription.setText(R.string.no_unwatched_movies_description);
-                    break;
-                case COLLECTIONS:
-                    mEmptyLibraryTitle.setText(R.string.no_movie_collections);
-                    mEmptyLibraryDescription.setText(R.string.no_movie_collections_description);
-                    break;
-                case LISTS:
-                    mEmptyLibraryTitle.setText(R.string.no_movie_lists);
-                    mEmptyLibraryDescription.setText(R.string.no_movie_lists_description);
-                    break;
-            }
+        if (resultCode == 1) { // Update
+            forceLoaderLoad();
+        } else if (resultCode == 3) {
+            notifyDataSetChanged();
         }
-    }
-
-    private void hideEmptyView() {
-        mEmptyLibraryLayout.setVisibility(View.GONE);
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(IGNORED_TITLE_PREFIXES)) {
             mIgnorePrefixes = mSharedPreferences.getBoolean(IGNORED_TITLE_PREFIXES, false);
+            forceLoaderLoad();
+        } else if (key.equals(GRID_ITEM_SIZE)) {
+            String thumbnailSize = mSharedPreferences.getString(GRID_ITEM_SIZE, getString(R.string.normal));
+            if (thumbnailSize.equals(getString(R.string.large)))
+                mImageThumbSize = (int) (getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size) * 1.33);
+            else if (thumbnailSize.equals(getString(R.string.normal)))
+                mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size) * 1;
+            else
+                mImageThumbSize = (int) (getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size) * 0.75);
 
-            if (mMovieLoader != null) {
-                //mMovieLoader.setIgnorePrefixes(mIgnorePrefixes);
-                mMovieLoader.load();
+            mGridView.setColumnWidth(mImageThumbSize);
+
+            final int numColumns = (int) Math.floor(mGridView.getWidth() / (mImageThumbSize + mImageThumbSpacing));
+            if (numColumns > 0) {
+                mAdapter.setNumColumns(numColumns);
             }
 
-        } else if (key.equals(GRID_ITEM_SIZE)) {
-            mImageThumbSize = ViewUtils.getGridViewThumbSize(mContext);
-
-            if (mGridView != null)
-                mGridView.setColumnWidth(mImageThumbSize);
-
-            mAdapter.notifyDataSetChanged();
+            notifyDataSetChanged();
         } else if (key.equals(SHOW_TITLES_IN_GRID)) {
             mShowTitles = sharedPreferences.getBoolean(SHOW_TITLES_IN_GRID, true);
-            mAdapter.notifyDataSetChanged();
+            notifyDataSetChanged();
         }
+    }
+
+    private void forceLoaderLoad() {
+        if (isAdded())
+            if (getLoaderManager().getLoader(0) == null) {
+                getLoaderManager().initLoader(0, null, loaderCallbacks);
+            } else {
+                getLoaderManager().restartLoader(0, null, loaderCallbacks);
+            }
     }
 
     private class LoaderAdapter extends BaseAdapter {
 
         private final Context mContext;
-        private Set<Integer> mChecked = new HashSet<>();
         private LayoutInflater mInflater;
-        private Typeface mTypeface;
+        private int mNumColumns = 0;
+        private ArrayList<Integer> mMovieKeys = new ArrayList<Integer>();
+        private ArrayList<NMJMovie> mMovies = new ArrayList<NMJMovie>();
 
         public LoaderAdapter(Context context) {
             mContext = context;
             mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            mTypeface = TypefaceUtils.getRobotoMedium(mContext);
         }
 
-        public void setItemChecked(int index, boolean checked) {
-            if (checked)
-                mChecked.add(index);
-            else
-                mChecked.remove(index);
-
+        // This is necessary in order to avoid random ArrayOutOfBoundsException when changing the items (i.e. during a library update)
+        public void setItems(ArrayList<Integer> movieKeys, ArrayList<NMJMovie> movies) {
+            mMovieKeys = new ArrayList<Integer>(movieKeys);
+            mMovies = new ArrayList<NMJMovie>(movies);
             notifyDataSetChanged();
-        }
-
-        public void clearCheckedItems() {
-            mChecked.clear();
-            notifyDataSetChanged();
-        }
-
-        public int getCheckedItemCount() {
-            return mChecked.size();
-        }
-
-        public List<NMJMovie> getCheckedMovies() {
-            List<NMJMovie> movies = new ArrayList<>(mChecked.size());
-            for (Integer i : mChecked)
-                movies.add(getItem(i));
-            return movies;
         }
 
         @Override
         public boolean isEmpty() {
-            return getCount() == 0 && !mLoading;
+            return (!mLoading && mMovieKeys.size() == 0);
         }
 
         @Override
         public int getCount() {
-            if (mMovieLoader != null)
-                return mMovieLoader.getResults().size();
-            return 0;
+            return mMovieKeys.size();
         }
 
         @Override
-        public NMJMovie getItem(int position) {
-            return mMovieLoader.getResults().get(position);
+        public Object getItem(int position) {
+            return position;
         }
 
         @Override
@@ -537,18 +425,21 @@ public class CollectionLibraryFragment extends Fragment implements SharedPrefere
 
         @Override
         public View getView(int position, View convertView, ViewGroup container) {
-            final NMJMovie movie = getItem(position);
             String mURL;
+            final NMJMovie mMovie = mMovies.get(mMovieKeys.get(position));
 
             CoverItem holder;
             if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.grid_cover, container, false);
+                convertView = mInflater.inflate(R.layout.grid_cover_two_line, container, false);
                 holder = new CoverItem();
 
-                holder.cardview = (CardView) convertView.findViewById(R.id.card);
                 holder.cover = (ImageView) convertView.findViewById(R.id.cover);
                 holder.text = (TextView) convertView.findViewById(R.id.text);
-                holder.text.setTypeface(mTypeface);
+                holder.text.setSingleLine(true);
+                holder.subtext = (TextView) convertView.findViewById(R.id.sub_text);
+                holder.subtext.setSingleLine(true);
+
+                holder.text.setTypeface(TypefaceUtils.getRobotoMedium(mContext));
 
                 convertView.setTag(holder);
             } else {
@@ -557,46 +448,76 @@ public class CollectionLibraryFragment extends Fragment implements SharedPrefere
 
             if (!mShowTitles) {
                 holder.text.setVisibility(View.GONE);
+                holder.subtext.setVisibility(View.GONE);
             } else {
                 holder.text.setVisibility(View.VISIBLE);
-/*                holder.text.setText(mMovieLoader.getType() == MovieLibraryType.COLLECTIONS ?
-                        movie.getCollection() : movie.getTitle());*/
-                holder.text.setText(movie.getTitle());
+                holder.subtext.setVisibility(View.VISIBLE);
+
+                holder.text.setText(mMovie.getTitle());
+                holder.subtext.setText(mMovie.getSubText(mCurrentSort));
             }
 
             holder.cover.setImageResource(R.color.card_background_dark);
-
-            //mPicasso.load(mMovieLoader.getType() == MovieLibraryType.COLLECTIONS ?
-            //       movie.getCollectionPoster() : movie.getThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
-
-            //System.out.println("baseUrl: " + baseUrl);
-            //System.out.println("Thumbnail: " + movie.getNMJThumbnail());
-            //System.out.println("Video Type:" + movie.getVideoType());
-            if (movie.getTitleType() == "tmdb")
+            if (mMovie.getTitleType() == "tmdb")
                 mURL = baseUrl + imageSizeUrl;
             else
-                mURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/My_Book/";
-            mPicasso.load(mURL + movie.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
-            if (mChecked.contains(position)) {
-                holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));
-            } else {
-                holder.cardview.setForeground(null);
-            }
+                mURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/";
+
+            if (mResizedWidth > 0)
+                mPicasso.load(mURL + mMovie.getNMJThumbnail()).resize(mResizedWidth, mResizedHeight).config(mConfig).into(holder);
+            else
+                mPicasso.load(mURL + mMovie.getNMJThumbnail()).config(mConfig).into(holder);
 
             return convertView;
         }
 
+        public int getNumColumns() {
+            return mNumColumns;
+        }
+
+        public void setNumColumns(int numColumns) {
+            mNumColumns = numColumns;
+        }
+    }
+
+    private class MovieSectionLoader extends LibrarySectionAsyncTask<Void, Void, Boolean> {
+        private int mPosition;
+        private ArrayList<Integer> mTempKeys = new ArrayList<Integer>();
+
+        public MovieSectionLoader(int position) {
+            mPosition = position;
+        }
+
         @Override
-        public void notifyDataSetChanged() {
-            super.notifyDataSetChanged();
+        protected void onPreExecute() {
+            setProgressBarVisible(true);
+            mMovieKeys.clear();
+        }
 
-            // Hide the progress bar once the data set has been changed
-            hideProgressBar();
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            if (isCancelled())
+                return false;
 
-            if (isEmpty()) {
-                showEmptyView();
-            } else {
-                hideEmptyView();
+            switch (mPosition) {
+                case 0:
+                    for (int i = 0; i < mMovies.size(); i++)
+                        mTempKeys.add(i);
+                    break;
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            // Make sure that the loading was successful, that the Fragment is still added and
+            // that the currently selected navigation index is the same as when we started loading
+            if (success && isAdded()) {
+                mMovieKeys.addAll(mTempKeys);
+
+                notifyDataSetChanged();
+                setProgressBarVisible(false);
             }
         }
     }

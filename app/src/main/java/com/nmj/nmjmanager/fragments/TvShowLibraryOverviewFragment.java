@@ -68,7 +68,8 @@ public class TvShowLibraryOverviewFragment extends Fragment {
     private class PagerAdapter extends FragmentPagerAdapter {
 
         private final String[] TITLES = {getString(R.string.choiceAllShows), getString(R.string.choiceFavorites), getString(R.string.recently_aired),
-                getString(R.string.watched_tv_shows), getString(R.string.unwatched_tv_shows)};
+                getString(R.string.watched_tv_shows), getString(R.string.unwatched_tv_shows), getString(R.string.popular_shows),
+                getString(R.string.toprated_shows), getString(R.string.ontv), getString(R.string.airing_today),};
 
         public PagerAdapter(FragmentManager fm) {
             super(fm);
@@ -92,6 +93,14 @@ public class TvShowLibraryOverviewFragment extends Fragment {
                     return TvShowLibraryFragment.newInstance(TvShowLoader.WATCHED);
                 case 4:
                     return TvShowLibraryFragment.newInstance(TvShowLoader.UNWATCHED);
+                case 5:
+                    return TvShowLibraryFragment.newInstance(TvShowLoader.POPULAR);
+                case 6:
+                    return TvShowLibraryFragment.newInstance(TvShowLoader.TOP_RATED);
+                case 7:
+                    return TvShowLibraryFragment.newInstance(TvShowLoader.ON_TV);
+                case 8:
+                    return TvShowLibraryFragment.newInstance(TvShowLoader.AIRING_TODAY);
                 default:
                     return null;
             }
