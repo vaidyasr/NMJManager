@@ -11,6 +11,10 @@
         android:layout_height="@dimen/toolbar_tabs_height"
         app:pstsTabBackground="?android:attr/selectableItemBackground"
         app:pstsTabPaddingLeftRight="16dp"
+        app:pstsIndicatorHeight="1dp"
+        app:pstsTabTextSize="15sp"
+        app:pstsIndicatorColor="?android:textColorPrimary"
+        android:textColor="?android:textColorPrimary"
         android:background="?attr/colorPrimary" />
 
     <FrameLayout

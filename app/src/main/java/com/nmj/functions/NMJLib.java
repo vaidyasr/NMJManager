@@ -188,6 +188,13 @@ public class NMJLib {
         return key;
     }
 
+    public static String getNMJServer(){
+        //String url = "http://www.pchportal.duckdns.org/";
+        String url = "http://192.168.1.108/";
+
+        return url;
+    }
+
     public static String getTmdbApiURL(Context context) {
         String key = context.getString(R.string.tmdb_api_url);
         if (TextUtils.isEmpty(key) || key.equals("add_your_own"))
@@ -2388,8 +2395,11 @@ public class NMJLib {
     public static ArrayList<NMJMovie> getMovieFromJSON(Context mContext, String videoType, String loadType, String id) {
         ArrayList<NMJMovie> list = new ArrayList<>();
         String url;
+        System.out.println("LoadType: " + loadType);
         if (id != null && loadType.equals("list"))
             url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getLists&drivepath=My_Book&sourceurl=My_Book&dbpath=My_Book/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
+        else if (id != null && loadType.equals("collection"))
+            url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getCollections&drivepath=My_Book&sourceurl=undefined&dbpath=My_Book/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
         else if (videoType.equals("movie"))
             url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" + getTmdbApiKey(mContext) + "&language=en";
         else
@@ -2401,9 +2411,11 @@ public class NMJLib {
             String CacheId = "";
             if (id != null && loadType.equals("list"))
                 CacheId = "list_" + id;
+            else if (id != null && loadType.equals("collection"))
+                CacheId = "collection_" + id;
             else
                 CacheId = videoType + "_" + loadType;
-            //NMJLib.getDiskCache(mContext).clearCache();
+            NMJLib.getDiskCache(mContext).clearCache();
             CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
 
             if (!cacheManager.exists(CacheId)) {
@@ -2413,7 +2425,7 @@ public class NMJLib {
             }
             System.out.println("Getting Cache from " + CacheId);
             jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
-            if (videoType.equals("tmdb"))
+            if (videoType.equals("movie"))
                 jArray = jObject.getJSONArray("results");
             else
                 jArray = jObject.getJSONArray("data");
@@ -2424,7 +2436,7 @@ public class NMJLib {
                         (NMJLib.getStringFromJSONObject(dObject, "TITLE", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "title", "") : NMJLib.getStringFromJSONObject(dObject, "TITLE", ""),
                         (NMJLib.getStringFromJSONObject(dObject, "tmdbid", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "id", "") : NMJLib.getStringFromJSONObject(dObject, "tmdbid", ""),
                         (NMJLib.getStringFromJSONObject(dObject, "RATING", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "vote_average", "") : NMJLib.getStringFromJSONObject(dObject, "RATING", ""),
-                        (NMJLib.getStringFromJSONObject(dObject, "tmdbid", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "release_date", "") : NMJLib.getStringFromJSONObject(dObject, "tmdbid", ""),
+                        (NMJLib.getStringFromJSONObject(dObject, "RELEASE_DATE", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "release_date", "") : NMJLib.getStringFromJSONObject(dObject, "RELEASE_DATE", ""),
                         NMJLib.getStringFromJSONObject(dObject, "GENRES", ""),
                         NMJLib.getStringFromJSONObject(dObject, "FAVOURITE", ""),
                         NMJLib.getStringFromJSONObject(dObject, "LIST_ID", ""),
@@ -2435,6 +2447,7 @@ public class NMJLib {
                         NMJLib.getStringFromJSONObject(dObject, "PARENTAL_CONTROL", ""),
                         NMJLib.getStringFromJSONObject(dObject, "RUNTIME", ""),
                         NMJLib.getStringFromJSONObject(dObject, "SHOW_ID", "0"),
+                        NMJLib.getStringFromJSONObject(dObject, "TITLE_TYPE", "0"),
                         (NMJLib.getStringFromJSONObject(dObject, "POSTER", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "poster_path", "") : NMJLib.getStringFromJSONObject(dObject, "POSTER", ""),
                         true));
             }

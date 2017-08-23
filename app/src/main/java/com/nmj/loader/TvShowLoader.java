@@ -285,6 +285,7 @@ public class TvShowLoader {
                         "", //CERTIFICATION
                         "", //RUNTIME
                         "0", //SHOW_ID
+                        "0",
                         dObject.getString("poster_path"),
                         true));
             }
@@ -337,6 +338,7 @@ public class TvShowLoader {
                         NMJLib.getStringFromJSONObject(dObject, "PARENTAL_CONTROL", ""),
                         NMJLib.getStringFromJSONObject(dObject, "RUNTIME", ""),
                         NMJLib.getStringFromJSONObject(dObject, "SHOW_ID", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "TITLE_TYPE", ""),
                         NMJLib.getStringFromJSONObject(dObject, "POSTER", ""),
                         true));
             }

@@ -5,6 +5,7 @@
     android:versionCode="1"
     android:versionName="1.0.0">
 
+
     <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -31,10 +32,10 @@
         android:banner="@drawable/android_tv_banner"
         android:hardwareAccelerated="true"
         android:icon="@drawable/menuicon"
+        tools:replace="android:icon"
         android:label="@string/app_name"
         android:largeHeap="true"
-        android:theme="@style/NMJManager.Theme"
-        tools:replace="android:icon">
+        android:theme="@style/NMJManager.Theme">
         <uses-library android:name="android.test.runner" />
 
         <!-- Show details activity -->

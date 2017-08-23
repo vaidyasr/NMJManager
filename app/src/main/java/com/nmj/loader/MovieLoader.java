@@ -24,18 +24,10 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-
-/*import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.Cache;*/
-
 import android.text.TextUtils;
 import android.widget.ListView;
 
-//import com.iainconnor.objectcache.CacheManager;
 import com.google.common.collect.Lists;
-//import com.iainconnor.objectcache.DiskCache;
 import com.nmj.db.DbAdapterMovieMappings;
 
 import com.nmj.functions.Filepath;
@@ -75,7 +67,8 @@ public class MovieLoader {
             NOW_PLAYING = 10,
             POPULAR = 11,
             TOP_RATED = 12,
-            LIST_MOVIES = 13;
+            LIST_MOVIES = 13,
+            COLLECTION_MOVIES = 14;
 
     // For MovieSortType
     public static final int TITLE = 1,
@@ -102,7 +95,7 @@ public class MovieLoader {
     private HashSet<MovieFilter> mFilters = new HashSet<>();
     private MovieLoaderAsyncTask mAsyncTask;
     private boolean mShowingSearchResults = false;
-    private String mListId, mListTmdbId;
+    private String mListId, mListTmdbId, mCollectionId, mCollectionTmdbId;
     //private DiskCache diskCache;
 
     public MovieLoader(Context context, MovieLibraryType libraryType, Intent intent, OnLoadCompletedCallback callback) {
@@ -112,6 +105,9 @@ public class MovieLoader {
         if (libraryType == MovieLibraryType.LIST_MOVIES) {
             mListId = intent.getStringExtra("listId");
             mListTmdbId = intent.getStringExtra("listTmdbId");
+        } else if (libraryType == MovieLibraryType.COLLECTION_MOVIES) {
+            mListId = intent.getStringExtra("collectionId");
+            mListTmdbId = intent.getStringExtra("collectionTmdbId");
         }
         mCallback = callback;
         mDatabase = NMJManagerApplication.getNMJMovieAdapter();
@@ -292,6 +288,7 @@ public class MovieLoader {
                         "", //CERTIFICATION
                         "", //RUNTIME
                         "0", //SHOW_ID
+                        "0",
                         dObject.getString("poster_path"),
                         true));
             }
@@ -351,6 +348,7 @@ public class MovieLoader {
                         NMJLib.getStringFromJSONObject(dObject, "PARENTAL_CONTROL", ""),
                         NMJLib.getStringFromJSONObject(dObject, "RUNTIME", ""),
                         NMJLib.getStringFromJSONObject(dObject, "SHOW_ID", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "TITLE_TYPE", ""),
                         NMJLib.getStringFromJSONObject(dObject, "POSTER", ""),
                         true));
             }
@@ -633,7 +631,9 @@ public class MovieLoader {
                     break;
                 case LIST_MOVIES:
                     mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "list", mListId));
-
+                    break;
+                case COLLECTION_MOVIES:
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "collection", mCollectionId));
                     //mMovieList.addAll(listFromJSON("top_rated"));
                     break;
                 default:

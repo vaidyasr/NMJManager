@@ -25,6 +25,7 @@
         <attr name="pstsDividerColor" format="color" />
         <attr name="pstsDividerWidth" format="dimension" />
         <attr name="pstsIndicatorHeight" format="dimension" />
+        <attr name="pstsTabTextSize" format="dimension" />
         <attr name="pstsUnderlineHeight" format="dimension" />
         <attr name="pstsDividerPadding" format="dimension" />
         <attr name="pstsTabPaddingLeftRight" format="dimension" />

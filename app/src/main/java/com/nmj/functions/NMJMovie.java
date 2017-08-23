@@ -28,13 +28,14 @@ import java.util.Locale;
 
 public class NMJMovie extends NMJBaseMovie {
 
-    private String PLOT, TAGLINE, IMDB_ID, TRAILER, TITLE;
+    private String PLOT, TAGLINE, IMDB_ID, TRAILER, TITLE, TITLE_TYPE;
 
     private String THUMBNAIL, SHOW_ID, LIST_ID, COLLECTION_ID;
 
     public NMJMovie(Context context, String title, String tmdbId, String rating, String releasedate,String genres,
                     String favourite, String listId, String collectionId, String toWatch, String hasWatched,
-                    String date_added, String certification, String runtime, String showId, String thumbnail, boolean ignorePrefixes) {
+                    String date_added, String certification, String runtime, String showId, String title_type,
+                    String thumbnail, boolean ignorePrefixes) {
 
         super(context, title, tmdbId, rating, releasedate, genres, favourite, listId,
                 collectionId, toWatch, hasWatched, date_added, certification, runtime, showId, thumbnail, ignorePrefixes);
@@ -48,6 +49,7 @@ public class NMJMovie extends NMJBaseMovie {
         TITLE = title;
         COLLECTION_ID = collectionId;
         LIST_ID = listId;
+        TITLE_TYPE = title_type;
         //IMDB_ID = imdbId;
         //TRAILER = trailer;
 
@@ -96,8 +98,8 @@ public class NMJMovie extends NMJBaseMovie {
         return THUMBNAIL.replaceAll(" ", "%20");
     }
 
-    public String getVideoType(){
-        if (getShowId() == "0")
+    public String getTitleType(){
+        if (TITLE_TYPE == "0")
             return "tmdb";
         else
             return "nmj";

@@ -30,6 +30,7 @@ public enum MovieLibraryType {
         NOW_PLAYING(MovieLoader.NOW_PLAYING),
         POPULAR(MovieLoader.POPULAR),
         TOP_RATED(MovieLoader.TOP_RATED),
+    COLLECTION_MOVIES(MovieLoader.COLLECTION_MOVIES),
     LIST_MOVIES(MovieLoader.LIST_MOVIES);
 
         private final int mType;
