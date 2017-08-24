@@ -19,4 +19,6 @@
     <dimen name="horizontal_grid_item_width">140dp</dimen>
     <dimen name="horizontal_grid_item_backdrop_width">210dp</dimen>
 
+    <dimen name="watched_image_start">70dp</dimen>
+    <dimen name="in_library_image_end">105dp</dimen>
 </resources>

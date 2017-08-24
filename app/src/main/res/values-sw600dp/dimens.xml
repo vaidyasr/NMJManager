@@ -26,6 +26,10 @@
     
     <dimen name="horizontal_grid_item_width">120dp</dimen>
     <dimen name="horizontal_grid_item_backdrop_width">180dp</dimen>
+
+    <dimen name="watched_image_start">60dp</dimen>
+    <dimen name="in_library_image_end">90dp</dimen>
+
     <dimen name="content_details_large_margin">64dp</dimen>
     <dimen name="content_details_baseline_margin">32dp</dimen>
     <dimen name="content_details_main_height">424dp</dimen>

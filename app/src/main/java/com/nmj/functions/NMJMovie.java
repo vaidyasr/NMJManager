@@ -50,6 +50,7 @@ public class NMJMovie extends NMJBaseMovie {
         COLLECTION_ID = collectionId;
         LIST_ID = listId;
         TITLE_TYPE = title_type;
+        HAS_WATCHED = hasWatched;
         //IMDB_ID = imdbId;
         //TRAILER = trailer;
 
@@ -117,15 +118,15 @@ public class NMJMovie extends NMJBaseMovie {
         return FAVOURITE;
     }
 
+    public void setFavourite(String fav) {
+        FAVOURITE = fav;
+    }
+
     public void setFavourite(boolean isFavourite) {
         if (isFavourite)
             FAVOURITE = "1";
         else
             FAVOURITE = "0";
-    }
-
-    public void setFavourite(String fav) {
-        FAVOURITE = fav;
     }
 
     public String getHasWatched() {
@@ -137,6 +138,13 @@ public class NMJMovie extends NMJBaseMovie {
             HAS_WATCHED = "1";
         else
             HAS_WATCHED = "0";
+    }
+
+    public boolean hasWatched() {
+        if (HAS_WATCHED.equals("0"))
+            return false;
+        else
+            return true;
     }
 
     public String getToWatch() {

@@ -24,6 +24,7 @@ import android.view.MenuItem;
 
 import com.nmj.base.NMJActivity;
 import com.nmj.nmjmanager.fragments.CollectionLibraryFragment;
+import com.nmj.nmjmanager.fragments.ListLibraryFragment;
 
 public class MovieCollection extends NMJActivity {
 	

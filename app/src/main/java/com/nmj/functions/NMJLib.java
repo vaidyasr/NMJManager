@@ -41,8 +41,6 @@ import android.graphics.RectF;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.*;
-import android.util.Log;
-import android.net.ParseException;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v8.renderscript.Allocation;
@@ -62,8 +60,6 @@ import android.widget.Toast;
 
 import com.google.gson.reflect.TypeToken;
 import com.iainconnor.objectcache.CacheManager;
-import com.nmj.abstractclasses.MovieApiService;
-import com.nmj.base.NMJActivity;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.db.DbAdapterSources;
 import com.nmj.db.DbAdapterTvShowEpisodes;
@@ -77,7 +73,6 @@ import com.nmj.service.MovieLibraryUpdate;
 import com.nmj.service.TvShowsLibraryUpdate;
 import com.nmj.utils.FileUtils;
 import com.nmj.utils.ViewUtils;
-import com.nmj.views.HorizontalCardLayout;
 import com.squareup.okhttp.FormEncodingBuilder;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
@@ -90,7 +85,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -119,9 +113,11 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -178,6 +174,7 @@ public class NMJLib {
     private static String[] mAdultKeywords = new String[]{"adult", "sex", "porn", "explicit", "penis", "vagina", "asshole",
             "blowjob", "cock", "fuck", "dildo", "kamasutra", "masturbat", "squirt", "slutty", "cum", "cunt"};
     private String showId, tmdbId, nmjdata, tmdbdata;
+
     private NMJLib() {
     } // No instantiation
 
@@ -188,7 +185,7 @@ public class NMJLib {
         return key;
     }
 
-    public static String getNMJServer(){
+    public static String getNMJServer() {
         String url = "http://www.pchportal.duckdns.org/";
         //String url = "http://192.168.1.108/";
 
@@ -2384,6 +2381,69 @@ public class NMJLib {
         Type myObjectType = new TypeToken<String>() {
         }.getType();
         return cache.get(key, String.class, myObjectType).toString();
+    }
+
+    public static ArrayList<Actor> getTMDbCast(Context context, JSONObject jObject) {
+        ArrayList<Actor> actors = new ArrayList<Actor>();
+        try {
+            JSONArray array = jObject.getJSONObject("credits").getJSONArray("cast");
+            Set<String> actorIds = new HashSet<String>();
+
+            for (int i = 0; i < array.length(); i++) {
+                if (!actorIds.contains(array.getJSONObject(i).getString("id"))) {
+                    actorIds.add(array.getJSONObject(i).getString("id"));
+                    actors.add(new Actor(
+                            array.getJSONObject(i).getString("name"),
+                            array.getJSONObject(i).getString("character"),
+                            array.getJSONObject(i).getString("id"),
+                            "cast",
+                            NMJLib.getTmdbImageBaseUrl(context) + NMJLib.getActorUrlSize(context) + array.getJSONObject(i).getString("profile_path")));
+                }
+            }
+        } catch (Exception e) {
+        }
+        return actors;
+    }
+
+    public static ArrayList<Actor> getTMDbCrew(Context context, JSONObject jObject) {
+        ArrayList<Actor> actors = new ArrayList<Actor>();
+        try {
+            JSONArray array = jObject.getJSONObject("credits").getJSONArray("crew");
+            Set<String> actorIds = new HashSet<String>();
+
+            for (int i = 0; i < array.length(); i++) {
+                if (!actorIds.contains(array.getJSONObject(i).getString("id"))) {
+                    actorIds.add(array.getJSONObject(i).getString("id"));
+                    actors.add(new Actor(
+                            array.getJSONObject(i).getString("name"),
+                            array.getJSONObject(i).getString("job"),
+                            array.getJSONObject(i).getString("id"),
+                            "crew",
+                            getTmdbImageBaseUrl(context) + NMJLib.getActorUrlSize(context) + array.getJSONObject(i).getString("profile_path")));
+                }
+            }
+        } catch (Exception e) {
+        }
+        return actors;
+    }
+
+    public static ArrayList<WebMovie> getTMDbSimilarMovies(Context context, JSONObject jObject) {
+        ArrayList<WebMovie> similarMovies = new ArrayList<WebMovie>();
+        try {
+            JSONArray jArray = jObject.getJSONObject("similar_movies").getJSONArray("results");
+
+            for (int i = 0; i < jArray.length(); i++) {
+                if (!NMJLib.isAdultContent(context, jArray.getJSONObject(i).getString("title")) && !NMJLib.isAdultContent(context, jArray.getJSONObject(i).getString("original_title"))) {
+                    similarMovies.add(new WebMovie(context,
+                            jArray.getJSONObject(i).getString("original_title"),
+                            jArray.getJSONObject(i).getString("id"),
+                            getTmdbImageBaseUrl(context) + NMJLib.getImageUrlSize(context) + jArray.getJSONObject(i).getString("poster_path"),
+                            jArray.getJSONObject(i).getString("release_date")));
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return similarMovies;
     }
 
     /**

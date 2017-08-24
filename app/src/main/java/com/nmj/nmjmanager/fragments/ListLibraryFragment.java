@@ -52,29 +52,18 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.net.URLEncoder;
-
 import com.github.ksoichiro.android.observablescrollview.ObservableGridView;
 import com.nmj.functions.CoverItem;
-import com.nmj.functions.MediumMovie;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.NMJMovie;
-import com.nmj.loader.MovieFilter;
 import com.nmj.loader.MovieLoader;
 import com.nmj.loader.MovieLibraryType;
 import com.nmj.loader.MovieSortType;
 import com.nmj.loader.OnLoadCompletedCallback;
-import com.nmj.nmjmanager.MovieDetails;
 import com.nmj.nmjmanager.NMJManagerApplication;
-import com.nmj.nmjmanager.MovieCollection;
-import com.nmj.nmjmanager.MovieList;
 import com.nmj.nmjmanager.NMJMovieDetails;
 import com.nmj.nmjmanager.R;
-import com.nmj.nmjmanager.TMDbMovieDetails;
-import com.nmj.nmjmanager.UnidentifiedMovies;
-import com.nmj.nmjmanager.Update;
 import com.nmj.utils.LocalBroadcastUtils;
-import com.nmj.utils.MovieDatabaseUtils;
 import com.nmj.utils.TypefaceUtils;
 import com.nmj.utils.ViewUtils;
 import com.squareup.picasso.Picasso;
@@ -129,7 +118,8 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
     /**
      * Empty constructor as per the Fragment documentation
      */
-    public ListLibraryFragment() {}
+    public ListLibraryFragment() {
+    }
 
     public static ListLibraryFragment newInstance(String listId, String listTitle, String listTmdbId) {
         ListLibraryFragment frag = new ListLibraryFragment();
@@ -209,31 +199,31 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
 
         // We only want to display the contextual menu if we're showing movies, not collections
         System.out.println("Type " + getArguments().getInt("type"));
-            mGridView.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE_MODAL);
-            mGridView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
-                @Override
-                public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-                    mAdapter.setItemChecked(position, checked);
+        mGridView.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE_MODAL);
+        mGridView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+            @Override
+            public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+                mAdapter.setItemChecked(position, checked);
 
-                    mode.setTitle(String.format(getString(R.string.selected),
-                            mAdapter.getCheckedItemCount()));
-                }
+                mode.setTitle(String.format(getString(R.string.selected),
+                        mAdapter.getCheckedItemCount()));
+            }
 
-                @Override
-                public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                    getActivity().getMenuInflater().inflate(R.menu.movie_library_cab, menu);
-                    return true;
-                }
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                getActivity().getMenuInflater().inflate(R.menu.movie_library_cab, menu);
+                return true;
+            }
 
-                @Override
-                public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                    return false;
-                }
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return false;
+            }
 
-                @Override
-                public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 
-                    int id = item.getItemId();
+                int id = item.getItemId();
 
                     /*switch (id) {
                         case R.id.movie_add_fav:
@@ -256,22 +246,22 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
                             break;
                     }*/
 
-                    if (!(id == R.id.watched_menu ||
-                            id == R.id.watchlist_menu ||
-                            id == R.id.favorite_menu)) {
-                        mode.finish();
+                if (!(id == R.id.watched_menu ||
+                        id == R.id.watchlist_menu ||
+                        id == R.id.favorite_menu)) {
+                    mode.finish();
 
-                        LocalBroadcastUtils.updateMovieLibrary(mContext);
-                    }
-
-                    return true;
+                    LocalBroadcastUtils.updateMovieLibrary(mContext);
                 }
 
-                @Override
-                public void onDestroyActionMode(ActionMode mode) {
-                    mAdapter.clearCheckedItems();
-                }
-            });
+                return true;
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                mAdapter.clearCheckedItems();
+            }
+        });
 
         Intent intent = new Intent();
         intent.putExtra("listId", mListId);
@@ -286,9 +276,9 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
 
     private void viewMovieDetails(int position, View view) {
         Intent intent = new Intent();
-            intent.putExtra("tmdbId", mAdapter.getItem(position).getTmdbId());
-            intent.putExtra("showId", mAdapter.getItem(position).getShowId());
-            intent.setClass(mContext, NMJMovieDetails.class);
+        intent.putExtra("tmdbId", mAdapter.getItem(position).getTmdbId());
+        intent.putExtra("showId", mAdapter.getItem(position).getShowId());
+        intent.setClass(mContext, NMJMovieDetails.class);
         if (view != null) {
             Pair<View, String> pair = new Pair<>(view.findViewById(R.id.cover), "cover");
             ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), pair);
@@ -338,8 +328,11 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
                 }
                 return true;
             }
+
             @Override
-            public boolean onQueryTextSubmit(String query) { return false; }
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
         });
 
         SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);

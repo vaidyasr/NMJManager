@@ -319,19 +319,12 @@ public class NMJMovieService extends NMJApiService {
             jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
 
             movie.setTitle(NMJLib.getStringFromJSONObject(jObject, "TITLE", ""));
-
             movie.setCertification(NMJLib.getStringFromJSONObject(jObject, "PARENTAL_CONTROL", ""));
-
             movie.setPlot(NMJLib.getStringFromJSONObject(jObject, "CONTENT", ""));
-
             movie.setImdbId(NMJLib.getStringFromJSONObject(jObject, "TTID", ""));
-
             movie.setTmdbId(NMJLib.getStringFromJSONObject(jObject, "CONTENT_TTID", ""));
-
             movie.setRating(NMJLib.getStringFromJSONObject(jObject, "RATING", "0.0"));
-
             movie.setReleasedate(NMJLib.getStringFromJSONObject(jObject, "RELEASE_DATE", ""));
-
             movie.setRuntime(NMJLib.getStringFromJSONObject(jObject, "RUNTIME", "0"));
 
             try {
@@ -382,90 +375,9 @@ public class NMJMovieService extends NMJApiService {
             System.out.println("Getting Cache from " + CacheId);
             jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
             movie.setTagline(NMJLib.getStringFromJSONObject(jObject, "tagline", ""));
-
-            try {
-                ArrayList<Actor> actors = new ArrayList<Actor>();
-
-                JSONArray array = jObject.getJSONObject("credits").getJSONArray("cast");
-                Set<String> actorIds = new HashSet<String>();
-
-                for (int i = 0; i < array.length(); i++) {
-                    if (!actorIds.contains(array.getJSONObject(i).getString("id"))) {
-                        actorIds.add(array.getJSONObject(i).getString("id"));
-
-                        actors.add(new Actor(
-                                array.getJSONObject(i).getString("name"),
-                                array.getJSONObject(i).getString("character"),
-                                array.getJSONObject(i).getString("id"),
-                                "cast",
-                                baseUrl + NMJLib.getActorUrlSize(mContext) + array.getJSONObject(i).getString("profile_path")));
-                    }
-                }
-
-                movie.setCast(actors);
-            } catch (Exception e) {
-            }
-
-            try {
-                ArrayList<Actor> actors = new ArrayList<Actor>();
-
-                JSONArray array = jObject.getJSONObject("credits").getJSONArray("crew");
-                Set<String> actorIds = new HashSet<String>();
-
-                for (int i = 0; i < array.length(); i++) {
-                    if (!actorIds.contains(array.getJSONObject(i).getString("id"))) {
-                        actorIds.add(array.getJSONObject(i).getString("id"));
-
-                        actors.add(new Actor(
-                                array.getJSONObject(i).getString("name"),
-                                array.getJSONObject(i).getString("job"),
-                                array.getJSONObject(i).getString("id"),
-                                "crew",
-                                baseUrl + NMJLib.getActorUrlSize(mContext) + array.getJSONObject(i).getString("profile_path")));
-                    }
-                }
-
-                movie.setCrew(actors);
-            } catch (Exception e) {
-            }
-
-            try {
-                ArrayList<WebMovie> similarMovies = new ArrayList<WebMovie>();
-                JSONArray jArray = jObject.getJSONObject("similar_movies").getJSONArray("results");
-
-                for (int i = 0; i < jArray.length(); i++) {
-                    if (!NMJLib.isAdultContent(mContext, jArray.getJSONObject(i).getString("title")) && !NMJLib.isAdultContent(mContext, jArray.getJSONObject(i).getString("original_title"))) {
-                        similarMovies.add(new WebMovie(mContext,
-                                jArray.getJSONObject(i).getString("original_title"),
-                                jArray.getJSONObject(i).getString("id"),
-                                baseUrl + NMJLib.getImageUrlSize(mContext) + jArray.getJSONObject(i).getString("poster_path"),
-                                jArray.getJSONObject(i).getString("release_date")));
-                    }
-                }
-
-                movie.setSimilarMovies(similarMovies);
-            } catch (Exception ignored) {
-            }
-
-            try {
-                JSONArray array = jObject.getJSONObject("images").getJSONArray("backdrops");
-
-                if (array.length() > 0) {
-                    movie.setBackdrop(baseUrl + NMJLib.getBackdropUrlSize(mContext) + array.getJSONObject(0).getString("file_path"));
-                } else { // Try with English set as the language, if no results are returned (usually caused by a server-side cache error)
-                    try {
-                        jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + movie.getTmdbId() + "/images?api_key=" + mTmdbApiKey);
-
-                        JSONArray array2 = jObject.getJSONArray("backdrops");
-                        if (array2.length() > 0) {
-                            movie.setBackdrop(baseUrl + NMJLib.getBackdropUrlSize(mContext) + array2.getJSONObject(0).getString("file_path"));
-                        }
-                    } catch (Exception e) {
-                    }
-                }
-            } catch (Exception e) {
-            }
-
+            movie.setCast(NMJLib.getTMDbCast(mContext, jObject));
+            movie.setCrew(NMJLib.getTMDbCast(mContext, jObject));
+            movie.setSimilarMovies(NMJLib.getTMDbSimilarMovies(mContext, jObject));
         } catch (Exception e) {
             // If something goes wrong here, i.e. API error, we won't get any details
             // about the movie - in other words, it's unidentified
@@ -498,17 +410,11 @@ public class NMJMovieService extends NMJApiService {
             jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
 
             movie.setTitle(NMJLib.getStringFromJSONObject(jObject, "title", ""));
-
             movie.setPlot(NMJLib.getStringFromJSONObject(jObject, "overview", ""));
-
             movie.setImdbId(NMJLib.getStringFromJSONObject(jObject, "imdb_id", ""));
-
             movie.setRating(NMJLib.getStringFromJSONObject(jObject, "vote_average", "0.0"));
-
             movie.setTagline(NMJLib.getStringFromJSONObject(jObject, "tagline", ""));
-
             movie.setReleasedate(NMJLib.getStringFromJSONObject(jObject, "release_date", ""));
-
             movie.setRuntime(NMJLib.getStringFromJSONObject(jObject, "runtime", "0"));
 
             if (!language.equals("en")) { // This is a localized search - let's fill in the blanks
@@ -574,71 +480,9 @@ public class NMJMovieService extends NMJApiService {
                 }
             } catch (Exception e) {
             }
-
-            try {
-                ArrayList<Actor> actors = new ArrayList<Actor>();
-
-                JSONArray array = jObject.getJSONObject("credits").getJSONArray("cast");
-                Set<String> actorIds = new HashSet<String>();
-
-                for (int i = 0; i < array.length(); i++) {
-                    if (!actorIds.contains(array.getJSONObject(i).getString("id"))) {
-                        actorIds.add(array.getJSONObject(i).getString("id"));
-
-                        actors.add(new Actor(
-                                array.getJSONObject(i).getString("name"),
-                                array.getJSONObject(i).getString("character"),
-                                array.getJSONObject(i).getString("id"),
-                                "cast",
-                                baseUrl + NMJLib.getActorUrlSize(mContext) + array.getJSONObject(i).getString("profile_path")));
-                    }
-                }
-
-                movie.setCast(actors);
-            } catch (Exception e) {
-            }
-
-            try {
-                ArrayList<Actor> actors = new ArrayList<Actor>();
-
-                JSONArray array = jObject.getJSONObject("credits").getJSONArray("crew");
-                Set<String> actorIds = new HashSet<String>();
-
-                for (int i = 0; i < array.length(); i++) {
-                    if (!actorIds.contains(array.getJSONObject(i).getString("id"))) {
-                        actorIds.add(array.getJSONObject(i).getString("id"));
-
-                        actors.add(new Actor(
-                                array.getJSONObject(i).getString("name"),
-                                array.getJSONObject(i).getString("job"),
-                                array.getJSONObject(i).getString("id"),
-                                "crew",
-                                baseUrl + NMJLib.getActorUrlSize(mContext) + array.getJSONObject(i).getString("profile_path")));
-                    }
-                }
-
-                movie.setCrew(actors);
-            } catch (Exception e) {
-            }
-
-            try {
-                ArrayList<WebMovie> similarMovies = new ArrayList<WebMovie>();
-                JSONArray jArray = jObject.getJSONObject("similar_movies").getJSONArray("results");
-
-                for (int i = 0; i < jArray.length(); i++) {
-                    if (!NMJLib.isAdultContent(mContext, jArray.getJSONObject(i).getString("title")) && !NMJLib.isAdultContent(mContext, jArray.getJSONObject(i).getString("original_title"))) {
-                        similarMovies.add(new WebMovie(mContext,
-                                jArray.getJSONObject(i).getString("original_title"),
-                                jArray.getJSONObject(i).getString("id"),
-                                baseUrl + NMJLib.getImageUrlSize(mContext) + jArray.getJSONObject(i).getString("poster_path"),
-                                jArray.getJSONObject(i).getString("release_date")));
-                    }
-                }
-
-                movie.setSimilarMovies(similarMovies);
-            } catch (Exception ignored) {
-            }
-
+            movie.setCast(NMJLib.getTMDbCast(mContext, jObject));
+            movie.setCrew(NMJLib.getTMDbCast(mContext, jObject));
+            movie.setSimilarMovies(NMJLib.getTMDbSimilarMovies(mContext, jObject));
             try {
                 JSONArray array = jObject.getJSONObject("images").getJSONArray("backdrops");
 
@@ -853,108 +697,4 @@ public class NMJMovieService extends NMJApiService {
 
         return results;
     }
-
-	/*public NMJMovie getNMJMovieDetails(final String showId) {
-        JSONObject json = NMJLib.getJSONObject(mContext, "http://pchportal.duckdns.org/NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&showid=1416&title_type=1");
-		//String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
-        System.out.println("TAG" + json.toString());
-
-		// Set up actor details
-		NMJMovie movie = new NMJMovie();
-		movie.setTitle(NMJLib.getStringFromJSONObject(json, "name", ""));
-		/*movie.setBiography(NMJLib.getStringFromJSONObject(json, "biography", ""));
-		movie.setBirthday(NMJLib.getStringFromJSONObject(json, "birthday", ""));
-		movie.setDayOfDeath(NMJLib.getStringFromJSONObject(json, "deathday", ""));
-		movie.setPlaceOfBirth(NMJLib.getStringFromJSONObject(json, "place_of_birth", ""));
-
-		String profilePhoto = NMJLib.getStringFromJSONObject(json, "profile_path", "");
-		if (!TextUtils.isEmpty(profilePhoto))
-			profilePhoto = baseUrl + "w500" + profilePhoto;
-		movie.setProfilePhoto(profilePhoto);
-
-        String profilePhotoThumb = NMJLib.getStringFromJSONObject(json, "profile_path", "");
-        if (!TextUtils.isEmpty(profilePhoto))
-            profilePhotoThumb = baseUrl + NMJLib.getActorUrlSize(mContext) + profilePhoto;
-		movie.setProfilePhotoThumb(profilePhotoThumb);
-
-		// Set up movies
-		List<WebMovie> movies = new ArrayList<WebMovie>();
-		try {
-			JSONArray movieArray = json.getJSONObject("movie_credits").getJSONArray("cast");
-			for (int i = 0; i < movieArray.length(); i++) {
-
-				final JSONObject thisObject = movieArray.getJSONObject(i);
-
-				boolean isAdult = thisObject.getBoolean("adult") |
-						NMJLib.isAdultContent(mContext, NMJLib.getStringFromJSONObject(thisObject, "title", "")) |
-						NMJLib.isAdultContent(mContext, NMJLib.getStringFromJSONObject(thisObject, "original_title", ""));
-
-				WebMovie movie = new WebMovie(mContext,
-						NMJLib.getStringFromJSONObject(thisObject, "title", ""),
-						String.valueOf(thisObject.getInt("id")),
-						baseUrl + NMJLib.getImageUrlSize(mContext) + NMJLib.getStringFromJSONObject(thisObject, "poster_path", ""),
-						NMJLib.getStringFromJSONObject(thisObject, "release_date", ""));
-
-				movies.add(movie);
-			}
-		} catch (JSONException ignored) {} finally {
-			movie.setMovies(movies);
-		}
-
-		// Set up TV shows
-		List<WebMovie> shows = new ArrayList<WebMovie>();
-		try {
-			JSONArray showArray = json.getJSONObject("tv_credits").getJSONArray("cast");
-			for (int i = 0; i < showArray.length(); i++) {
-
-				final JSONObject thisObject = showArray.getJSONObject(i);
-
-				boolean isAdult =
-						NMJLib.isAdultContent(mContext, NMJLib.getStringFromJSONObject(thisObject, "name", "")) |
-						NMJLib.isAdultContent(mContext, NMJLib.getStringFromJSONObject(thisObject, "original_name", ""));
-
-				WebMovie show = new WebMovie(mContext,
-						NMJLib.getStringFromJSONObject(thisObject, "name", ""),
-						String.valueOf(thisObject.getInt("id")),
-						baseUrl + NMJLib.getImageUrlSize(mContext) + NMJLib.getStringFromJSONObject(thisObject, "poster_path", ""),
-						NMJLib.getStringFromJSONObject(thisObject, "first_air_date", ""));
-
-				shows.add(show);
-			}
-		} catch (JSONException ignored) {} finally {
-			movie.setTvShows(shows);
-		}
-
-		int count = 0;
-
-		try {
-			count += json.getJSONObject("movie_credits").getJSONArray("cast").length();
-			count += json.getJSONObject("tv_credits").getJSONArray("cast").length();
-		} catch (JSONException ignored) {}
-
-		movie.setKnownCreditCount(count);
-
-		List<String> photos = new ArrayList<String>();
-		try {
-			JSONArray photoArray = json.getJSONObject("images").getJSONArray("profiles");
-			for (int i = 0; i < photoArray.length(); i++) {
-				photos.add(baseUrl + NMJLib.getImageUrlSize(mContext) + photoArray.getJSONObject(i).getString("file_path"));
-			}
-		} catch (JSONException ignored) {} finally {
-			movie.setPhotos(photos);
-		}
-
-		List<String> taggedPhotos = new ArrayList<String>();
-		try {
-			JSONArray photoArray = json.getJSONObject("tagged_images").getJSONArray("results");
-			for (int i = 0; i < photoArray.length(); i++) {
-				if (photoArray.getJSONObject(i).getString("image_type").equals("backdrop"))
-					taggedPhotos.add(baseUrl + NMJLib.getBackdropThumbUrlSize(mContext) + photoArray.getJSONObject(i).getString("file_path"));
-			}
-		} catch (JSONException ignored) {} finally {
-			movie.setTaggedPhotos(taggedPhotos);
-		}
-
-		return movie;
-	}*/
 }

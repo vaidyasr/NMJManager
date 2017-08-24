@@ -52,29 +52,22 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.net.URLEncoder;
-
 import com.github.ksoichiro.android.observablescrollview.ObservableGridView;
 import com.nmj.functions.CoverItem;
-import com.nmj.functions.MediumMovie;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.NMJMovie;
-import com.nmj.loader.MovieFilter;
 import com.nmj.loader.MovieLoader;
 import com.nmj.loader.MovieLibraryType;
 import com.nmj.loader.MovieSortType;
 import com.nmj.loader.OnLoadCompletedCallback;
-import com.nmj.nmjmanager.MovieDetails;
-import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.MovieCollection;
+import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.MovieList;
 import com.nmj.nmjmanager.NMJMovieDetails;
 import com.nmj.nmjmanager.R;
-import com.nmj.nmjmanager.TMDbMovieDetails;
 import com.nmj.nmjmanager.UnidentifiedMovies;
 import com.nmj.nmjmanager.Update;
 import com.nmj.utils.LocalBroadcastUtils;
-import com.nmj.utils.MovieDatabaseUtils;
 import com.nmj.utils.TypefaceUtils;
 import com.nmj.utils.ViewUtils;
 import com.squareup.picasso.Picasso;
@@ -282,12 +275,14 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         Intent intent = new Intent();
 
         if (mMovieLoader.getType() == MovieLibraryType.COLLECTIONS) { // Collection
+            intent.putExtra("type", MovieLibraryType.COLLECTIONS.toString());
             intent.putExtra("collectionId", mAdapter.getItem(position).getCollectionId());
             intent.putExtra("collectionTitle", mAdapter.getItem(position).getTitle());
             intent.putExtra("collectionTmdbId", mAdapter.getItem(position).getTmdbId());
             intent.setClass(mContext, MovieCollection.class);
             //startActivity(intent);
         } else if (mMovieLoader.getType() == MovieLibraryType.LISTS) { // Collection
+            intent.putExtra("type", MovieLibraryType.LISTS.toString());
             intent.putExtra("listId", mAdapter.getItem(position).getListId());
             intent.putExtra("listTitle", mAdapter.getItem(position).getTitle());
             intent.putExtra("listTmdbId", mAdapter.getItem(position).getTmdbId());
@@ -598,6 +593,10 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             return mMovieLoader.getResults().get(position);
         }
 
+        public boolean hasWatched(int position) {
+            return getItem(position).hasWatched();
+        }
+
         @Override
         public long getItemId(int position) {
             return position;
@@ -653,9 +652,14 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             } else {
                 holder.cardview.setForeground(null);
             }
-            convertView.findViewById(R.id.hasWatched).getLayoutParams().height = convertView.findViewById(R.id.cover).getLayoutParams().width / 2;
-            convertView.findViewById(R.id.hasWatched).getLayoutParams().width = convertView.findViewById(R.id.hasWatched).getLayoutParams().height;
-            convertView.findViewById(R.id.hasWatched).requestLayout();
+            if (hasWatched(position))
+                holder.hasWatched.setVisibility(View.VISIBLE);
+            else
+                holder.hasWatched.setVisibility(View.GONE);
+            if (movie.getTitleType() == "tmdb")
+                holder.inLibrary.setVisibility(View.VISIBLE);
+            else
+                holder.inLibrary.setVisibility(View.GONE);
             return convertView;
         }
 

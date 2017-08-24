@@ -468,6 +468,11 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
             else
                 mPicasso.load(mURL + mMovie.getNMJThumbnail()).config(mConfig).into(holder);
 
+            /*if (hasWatched(position))
+                holder.hasWatched.setVisibility(View.VISIBLE);
+            else
+                holder.hasWatched.setVisibility(View.GONE);;*/
+
             return convertView;
         }
 

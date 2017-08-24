@@ -534,6 +534,10 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
             return mTvShowLoader.getResults().get(position);
         }
 
+        public boolean hasWatched(int position) {
+            return getItem(position).hasWatched();
+        }
+
         @Override
         public long getItemId(int position) {
             return position;
@@ -551,6 +555,8 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
 
                 holder.cardview = (CardView) convertView.findViewById(R.id.card);
                 holder.cover = (ImageView) convertView.findViewById(R.id.cover);
+                holder.hasWatched = (ImageView) convertView.findViewById(R.id.hasWatched);
+                holder.inLibrary = (ImageView) convertView.findViewById(R.id.inLibrary);
                 holder.text = (TextView) convertView.findViewById(R.id.text);
                 holder.text.setTypeface(mTypeface);
 
@@ -579,7 +585,12 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
             } else {
                 holder.cardview.setForeground(null);
             }
-
+            if (hasWatched(position))
+                holder.hasWatched.setVisibility(View.VISIBLE);
+            else
+                holder.hasWatched.setVisibility(View.GONE);
+            ;
+            holder.inLibrary.setVisibility(View.GONE);
             return convertView;
         }
 
