@@ -113,6 +113,7 @@ public class ViewUtils {
 
         // Load image
         picasso.load(movie.getUrl()).placeholder(R.color.card_background_dark).error(R.drawable.loading_image).config(NMJManagerApplication.getBitmapConfig()).into(((ImageView) v.findViewById(R.id.cover)));
+        //picasso.load(movie.getUrl()).placeholder(R.color.card_background_dark).error(R.drawable.episode_watched).config(NMJManagerApplication.getBitmapConfig()).into(((ImageView) v.findViewById(R.id.hasWatched)));
 
         // Set title
         ((TextView) v.findViewById(R.id.text)).setText(movie.getTitle());

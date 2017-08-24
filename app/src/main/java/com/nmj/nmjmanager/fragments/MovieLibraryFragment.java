@@ -615,8 +615,11 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
 
                 holder.cardview = (CardView) convertView.findViewById(R.id.card);
                 holder.cover = (ImageView) convertView.findViewById(R.id.cover);
+                holder.hasWatched = (ImageView) convertView.findViewById(R.id.hasWatched);
+                holder.inLibrary = (ImageView) convertView.findViewById(R.id.inLibrary);
                 holder.text = (TextView) convertView.findViewById(R.id.text);
                 holder.text.setTypeface(mTypeface);
+
 
                 convertView.setTag(holder);
             } else {
@@ -633,7 +636,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             }
 
             holder.cover.setImageResource(R.color.card_background_dark);
-
+            //holder.hasWatched.setImageResource(R.color.card_background_dark);
             //mPicasso.load(mMovieLoader.getType() == MovieLibraryType.COLLECTIONS ?
             //       movie.getCollectionPoster() : movie.getThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
 
@@ -650,7 +653,9 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             } else {
                 holder.cardview.setForeground(null);
             }
-
+            convertView.findViewById(R.id.hasWatched).getLayoutParams().height = convertView.findViewById(R.id.cover).getLayoutParams().width / 2;
+            convertView.findViewById(R.id.hasWatched).getLayoutParams().width = convertView.findViewById(R.id.hasWatched).getLayoutParams().height;
+            convertView.findViewById(R.id.hasWatched).requestLayout();
             return convertView;
         }
 

@@ -1,33 +1,64 @@
-<android.support.v7.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardBackgroundColor="@color/card_background_dark" >
+    app:cardBackgroundColor="@color/card_background_dark">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
-        <com.nmj.views.GridItemImageView
-            android:id="@+id/cover"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:adjustViewBounds="true"
-            android:cropToPadding="true"
-            android:scaleType="centerCrop"
-            android:transitionName="cover" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.nmj.views.GridItemImageView
+                android:id="@+id/cover"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="true"
+                android:cropToPadding="true"
+                android:scaleType="centerCrop"
+                android:transitionName="cover" />
+
+            <com.nmj.views.GridItemImageView
+                android:id="@+id/hasWatched"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:scaleType="fitStart"
+                android:src="@drawable/episode_watched"
+                android:transitionName="hasWatched"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"/>
+
+            <com.nmj.views.GridItemImageView
+                android:id="@+id/inLibrary"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="true"
+                android:cropToPadding="true"
+                android:transitionName="inLibrary"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginRight="33dp"
+                android:layout_marginEnd="33dp"
+                android:layout_marginTop="50dp" />
+        </RelativeLayout>
 
         <TextView
-            android:padding="4dp"
             android:id="@+id/text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="2"
             android:lines="2"
+            android:maxLines="2"
+            android:padding="4dp"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="@color/card_title_color"
             android:textIsSelectable="false"

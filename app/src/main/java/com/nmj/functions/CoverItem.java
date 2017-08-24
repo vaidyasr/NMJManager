@@ -33,7 +33,7 @@ public class CoverItem implements Target {
 
     public CardView cardview;
     public TextView text, subtext;
-    public ImageView cover, highlight;
+    public ImageView cover, highlight, hasWatched, inLibrary;
     public RelativeLayout layout;
     private int animationDuration = 200;
 
