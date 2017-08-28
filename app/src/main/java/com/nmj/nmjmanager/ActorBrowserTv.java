@@ -21,14 +21,19 @@ public class ActorBrowserTv extends NMJActivity {
 
 		String showId = getIntent().getExtras().getString("showId");
 		String title = getIntent().getExtras().getString("title");
+		String loadType = getIntent().getExtras().getString("loadType");
         mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
 		
 		getSupportActionBar().setSubtitle(title);
+		if (loadType.equals("cast"))
+			getSupportActionBar().setTitle(R.string.detailsCast);
+		else
+			getSupportActionBar().setTitle(R.string.detailsCrew);
 
 		Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
 		if (frag == null && savedInstanceState == null) {
 			final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-			ft.replace(R.id.content, ActorBrowserTvFragment.newInstance(showId), TAG);
+			ft.replace(R.id.content, ActorBrowserTvFragment.newInstance(showId, loadType), TAG);
 			ft.commit();
 		}
 	}

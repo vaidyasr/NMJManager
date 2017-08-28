@@ -22,12 +22,14 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.MenuItem;
 
 import com.nmj.base.NMJActivity;
+import com.nmj.functions.IntentKeys;
 import com.nmj.nmjmanager.fragments.ActorDetailsFragment;
 import com.nmj.utils.ViewUtils;
 
 public class ActorDetails extends NMJActivity {
 
 	private static String TAG = "ActorDetailsFragment";
+	private int mToolbarColor;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -41,6 +43,7 @@ public class ActorDetails extends NMJActivity {
         setTitle(null);
 		
 		String actorId = getIntent().getExtras().getString("actorID");
+		mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
 
 		Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
 		if (frag == null && savedInstanceState == null) {
@@ -65,6 +68,7 @@ public class ActorDetails extends NMJActivity {
 	public void onStart() {
 		super.onStart();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		ViewUtils.setToolbarAndStatusBarColor(getSupportActionBar(), getWindow(), mToolbarColor);
 	}
 	
 	@Override

@@ -34,7 +34,7 @@ public class Movie {
             rating = "0.0", tagline = "", releasedate = "", imdbId = "", certification = "", runtime = "0",
             trailer = "", genres = "", cast = "", crew = "", collectionTitle = "", collectionId = "",
             collectionImage = "", year = "", tmdbId = "", filepath = "";
-    private List<Video> mVideo= new ArrayList<>();
+    private List<Video> mVideo = new ArrayList<>();
 
     private List<Actor> mCast = new ArrayList<Actor>();
     private List<Actor> mCrew = new ArrayList<Actor>();
@@ -265,5 +265,6 @@ public class Movie {
     public List<Video> getVideo() {
         return mVideo;
     }
+
 
 }

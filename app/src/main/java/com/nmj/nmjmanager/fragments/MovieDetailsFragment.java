@@ -419,7 +419,7 @@ public class MovieDetailsFragment extends Fragment {
             @Override
             protected Void doInBackground(Void... params) {
                 MovieApiService service = NMJManagerApplication.getMovieService(mContext);
-                mActors = service.getCast(mMovie.getTmdbId());
+                mActors = NMJLib.getTMDbCast(mContext, mMovie.getTmdbId());
 
                 return null;
             }

@@ -1,9 +1,9 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:icon="@drawable/ic_settings_white_24dp" >
+    android:icon="@drawable/ic_settings_white_24dp">
 
-    <PreferenceCategory android:title="@string/prefsUIGeneral" >
+    <PreferenceCategory android:title="@string/prefsUIGeneral">
         <ListPreference
-            android:defaultValue="1"
+            android:defaultValue="0"
             android:entries="@array/startup_screen"
             android:entryValues="@array/startup_screen_codes"
             android:icon="@drawable/ic_home_white_24dp"
@@ -17,13 +17,33 @@
             android:summary="@string/useEnglishLanguage"
             android:title="@string/forceEnglishApplicationLanguage" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/chooserMovies" >
+    <PreferenceCategory android:title="@string/chooserMovies">
+        <MultiSelectListPreference
+            android:defaultValue="@array/movie_tabs_values"
+            android:dialogTitle="@string/stringEnableDisableTabs"
+            android:entries="@array/movie_tabs"
+            android:entryValues="@array/movie_tabs_values"
+            android:icon="@drawable/ic_movie_white_24dp"
+            android:key="prefsMoviesTabEnableDisable"
+            android:summary="@string/stringEnableDisableTabsDescription"
+            android:title="@string/stringEnableDisableTabs" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:icon="@drawable/ic_queue_white_24dp"
             android:key="prefsRemoveMoviesFromWatchlist"
             android:summary="@string/automaticallyRemoveMoviesFromWatchlistDescription"
             android:title="@string/automaticallyRemoveMoviesFromWatchlist" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/chooserTVShows">
+        <MultiSelectListPreference
+            android:defaultValue="@array/movie_tabs_values"
+            android:dialogTitle="@string/stringEnableDisableTabs"
+            android:entries="@array/show_tabs"
+            android:entryValues="@array/show_tabs_values"
+            android:icon="@drawable/ic_tv_white_24dp"
+            android:key="prefsShowsTabEnableDisable"
+            android:summary="@string/stringEnableDisableTabsDescription"
+            android:title="@string/stringEnableDisableTabs" />
     </PreferenceCategory>
 
 </PreferenceScreen>

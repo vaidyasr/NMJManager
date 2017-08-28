@@ -39,6 +39,7 @@ import com.nmj.apis.tmdb.TMDbMovieService;
 import com.nmj.base.NMJActivity;
 import com.nmj.functions.BlurTransformation;
 import com.nmj.functions.CompleteActor;
+import com.nmj.functions.IntentKeys;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.PaletteLoader;
 import com.nmj.nmjmanager.NMJManagerApplication;
@@ -90,6 +91,9 @@ public class ActorDetailsFragment extends Fragment {
         mContext = getActivity();
 
         mActorId = getArguments().getString("actorId");
+        mToolbarColor = getArguments().getInt(IntentKeys.TOOLBAR_COLOR);
+
+        System.out.println("Debug: Actor Details Toolbar Color: " + mToolbarColor);
 
         mPicasso = NMJManagerApplication.getPicassoDetailsView(mContext);
 
@@ -310,11 +314,11 @@ public class ActorDetailsFragment extends Fragment {
     }
 
     private void loadImages() {
-        mPicasso.load(mActor.getProfilePhoto()).placeholder(R.drawable.noactor).error(R.drawable.noactor).into(mPhoto, new Callback() {
+            mPicasso.load(mActor.getProfilePhoto()).placeholder(R.drawable.noactor).error(R.drawable.noactor).into(mPhoto, new Callback() {
             @Override
             public void onSuccess() {
                 if (mPaletteLoader == null) {
-                    mPaletteLoader = new PaletteLoader(mPicasso, Uri.parse(mActor.getProfilePhotoThumb()), new PaletteLoader.OnPaletteLoadedCallback() {
+                    mPaletteLoader = new PaletteLoader(mPicasso, Uri.parse(mActor.getProfilePhoto()), new PaletteLoader.OnPaletteLoadedCallback() {
                         @Override
                         public void onPaletteLoaded(int swatchColor) {
                             mToolbarColor = swatchColor;

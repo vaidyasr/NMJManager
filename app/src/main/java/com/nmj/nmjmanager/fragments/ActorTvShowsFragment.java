@@ -197,6 +197,8 @@ public class ActorTvShowsFragment extends Fragment {
 				holder = new CoverItem();
 
 				holder.cover = (ImageView) convertView.findViewById(R.id.cover);
+				holder.hasWatched = (ImageView) convertView.findViewById(R.id.hasWatched);
+				holder.inLibrary = (ImageView) convertView.findViewById(R.id.inLibrary);
 				holder.text = (TextView) convertView.findViewById(R.id.text);
 				holder.text.setSingleLine(true);
 				holder.subtext = (TextView) convertView.findViewById(R.id.sub_text);
@@ -208,11 +210,19 @@ public class ActorTvShowsFragment extends Fragment {
 			} else {
 				holder = (CoverItem) convertView.getTag();
 			}
+			holder.inLibrary.setVisibility(View.GONE);
+			holder.hasWatched.setVisibility(View.GONE);
 
 			holder.cover.setImageResource(R.color.card_background_dark);
 
 			holder.text.setText(show.getTitle());
 			holder.subtext.setText(show.getSubtitle());
+
+			if(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(show.getId()))
+				holder.inLibrary.setVisibility(View.VISIBLE);
+
+			if(NMJManagerApplication.getNMJMovieAdapter().hasWatched(show.getId()))
+				holder.hasWatched.setVisibility(View.VISIBLE);
 
 			if (!show.getUrl().contains("null"))
 				mPicasso.load(show.getUrl()).config(mConfig).into(holder);

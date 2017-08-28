@@ -34,6 +34,7 @@ import android.widget.ProgressBar;
 import com.nmj.apis.tmdb.TMDbMovieService;
 import com.nmj.functions.CompleteActor;
 import com.nmj.functions.CoverItem;
+import com.nmj.functions.IntentKeys;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.utils.IntentUtils;
@@ -49,6 +50,7 @@ public class ActorTaggedPhotosFragment extends Fragment {
 	private ProgressBar mProgressBar;
 	private String mActorId;
 	private CompleteActor mActor;
+	private int mToolbarColor;
 
 	/**
 	 * Empty constructor as per the Fragment documentation
@@ -75,6 +77,7 @@ public class ActorTaggedPhotosFragment extends Fragment {
 		mConfig = NMJManagerApplication.getBitmapConfig();
 		
 		mActorId = getArguments().getString("actorId");
+		mToolbarColor = getArguments().getInt(IntentKeys.TOOLBAR_COLOR);
 	}
 
 	@Override
@@ -91,7 +94,7 @@ public class ActorTaggedPhotosFragment extends Fragment {
 		mGridView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-				startActivity(IntentUtils.getActorTaggedPhotoIntent(mContext, mActor.getTaggedPhotos(), arg2));
+				startActivity(IntentUtils.getActorTaggedPhotoIntent(mContext, mActor.getTaggedPhotos(), arg2, mToolbarColor));
 			}
 		});
 

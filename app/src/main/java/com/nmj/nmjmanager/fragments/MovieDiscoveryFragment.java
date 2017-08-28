@@ -44,9 +44,10 @@ import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.AsyncTask;
 import com.nmj.functions.CoverItem;
 import com.nmj.functions.NMJLib;
+import com.nmj.functions.NMJMovie;
 import com.nmj.functions.WebMovie;
 import com.nmj.nmjmanager.NMJManagerApplication;
-import com.nmj.nmjmanager.MovieDetails;
+import com.nmj.nmjmanager.NMJMovieDetails;
 import com.nmj.nmjmanager.R;
 import com.nmj.nmjmanager.TMDbMovieDetails;
 import com.nmj.utils.TypefaceUtils;
@@ -148,7 +149,7 @@ public class MovieDiscoveryFragment extends Fragment implements OnSharedPreferen
                 Intent i = new Intent();
 
 				if (mMovieMap.get(Integer.valueOf(mMovies.get(arg2).getId()))) {
-					i.setClass(getActivity(), MovieDetails.class);
+					i.setClass(getActivity(), NMJMovieDetails.class);
 					i.putExtra("tmdbId", mMovies.get(arg2).getId());
 				} else {
 					i.setClass(getActivity(), TMDbMovieDetails.class);

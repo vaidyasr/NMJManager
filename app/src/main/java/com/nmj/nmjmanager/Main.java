@@ -84,15 +84,17 @@ import java.util.List;
 
 import static com.nmj.functions.PreferenceKeys.CONFIRM_BACK_PRESS;
 import static com.nmj.functions.PreferenceKeys.STARTUP_SELECTION;
+import static com.nmj.functions.PreferenceKeys.MOVIES_TABS_SELECTED;
+import static com.nmj.functions.PreferenceKeys.SHOWS_TAB_SELECTED;
 import static com.nmj.functions.PreferenceKeys.TRAKT_FULL_NAME;
 import static com.nmj.functions.PreferenceKeys.TRAKT_USERNAME;
 
 @SuppressLint("NewApi")
 public class Main extends NMJActivity {
 
-    public static final int MOVIES = 1, SHOWS = 2, WEB_MOVIES = 3, WEB_VIDEOS = 4;
+    public static final int MOVIES = 1, SHOWS = 2, MUSIC = 3;
     protected ListView mDrawerList;
-    private int mNumMovies, mNumShows, selectedIndex, mStartup;
+    private int mNumMovies, mNumShows, selectedIndex, mStartup, mNumMusic;
     private Typeface mTfMedium, mTfRegular;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -125,7 +127,7 @@ public class Main extends NMJActivity {
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         mConfirmExit = settings.getBoolean(CONFIRM_BACK_PRESS, false);
-        mStartup = Integer.valueOf(settings.getString(STARTUP_SELECTION, "1"));
+        mStartup = Integer.valueOf(settings.getString(STARTUP_SELECTION, "0"));
 
         mDbHelper = NMJManagerApplication.getNMJMovieAdapter();
         mDbHelperTv = NMJManagerApplication.getTvDbAdapter();
@@ -221,11 +223,8 @@ public class Main extends NMJActivity {
                 case SHOWS:
                     ft.replace(R.id.content_frame, TvShowLibraryOverviewFragment.newInstance(), "frag" + type);
                     break;
-                case WEB_MOVIES:
+                case MUSIC:
                     ft.replace(R.id.content_frame, MovieDiscoveryViewPagerFragment.newInstance(), "frag" + type);
-                    break;
-                case WEB_VIDEOS:
-                    ft.replace(R.id.content_frame, WebVideosViewPagerFragment.newInstance(), "frag" + type);
                     break;
             }
             ft.commit();
@@ -238,11 +237,8 @@ public class Main extends NMJActivity {
             case SHOWS:
                 setTitle(R.string.chooserTVShows);
                 break;
-            case WEB_MOVIES:
-                setTitle(R.string.drawerOnlineMovies);
-                break;
-            case WEB_VIDEOS:
-                setTitle(R.string.drawerWebVideos);
+            case MUSIC:
+                setTitle(R.string.drawerMyMusic);
                 break;
         }
 
@@ -283,7 +279,7 @@ public class Main extends NMJActivity {
         // Regular menu items
         mMenuItems.add(new MenuItem(getString(R.string.drawerMyMovies), mNumMovies, MenuItem.SECTION, null, MOVIES, R.drawable.ic_movie_grey600_24dp));
         mMenuItems.add(new MenuItem(getString(R.string.drawerMyTvShows), mNumShows, MenuItem.SECTION, null, SHOWS, R.drawable.ic_tv_grey600_24dp));
-        mMenuItems.add(new MenuItem(getString(R.string.drawerOnlineMovies), -1, MenuItem.SECTION, null, WEB_MOVIES, R.drawable.ic_local_movies_grey600_24dp));
+        mMenuItems.add(new MenuItem(getString(R.string.drawerMyMusic), mNumMusic, MenuItem.SECTION, null, MUSIC, R.drawable.ic_music_grey600_24dp));
         //mMenuItems.add(new MenuItem(getString(R.string.drawerWebVideos), -1, MenuItem.SECTION, null, WEB_VIDEOS, R.drawable.ic_cloud_grey600_24dp));
 
         // Third party applications
@@ -346,6 +342,7 @@ public class Main extends NMJActivity {
                 try {
                     mNumMovies = mDbHelper.getMovieCount();
                     mNumShows = mDbHelperTv.count();
+                    mNumMusic = mDbHelperTv.count();
 
                     runOnUiThread(new Runnable() {
                         @Override

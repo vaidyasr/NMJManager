@@ -53,7 +53,7 @@ import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.AsyncTask;
 import com.nmj.functions.NMJLib;
 import com.nmj.nmjmanager.NMJManagerApplication;
-import com.nmj.nmjmanager.MovieDetails;
+import com.nmj.nmjmanager.NMJMovieDetails;
 import com.nmj.nmjmanager.R;
 import com.nmj.nmjmanager.TMDbMovieDetails;
 import com.nmj.utils.TypefaceUtils;
@@ -160,7 +160,7 @@ public class SearchWebMoviesFragment extends Fragment {
         DbAdapterMovies db = NMJManagerApplication.getMovieAdapter();
         if (db.movieExists(mResults.get(arg2).getId())) {
             Intent intent = new Intent();
-            intent.setClass(getActivity(), MovieDetails.class);
+            intent.setClass(getActivity(), NMJMovieDetails.class);
             intent.putExtra("tmdbId", mResults.get(arg2).getId());
 
             // Start the Intent for result

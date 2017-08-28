@@ -27,14 +27,15 @@
     <dimen name="horizontal_grid_item_width">120dp</dimen>
     <dimen name="horizontal_grid_item_backdrop_width">180dp</dimen>
 
-    <dimen name="watched_image_start">60dp</dimen>
-    <dimen name="in_library_image_end">90dp</dimen>
+    <dimen name="watched_image_width">60dp</dimen>
+    <dimen name="in_library_image_width">30dp</dimen>
 
     <dimen name="content_details_large_margin">64dp</dimen>
     <dimen name="content_details_baseline_margin">32dp</dimen>
     <dimen name="content_details_main_height">424dp</dimen>
     <dimen name="content_details_thumb_height">392dp</dimen>
     <dimen name="content_details_thumb_width">261dp</dimen>
+    <dimen name="content_details_watch_start">130dp</dimen>
     <dimen name="content_details_title">40sp</dimen>
     <dimen name="content_details_small_margin">8dp</dimen>
     <dimen name="content_details_very_small_margin">2dp</dimen>
@@ -47,6 +48,7 @@
     <dimen name="content_details_body_text">20sp</dimen>
     <dimen name="content_details_filepath">14sp</dimen>
     <dimen name="content_details_portrait_thumb_width">200dp</dimen>
+    <dimen name="content_details_portrait_watched_start">100dp</dimen>
     <dimen name="content_details_portrait_thumb_height">300dp</dimen>
     <dimen name="content_details_portrait_thumb_negative_margin">-96dp</dimen>
     <dimen name="content_details_fab_negative_margin">-32dp</dimen>

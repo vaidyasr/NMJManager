@@ -32,13 +32,14 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.nmj.abstractclasses.MovieApiService;
 import com.nmj.functions.Actor;
 import com.nmj.functions.CoverItem;
+import com.nmj.functions.IntentKeys;
+import com.nmj.functions.NMJLib;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.utils.IntentUtils;
@@ -49,7 +50,7 @@ import java.util.ArrayList;
 
 public class ActorBrowserFragment extends Fragment {
 
-    private int mImageThumbSize, mImageThumbSpacing;
+    private int mImageThumbSize, mImageThumbSpacing, mToolbarColor;
     private ArrayList<Actor> mCast = new ArrayList<Actor>();
     private ArrayList<Actor> mCrew = new ArrayList<Actor>();
     private String loadType;
@@ -89,6 +90,7 @@ public class ActorBrowserFragment extends Fragment {
         mConfig = NMJManagerApplication.getBitmapConfig();
 
         mAdapter = new ImageAdapter(getActivity());
+        mToolbarColor = getArguments().getInt(IntentKeys.TOOLBAR_COLOR);
     }
 
     @Override
@@ -122,7 +124,7 @@ public class ActorBrowserFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), arg1.findViewById(R.id.cover), "cover");
-                ActivityCompat.startActivity(getActivity(), IntentUtils.getActorIntent(getActivity(), mCast.get(arg2)), options.toBundle());
+                ActivityCompat.startActivity(getActivity(), IntentUtils.getActorIntent(getActivity(), mCast.get(arg2), mToolbarColor), options.toBundle());
             }
         });
 
@@ -192,6 +194,8 @@ public class ActorBrowserFragment extends Fragment {
                 holder = new CoverItem();
 
                 holder.cover = (ImageView) convertView.findViewById(R.id.cover);
+                holder.hasWatched = (ImageView) convertView.findViewById(R.id.hasWatched);
+                holder.inLibrary = (ImageView) convertView.findViewById(R.id.inLibrary);
                 holder.text = (TextView) convertView.findViewById(R.id.text);
                 holder.text.setSingleLine(true);
                 holder.subtext = (TextView) convertView.findViewById(R.id.sub_text);
@@ -205,6 +209,8 @@ public class ActorBrowserFragment extends Fragment {
             }
 
             holder.cover.setImageResource(R.color.card_background_dark);
+            holder.hasWatched.setVisibility(View.GONE);
+            holder.inLibrary.setVisibility(View.GONE);
             holder.text.setText(mCast.get(position).getName());
             holder.subtext.setText(mCast.get(position).getCharacter());
 
@@ -238,9 +244,9 @@ public class ActorBrowserFragment extends Fragment {
         protected Void doInBackground(Void... params) {
             MovieApiService service = NMJManagerApplication.getMovieService(mContext);
             if (loadType.equals("cast"))
-                mCast = new ArrayList<Actor>(service.getCast(mMovieId));
+                mCast = new ArrayList<Actor>(NMJLib.getTMDbCast(mContext, mMovieId));
             else
-                mCast = new ArrayList<Actor>(service.getCrew(mMovieId));
+                mCast = new ArrayList<Actor>(NMJLib.getTMDbCrew(mContext,mMovieId));
             return null;
         }
 

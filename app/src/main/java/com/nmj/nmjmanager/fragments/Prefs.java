@@ -47,7 +47,7 @@ import static com.nmj.functions.PreferenceKeys.LANGUAGE_PREFERENCE;
 
 public class Prefs extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
-	private Preference mPref, mLanguagePref, mCopyDatabase, mIgnoreNfoFiles;
+	private Preference mPref, mLanguagePref, mCopyDatabase, mIgnoreNfoFiles, mMoviesSelectedTabs, mShowsSelectedTabs;
 	private Locale[] mSystemLocales;
 
 	@Override
@@ -59,6 +59,25 @@ public class Prefs extends PreferenceFragment implements OnSharedPreferenceChang
 
 		PreferenceManager.getDefaultSharedPreferences(getActivity()).registerOnSharedPreferenceChangeListener(this);
 
+		mMoviesSelectedTabs = getPreferenceScreen().findPreference("prefsMoviesTabEnableDisable");
+		if (mMoviesSelectedTabs != null)
+			mMoviesSelectedTabs.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+				@Override
+				public boolean onPreferenceClick(Preference preference) {
+						Toast.makeText(getActivity(), "Updated tabs...", Toast.LENGTH_SHORT).show();
+					return true;
+				}
+			});
+		mShowsSelectedTabs = getPreferenceScreen().findPreference("prefsShowsTabEnableDisable");
+		if (mShowsSelectedTabs != null)
+			mShowsSelectedTabs.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+				@Override
+				public boolean onPreferenceClick(Preference preference) {
+					Toast.makeText(getActivity(), "Updated tabs...", Toast.LENGTH_SHORT).show();
+
+					return true;
+				}
+			});
 		mPref = getPreferenceScreen().findPreference("prefsIgnoredFiles");
 		if (mPref != null)
 			mPref.setEnabled(PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(IGNORED_FILES_ENABLED, false));

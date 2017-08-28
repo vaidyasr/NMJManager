@@ -43,6 +43,7 @@ import android.widget.TextView;
 import com.nmj.apis.tmdb.TMDbMovieService;
 import com.nmj.functions.CompleteActor;
 import com.nmj.functions.CoverItem;
+import com.nmj.functions.IntentKeys;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.WebMovie;
 import com.nmj.nmjmanager.NMJManagerApplication;
@@ -56,7 +57,7 @@ import java.util.ArrayList;
 public class ActorMoviesFragment extends Fragment {
 
 	private Context mContext;
-	private int mImageThumbSize, mImageThumbSpacing;
+	private int mImageThumbSize, mImageThumbSpacing, mToolbarColor;
 	private ImageAdapter mAdapter;
 	private GridView mGridView;
 	private Picasso mPicasso;
@@ -95,6 +96,9 @@ public class ActorMoviesFragment extends Fragment {
 		mConfig = NMJManagerApplication.getBitmapConfig();
 
 		mActorId = getArguments().getString("actorId");
+		mToolbarColor = getArguments().getInt(IntentKeys.TOOLBAR_COLOR);
+		System.out.println("Debug: Actor Movies Toolbar Color: " + mToolbarColor);
+
 	}
 
     @Override
@@ -147,7 +151,7 @@ public class ActorMoviesFragment extends Fragment {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), arg1.findViewById(R.id.cover), "cover");
-                ActivityCompat.startActivity(getActivity(), IntentUtils.getTmdbMovieDetails(mContext, mAdapter.getItem(arg2)), options.toBundle());
+                ActivityCompat.startActivity(getActivity(), IntentUtils.getTmdbMovieDetails(mContext, mAdapter.getItem(arg2), mToolbarColor), options.toBundle());
 			}
 		});
 
@@ -200,6 +204,8 @@ public class ActorMoviesFragment extends Fragment {
 				holder = new CoverItem();
 
 				holder.cover = (ImageView) convertView.findViewById(R.id.cover);
+				holder.hasWatched = (ImageView) convertView.findViewById(R.id.hasWatched);
+				holder.inLibrary = (ImageView) convertView.findViewById(R.id.inLibrary);
 				holder.text = (TextView) convertView.findViewById(R.id.text);
 				holder.text.setSingleLine(true);
 				holder.subtext = (TextView) convertView.findViewById(R.id.sub_text);
@@ -211,11 +217,19 @@ public class ActorMoviesFragment extends Fragment {
 			} else {
 				holder = (CoverItem) convertView.getTag();
 			}
+			holder.inLibrary.setVisibility(View.GONE);
+			holder.hasWatched.setVisibility(View.GONE);
 
 			holder.cover.setImageResource(R.color.card_background_dark);
 
 			holder.text.setText(movie.getTitle());
 			holder.subtext.setText(movie.getSubtitle());
+
+			if(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(movie.getId()))
+				holder.inLibrary.setVisibility(View.VISIBLE);
+
+			if(NMJManagerApplication.getNMJMovieAdapter().hasWatched(movie.getId()))
+				holder.hasWatched.setVisibility(View.VISIBLE);
 
 			if (!movie.getUrl().contains("null"))
 				mPicasso.load(movie.getUrl()).error(R.drawable.loading_image).config(mConfig).into(holder);

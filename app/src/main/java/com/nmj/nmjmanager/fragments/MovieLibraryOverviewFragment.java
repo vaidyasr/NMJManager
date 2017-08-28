@@ -53,8 +53,10 @@ public class MovieLibraryOverviewFragment extends Fragment {
         mTabs = (PagerSlidingTabStrip) v.findViewById(R.id.tabs);
 
         mViewPager.setAdapter(new PagerAdapter(getChildFragmentManager()));
+        mViewPager.setOffscreenPageLimit(mViewPager.getAdapter().getCount());
         mTabs.setViewPager(mViewPager);
         mTabs.setVisibility(View.VISIBLE);
+        System.out.println("Debug: No Tabs: " + mViewPager.getAdapter().getCount());
 
         // Work-around a bug that sometimes happens with the tabs
         mViewPager.setCurrentItem(0);

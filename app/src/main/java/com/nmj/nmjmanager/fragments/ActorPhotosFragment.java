@@ -35,6 +35,7 @@ import android.widget.ProgressBar;
 import com.nmj.apis.tmdb.TMDbMovieService;
 import com.nmj.functions.CompleteActor;
 import com.nmj.functions.CoverItem;
+import com.nmj.functions.IntentKeys;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.utils.IntentUtils;
@@ -43,7 +44,7 @@ import com.squareup.picasso.Picasso;
 public class ActorPhotosFragment extends Fragment {
 
 	private Context mContext;
-	private int mImageThumbSize, mImageThumbSpacing;
+	private int mImageThumbSize, mImageThumbSpacing, mToolbarColor;
 	private ImageAdapter mAdapter;
 	private GridView mGridView;
 	private Picasso mPicasso;
@@ -78,6 +79,8 @@ public class ActorPhotosFragment extends Fragment {
 		
 		mPicasso = NMJManagerApplication.getPicasso(getActivity());
 		mConfig = NMJManagerApplication.getBitmapConfig();
+
+		mToolbarColor = getArguments().getInt(IntentKeys.TOOLBAR_COLOR);
 		
 		mActorId = getArguments().getString("actorId");
 	}
@@ -108,7 +111,7 @@ public class ActorPhotosFragment extends Fragment {
 		mGridView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-				startActivity(IntentUtils.getActorPhotoIntent(mContext, mActor.getPhotos(), arg2));
+				startActivity(IntentUtils.getActorPhotoIntent(mContext, mActor.getPhotos(), arg2, mToolbarColor));
 			}
 		});
 

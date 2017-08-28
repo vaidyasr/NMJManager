@@ -17,6 +17,11 @@
         android:title="@string/watchLater">
     </item>
     <item
+        android:id="@+id/add_list"
+        android:icon="@drawable/ic_add_list_white_24dp"
+        android:title="@string/addToList">
+    </item>
+    <item
         android:id="@+id/trailer"
         android:title="@string/detailsTrailer">
     </item>

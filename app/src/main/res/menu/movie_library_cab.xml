@@ -49,5 +49,20 @@
             </item>
         </menu>
     </item>
-
+    <item
+        android:id="@+id/add_list_menu"
+        android:icon="@drawable/ic_add_list_white_24dp"
+        app:showAsAction="always"
+        android:title="@string/addToList">
+        <menu>
+            <item
+                android:id="@+id/add_to_list"
+                android:title="@string/addToList">
+            </item>
+            <item
+                android:id="@+id/remove_from_list"
+                android:title="@string/removeFromList">
+            </item>
+        </menu>
+    </item>
 </menu>

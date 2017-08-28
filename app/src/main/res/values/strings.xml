@@ -203,6 +203,8 @@
     <string name="stringEditTvShow">Edit TV show</string>
     <string name="stringEditTvShowEpisode">Edit TV show episode</string>
     <string name="stringLaunchScreen">Launch screen</string>
+    <string name="stringEnableDisableTabs">Enable/Disable tabs</string>
+    <string name="stringEnableDisableTabsDescription">Select tabs to be enabled/disabled.</string>
     <string name="stringLaunchScreenDescription">Select which section to show at launch.</string>
     <string name="stringRemoveUnavailableEntries">Remove unavailable files</string>
     <string name="detailsAirDate">Air Date</string>
@@ -284,6 +286,8 @@
     <string name="includePreviouslyRemovedFiles">Don\'t include removed files in library updates.</string>
     <string name="removeFromWatchlist">Remove from Watch list</string>
     <string name="watchLater">Watch later</string>
+    <string name="addToList">Add to List</string>
+    <string name="removeFromList">Remove from list</string>
     <string name="ignoreSmallFilesDescription">Ignore video files smaller than the set file size.</string>
     <string name="smallFilesOption_1">Include all files</string>
     <string name="smallFilesOption_2">50 MB</string>
@@ -370,6 +374,7 @@
     <string name="drawerMyMovies">My Movies</string>
     <string name="drawerMyTvShows">My TV Shows</string>
     <string name="drawerOnlineMovies">Online Movies</string>
+    <string name="drawerMyMusic">My Music</string>
     <string name="drawerWebVideos">Web Videos</string>
     <string name="greeting">Welcome</string>
     <string name="thirdPartyLibraries">Third party libraries</string>
@@ -522,6 +527,10 @@
     <string name="no_tv_shows_description_tablet">Select the <b>Update icon</b> from the menu to add TV shows.</string>
     <string name="no_favorites_description_tv">Don\'t you like TV shows?</string>
     <string name="recently_aired">Recently aired</string>
+    <string name="popular_shows">Popular</string>
+    <string name="toprated_shows">Top Rated</string>
+    <string name="ontv">On TV</string>
+    <string name="airing_today">Airing Today</string>
     <string name="recently_aired_description">Nothing has aired in the last three months.</string>
     <string name="no_watched_tv_shows">No watched TV shows</string>
     <string name="no_unwatched_tv_shows_descriptions">Good job!</string>

@@ -75,7 +75,7 @@ public class ViewUtils {
      * @return
      */
     @SuppressLint("InflateParams")
-    public static View setupActorCard(final Activity context, Picasso picasso, final Actor actor) {
+    public static View setupActorCard(final Activity context, Picasso picasso, final Actor actor, final int toolbarColor) {
         View v = LayoutInflater.from(context).inflate(R.layout.horizontal_grid_item_small, null);
 
         // Load image
@@ -89,11 +89,14 @@ public class ViewUtils {
         ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setText(actor.getCharacter());
         ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setSingleLine(true);
 
+        v.findViewById(R.id.inLibrary).setVisibility(View.GONE);
+        v.findViewById(R.id.hasWatched).setVisibility(View.GONE);
+
         // Set click listener
         v.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                context.startActivity(IntentUtils.getActorIntent(context, actor));
+                context.startActivity(IntentUtils.getActorIntent(context, actor, toolbarColor));
             }
         });
 
@@ -108,7 +111,7 @@ public class ViewUtils {
      * @return
      */
     @SuppressLint("InflateParams")
-    public static View setupMovieCard(final Activity context, Picasso picasso, final WebMovie movie) {
+    public static View setupMovieCard(final Activity context, Picasso picasso, final WebMovie movie, final int toolbarColor) {
         final View v = LayoutInflater.from(context).inflate(R.layout.horizontal_grid_item_small, null);
 
         // Load image
@@ -123,12 +126,21 @@ public class ViewUtils {
         ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setText(movie.getSubtitle());
         ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setSingleLine(true);
 
+        v.findViewById(R.id.inLibrary).setVisibility(View.GONE);
+        v.findViewById(R.id.hasWatched).setVisibility(View.GONE);
+
+        if(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(movie.getId()))
+            v.findViewById(R.id.inLibrary).setVisibility(View.VISIBLE);
+
+        if(NMJManagerApplication.getNMJMovieAdapter().hasWatched(movie.getId()))
+            v.findViewById(R.id.hasWatched).setVisibility(View.VISIBLE);
+
         // Set click listener
         v.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(context, v.findViewById(R.id.cover), "cover");
-                ActivityCompat.startActivity(context, IntentUtils.getTmdbMovieDetails(context, movie), options.toBundle());
+                ActivityCompat.startActivity(context, IntentUtils.getTmdbMovieDetails(context, movie, toolbarColor), options.toBundle());
             }
         });
 
@@ -143,7 +155,7 @@ public class ViewUtils {
      * @return
      */
     @SuppressLint("InflateParams")
-    public static View setupTvShowCard(final Context context, Picasso picasso, final WebMovie show) {
+    public static View setupTvShowCard(final Context context, Picasso picasso, final WebMovie show, final int toolbarColor) {
         View v = LayoutInflater.from(context).inflate(R.layout.horizontal_grid_item_small, null);
 
         // Load image
@@ -156,6 +168,15 @@ public class ViewUtils {
         // Set subtitle
         ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setText(show.getSubtitle());
         ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setSingleLine(true);
+
+        v.findViewById(R.id.inLibrary).setVisibility(View.GONE);
+        v.findViewById(R.id.hasWatched).setVisibility(View.GONE);
+
+        if(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(show.getId()))
+            v.findViewById(R.id.inLibrary).setVisibility(View.VISIBLE);
+
+        if(NMJManagerApplication.getNMJMovieAdapter().hasWatched(show.getId()))
+            v.findViewById(R.id.hasWatched).setVisibility(View.VISIBLE);
 
         // Set click listener
         v.setOnClickListener(new OnClickListener() {
@@ -212,7 +233,7 @@ public class ViewUtils {
      * @return
      */
     @SuppressLint("InflateParams")
-    public static View setupPhotoCard(final Context context, Picasso picasso, final String url, final List<String> items, final int index) {
+    public static View setupPhotoCard(final Context context, Picasso picasso, final String url, final List<String> items, final int index, final int toolbarColor) {
         final View v = LayoutInflater.from(context).inflate(R.layout.horizontal_grid_item_small_no_text, null);
 
         // Load image
@@ -222,7 +243,7 @@ public class ViewUtils {
         v.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                context.startActivity(IntentUtils.getActorPhotoIntent(context, items, index));
+                context.startActivity(IntentUtils.getActorPhotoIntent(context, items, index, toolbarColor));
             }
         });
 
@@ -239,7 +260,7 @@ public class ViewUtils {
      * @return
      */
     @SuppressLint("InflateParams")
-    public static View setupTaggedPhotoCard(final Context context, Picasso picasso, final String url, final List<String> items, final int index) {
+    public static View setupTaggedPhotoCard(final Context context, Picasso picasso, final String url, final List<String> items, final int index, final int toolbarColor) {
         View v = LayoutInflater.from(context).inflate(R.layout.horizontal_grid_item_small_landscape_no_text, null);
 
         // Load image
@@ -249,7 +270,7 @@ public class ViewUtils {
         v.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                context.startActivity(IntentUtils.getActorTaggedPhotoIntent(context, items, index));
+                context.startActivity(IntentUtils.getActorTaggedPhotoIntent(context, items, index, toolbarColor));
             }
         });
 

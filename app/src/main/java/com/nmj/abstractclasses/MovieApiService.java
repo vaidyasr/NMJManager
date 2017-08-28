@@ -48,13 +48,6 @@ public abstract class MovieApiService extends ApiService<Movie> {
 	public abstract List<String> getBackdrops(String id);
 	
 	/**
-	 * Get a {@link List} of similar content for a given movie ID.
-	 * @param id Movie ID.
-	 * @return {@link List} of similar content.
-	 */
-	public abstract List<WebMovie> getSimilarMovies(String id);
-	
-	/**
 	 * Get the language code or a default one if
 	 * the supplied one is empty or {@link null}.
 	 * @param language

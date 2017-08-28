@@ -314,20 +314,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Movie Details activity -->
-        <activity
-            android:name="com.nmj.nmjmanager.MovieDetails"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="android.intent.action.DEFAULT" />
-                <action android:name="android.intent.action.SEARCH" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
-        </activity>
-
         <!-- Edit Movie activity -->
         <activity
             android:name="com.nmj.nmjmanager.EditMovie"

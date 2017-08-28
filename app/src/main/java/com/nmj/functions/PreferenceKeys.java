@@ -62,6 +62,8 @@ public class PreferenceKeys {
 	public static final String SORTING_TVSHOWS = "prefsSortingTv";
 	public static final String ROOT_ACCESS = "prefsRootAccess";
 	public static final String STARTUP_SELECTION = "prefsStartup";
+    public static final String MOVIES_TABS_SELECTED = "prefsMoviesTabEnableDisable";
+    public static final String SHOWS_TAB_SELECTED = "prefsShowsTabEnableDisable";
 	public static final String USE_ENGLISH_LANGUAGE = "prefsUseEnglishLanguage";
 	public static final String CONFIRM_BACK_PRESS = "prefsConfirmBackPress";
 	public static final String ALWAYS_DELETE_FILE = "prefsAlwaysDeleteFile";

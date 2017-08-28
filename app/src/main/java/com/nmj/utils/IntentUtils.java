@@ -35,11 +35,8 @@ import com.nmj.nmjmanager.ActorMovies;
 import com.nmj.nmjmanager.ActorPhotos;
 import com.nmj.nmjmanager.ActorTaggedPhotos;
 import com.nmj.nmjmanager.ActorTvShows;
-import com.nmj.nmjmanager.ActorBrowser;
-import com.nmj.nmjmanager.ActorBrowserTv;
 import com.nmj.nmjmanager.ImageViewer;
 import com.nmj.nmjmanager.NMJManagerApplication;
-import com.nmj.nmjmanager.MovieDetails;
 import com.nmj.nmjmanager.NMJMovieDetails;
 import com.nmj.nmjmanager.SimilarMovies;
 import com.nmj.nmjmanager.TMDbMovieDetails;
@@ -62,12 +59,14 @@ public class IntentUtils {
 	 * @param thumbnail
 	 * @return
 	 */
-	public static Intent getActorIntent(Context context, String name, String id, String personId, String thumbnail) {
+	public static Intent getActorIntent(Context context, String name, String id, String personId, String thumbnail, int toolbarColor) {
 		Intent actorIntent = new Intent(context, ActorDetails.class);
 		actorIntent.putExtra("actorName", name);
 		actorIntent.putExtra("actorID", id);
         actorIntent.putExtra("personId", personId);
 		actorIntent.putExtra("thumb", thumbnail);
+		actorIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
+
 		return actorIntent;
 	}
 	
@@ -77,8 +76,8 @@ public class IntentUtils {
 	 * @param actor
 	 * @return
 	 */
-	public static Intent getActorIntent(Context context, Actor actor) {
-		return getActorIntent(context, actor.getName(), actor.getId(), actor.getPersonType(), actor.getUrl());
+	public static Intent getActorIntent(Context context, Actor actor, int toolbarColor) {
+		return getActorIntent(context, actor.getName(), actor.getId(), actor.getPersonType(), actor.getUrl(), toolbarColor);
 	}
 	
 	/**
@@ -128,7 +127,7 @@ public class IntentUtils {
 		return similarMoviesIntent;
 	}
 	
-	public static Intent getTmdbMovieDetails(Context context, WebMovie movie) {
+	public static Intent getTmdbMovieDetails(Context context, WebMovie movie, int toolbarColor) {
 		NMJAdapterMovies mDatabase = NMJManagerApplication.getNMJMovieAdapter();
 		ArrayList<Library> list = mDatabase.getLibrary();
 		Intent movieDetailsIntent = new Intent(context, movie.isInLibrary() ? NMJMovieDetails.class : TMDbMovieDetails.class);
@@ -138,6 +137,8 @@ public class IntentUtils {
 			movieDetailsIntent.putExtra("showId", mDatabase.getShowIdByTmdbId(movie.getId()));
 		System.out.println("showId: " + mDatabase.getShowIdByTmdbId(movie.getId()));
 		movieDetailsIntent.putExtra("title", movie.getTitle());
+		movieDetailsIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
+
 		return movieDetailsIntent;
 	}
 	
@@ -155,7 +156,7 @@ public class IntentUtils {
 		return showIntent;
 	}
 
-	public static Intent getActorPhotoIntent(Context context, List<String> photos, int selectedIndex) {	
+	public static Intent getActorPhotoIntent(Context context, List<String> photos, int selectedIndex, int toolbarColor) {
 		String[] array = new String[photos.size()];
 		for (int i = 0; i < photos.size(); i++)
 			array[i] = photos.get(i).replace(NMJLib.getActorUrlSize(context), "original");
@@ -163,11 +164,12 @@ public class IntentUtils {
 		Intent intent = new Intent(context, ImageViewer.class);
 		intent.putExtra("photos", array);
 		intent.putExtra("selectedIndex", selectedIndex);
+		intent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
 
 		return intent;
 	}
 	
-	public static Intent getActorTaggedPhotoIntent(Context context, List<String> photos, int selectedIndex) {	
+	public static Intent getActorTaggedPhotoIntent(Context context, List<String> photos, int selectedIndex, int toolbarColor) {
 		String[] array = new String[photos.size()];
 		for (int i = 0; i < photos.size(); i++)
 			array[i] = photos.get(i).replace(NMJLib.getBackdropThumbUrlSize(context), "original");
@@ -176,6 +178,7 @@ public class IntentUtils {
 		intent.putExtra("photos", array);
 		intent.putExtra("portraitPhotos", false);
 		intent.putExtra("selectedIndex", selectedIndex);
+		intent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
 
 		return intent;
 	}

@@ -79,7 +79,7 @@ public class NMJMovieDetailsFragment extends Fragment {
 
     private Activity mContext;
     private TextView mTitle, mPlot, mSrc, mGenre, mRuntime, mReleaseDate, mRating, mTagline, mCertification;
-    private ImageView mBackground, mCover;
+    private ImageView mBackground, mCover, mHasWatched, mInLibrary, mSimilarMoviesLayout_inLibrary, mSimilarMoviesLayout_hasWatched;
     private Movie mMovie;
     private Video mVideo;
     private ObservableScrollView mScrollView;
@@ -170,11 +170,16 @@ public class NMJMovieDetailsFragment extends Fragment {
         mSimilarMoviesLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra_1);
         mScrollView = (ObservableScrollView) v.findViewById(R.id.observableScrollView);
         mFab = (FloatingActionButton) v.findViewById(R.id.fab);
+        mHasWatched = (ImageView) v.findViewById(R.id.hasWatched);
+        mInLibrary = (ImageView) v.findViewById(R.id.inLibrary);
 
-        if(mMovie.getShowId().equals("0"))
+        if (mMovie.getShowId().equals("0"))
             mFab.setVisibility(View.INVISIBLE);
         else
             mFab.setVisibility(View.VISIBLE);
+
+        mInLibrary.setVisibility(View.GONE);
+        mHasWatched.setVisibility(View.GONE);
 
         mFab.setOnClickListener(new OnClickListener() {
             @Override
@@ -273,7 +278,7 @@ public class NMJMovieDetailsFragment extends Fragment {
             mSrc.setTypeface(mCondensedRegular);
             if (mShowFileLocation) {
                 List<String> list = new ArrayList<String>();
-                for(int i=0;i < mMovie.getVideo().size();i++) {
+                for (int i = 0; i < mMovie.getVideo().size(); i++) {
                     list.add(mMovie.getVideo().get(i).getPath());
                 }
                 mSrc.setText(TextUtils.join("\n", list));
@@ -297,7 +302,7 @@ public class NMJMovieDetailsFragment extends Fragment {
             }
 
             // Set the movie runtime
-            if(mMovie.getShowId().equals("0"))
+            if (mMovie.getShowId().equals("0"))
                 mRuntime.setText(NMJLib.getPrettyRuntimeFromMinutes(getActivity(), Integer.parseInt(mMovie.getRuntime())));
             else
                 mRuntime.setText(NMJLib.getPrettyRuntimeFromSeconds(getActivity(), Integer.parseInt(mMovie.getRuntime())));
@@ -394,6 +399,10 @@ public class NMJMovieDetailsFragment extends Fragment {
             });
 
             ViewUtils.updateToolbarBackground(getActivity(), mToolbar, 0, mMovie.getTitle(), mToolbarColor);
+
+
+            if (!mMovie.getVideo().get(0).getPlayCount().equals("0"))
+                mHasWatched.setVisibility(View.VISIBLE);
 
             setLoading(false);
 

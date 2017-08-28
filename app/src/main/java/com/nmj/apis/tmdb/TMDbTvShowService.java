@@ -375,7 +375,6 @@ public class TMDbTvShowService extends TvShowApiService {
 		return getListFromUrl(serviceUrl);
 	}
 
-	@Override
     public List<Actor> getCast(String id) {
         ArrayList<Actor> results = new ArrayList<Actor>();
 
@@ -414,7 +413,6 @@ public class TMDbTvShowService extends TvShowApiService {
         return results;
     }
 
-    @Override
     public List<Actor> getCrew(String id) {
         ArrayList<Actor> results = new ArrayList<Actor>();
 

@@ -24,7 +24,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.widget.RemoteViews;
 
-import com.nmj.nmjmanager.MovieDetails;
+import com.nmj.nmjmanager.NMJMovieDetails;
 import com.nmj.nmjmanager.R;
 
 public class MovieCoverWidgetProvider extends AppWidgetProvider {
@@ -37,7 +37,7 @@ public class MovieCoverWidgetProvider extends AppWidgetProvider {
 		
 		if (MOVIE_COVER_WIDGET.equals(action)) {
 			Intent openMovie = new Intent();
-			openMovie.setClass(context, MovieDetails.class);
+			openMovie.setClass(context, NMJMovieDetails.class);
 			openMovie.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 			openMovie.putExtra("tmdbId", intent.getStringExtra("tmdbId"));
 			openMovie.putExtra("isFromWidget", true);

@@ -26,30 +26,22 @@
 
             <com.nmj.views.GridItemImageView
                 android:id="@+id/hasWatched"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="@dimen/watched_image_width"
+                android:layout_height="@dimen/watched_image_width"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentTop="true"
-                android:adjustViewBounds="false"
-                android:cropToPadding="false"
-                android:paddingLeft="@dimen/watched_image_start"
                 android:scaleType="fitStart"
-                android:src="@drawable/episode_watched"
-                android:transitionName="hasWatched" />
+                android:src="@drawable/episode_watched2"
+                android:transitionName="hasWatched2" />
 
             <com.nmj.views.GridItemImageView
                 android:id="@+id/inLibrary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="@dimen/in_library_image_width"
+                android:layout_height="@dimen/in_library_image_width"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
-                android:layout_marginBottom="-8dp"
-                android:layout_marginLeft="-8dp"
-                android:adjustViewBounds="true"
-                android:cropToPadding="false"
-                android:paddingRight="@dimen/in_library_image_end"
                 android:scaleType="fitEnd"
                 android:src="@drawable/in_library"
                 android:transitionName="inLibrary" />

@@ -39,6 +39,7 @@ import com.nmj.functions.NMJMovie;
 import com.nmj.functions.PreferenceKeys;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
+import com.nmj.nmjmanager.fragments.MovieLibraryFragment;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -108,7 +109,7 @@ public class MovieLoader {
         mCallback = callback;
         mDatabase = NMJManagerApplication.getNMJMovieAdapter();
 
-        setupSortType();
+            setupSortType();
     }
 
     /**
@@ -245,34 +246,7 @@ public class MovieLoader {
         mAsyncTask.execute();
     }
 
-    /**
-     * Creates movie objects from a URL and adds them to a list.
-     *
-     * @return List of movie objects from the supplied URL.
-     */
-    private void setLibrary() {
-        ArrayList<Library> list = new ArrayList<>();
-        String url = "http://www.pchportal.duckdns.org/NMJManagerTablet_web/gd.php?action=getCount&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db";
 
-        JSONObject jObject;
-        try {
-            jObject = NMJLib.getJSONObject(mContext, url);
-            mDatabase.setMovieCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("movies")));
-            mDatabase.setShowCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("shows")));
-            JSONArray jArray = jObject.getJSONObject("data").getJSONArray("library");
-
-            for (int i = 0; i < jArray.length(); i++) {
-                JSONObject dObject = jArray.getJSONObject(i);
-                list.add(new Library(dObject.getString("ID"),
-                        dObject.getString("PLAY_COUNT"),
-                        dObject.getString("CONTENT_TTID")));
-            }
-            mDatabase.setLibrary(list);
-            System.out.println("Library : " + list.toString());
-        } catch (Exception ignored) {
-        }
-        //return jObject;
-    }
 
 
     /**
@@ -438,6 +412,11 @@ public class MovieLoader {
         }
     }
 
+    public void loadMoreData(Integer Count){
+        //mAsyncTask = new MovieLoaderAsyncTask(Count);
+        mAsyncTask.execute();
+    }
+
     /**
      * Handles everything related to loading, filtering, sorting
      * and delivering the callback when everything is finished.
@@ -458,7 +437,7 @@ public class MovieLoader {
         @Override
         protected Void doInBackground(Void... params) {
             if (NMJManagerApplication.getNMJMovieAdapter().getLibrary() == null)
-                setLibrary();
+                NMJLib.setLibrary(mContext, mDatabase);
             switch (mLibraryType) {
                 case ALL_MOVIES:
                     mMovieList.addAll(NMJLib.getVideoFromJSON(mContext, "Movies", "all", ""));
@@ -539,16 +518,6 @@ public class MovieLoader {
 
                             break;
 
-                        /*case MovieFilter.FILE_SOURCE:
-
-                            for (Filepath path : mMovieList.get(i).getFilepaths()) {
-                                condition = path.getTypeAsString(mContext).equals(filter.getFilter());
-                                if (condition)
-                                    break;
-                            }
-
-                            break;*/
-
                         case MovieFilter.RELEASE_YEAR:
 
                             condition = mMovieList.get(i).getReleaseYear().trim().contains(filter.getFilter());
@@ -563,84 +532,6 @@ public class MovieLoader {
 
                         case MovieFilter.OTHERS:
                             break;
-
-                        /*case MovieFilter.FOLDER:
-
-                            for (Filepath path : mMovieList.get(i).getFilepaths()) {
-                                condition = path.getFilepath().trim().startsWith(filter.getFilter());
-                                if (condition)
-                                    break;
-                            }
-
-                            break;
-
-                        case MovieFilter.OFFLINE_FILES:
-
-                            for (Filepath path : mMovieList.get(i).getFilepaths()) {
-                                condition = mMovieList.get(i).hasOfflineCopy(path);
-                                if (condition)
-                                    break;
-                            }
-
-                            break;
-
-                        case MovieFilter.AVAILABLE_FILES:
-
-                            ArrayList<FileSource> filesources = NMJLib.getFileSources(NMJLib.TYPE_MOVIE, true);
-
-                            if (isCancelled())
-                                return null;
-
-                            for (Filepath path : mMovieList.get(i).getFilepaths()) {
-                                if (path.isNetworkFile())
-                                    if (mMovieList.get(i).hasOfflineCopy(path)) {
-                                        condition = true;
-                                        break; // break inner loop to continue to the next movie
-                                    } else {
-                                        if (path.getType() == FileSource.SMB) {
-                                            if (NMJLib.isWifiConnected(mContext)) {
-                                                FileSource source = null;
-
-                                                for (int j = 0; j < filesources.size(); j++)
-                                                    if (path.getFilepath().contains(filesources.get(j).getFilepath())) {
-                                                        source = filesources.get(j);
-                                                        break;
-                                                    }
-
-                                                if (source == null)
-                                                    continue;
-
-                                                try {
-                                                    final SmbFile file = new SmbFile(
-                                                            NMJLib.createSmbLoginString(
-                                                                    source.getDomain(),
-                                                                    source.getUser(),
-                                                                    source.getPassword(),
-                                                                    path.getFilepath(),
-                                                                    false
-                                                            ));
-                                                    if (file.exists()) {
-                                                        condition = true;
-                                                        break; // break inner loop to continue to the next movie
-                                                    }
-                                                } catch (Exception e) {}  // Do nothing - the file isn't available (either MalformedURLException or SmbException)
-                                            }
-                                        } else if (path.getType() == FileSource.UPNP) {
-                                            if (NMJLib.exists(path.getFilepath())) {
-                                                condition = true;
-                                                break; // break inner loop to continue to the next movie
-                                            }
-                                        }
-                                    } else {
-                                    if (new File(path.getFilepath()).exists()) {
-                                        condition = true;
-                                        break; // break inner loop to continue to the next movie
-                                    }
-                                }
-                            }
-
-                            break;
-                            */
                     }
 
                     if (!condition && mMovieList.size() > i) {
@@ -715,7 +606,7 @@ public class MovieLoader {
                 }
 
                 // Clear the movie list
-                mMovieList.clear();
+                //mMovieList.clear();
 
                 // Add all the temporary ones after search completed
                 mMovieList.addAll(tempCollection);

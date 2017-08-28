@@ -84,6 +84,14 @@ public class HorizontalCardLayout extends LinearLayout {
 		mSeeMoreTextView.setVisibility(visible ? VISIBLE : GONE);
 	}
 
+	public void setInLibraryVisibility(boolean visible){
+		mSeeMoreTextView.setVisibility(visible ? VISIBLE : GONE);
+	}
+
+	public void setHasWatchedVisibility(boolean visible){
+		mSeeMoreTextView.setVisibility(visible ? VISIBLE : GONE);
+	}
+
 	public void setSeeMoreOnClickListener(OnClickListener listener) {
 		mTitleLayout.setOnClickListener(listener);
 	}
@@ -133,15 +141,15 @@ public class HorizontalCardLayout extends LinearLayout {
 
 			for (int i = 0; i < items.size() && i < capacity; i++) {
 				if (type == MOVIES || type == RELATED_MOVIES) {
-					addView(ViewUtils.setupMovieCard(context, picasso, (WebMovie) items.get(i)), i, lp);
+					addView(ViewUtils.setupMovieCard(context, picasso, (WebMovie) items.get(i), toolbarColor), i, lp);
 				} else if (type == TV_SHOWS) {
-					addView(ViewUtils.setupTvShowCard(context, picasso, (WebMovie) items.get(i)), i, lp);
+					addView(ViewUtils.setupTvShowCard(context, picasso, (WebMovie) items.get(i), toolbarColor), i, lp);
 				} else if (type == PHOTOS) {
-					addView(ViewUtils.setupPhotoCard(context, picasso, (String) items.get(i), (List<String>) items, i), i, lp);
+					addView(ViewUtils.setupPhotoCard(context, picasso, (String) items.get(i), (List<String>) items, i, toolbarColor), i, lp);
 				} else if (type == TAGGED_PHOTOS) {
-					addView(ViewUtils.setupTaggedPhotoCard(context, picasso, (String) items.get(i), (List<String>) items, i), i, lp);
+					addView(ViewUtils.setupTaggedPhotoCard(context, picasso, (String) items.get(i), (List<String>) items, i, toolbarColor), i, lp);
 				} else if (type == ACTORS) {
-					addView(ViewUtils.setupActorCard(context, picasso, (Actor) items.get(i)), i, lp);
+					addView(ViewUtils.setupActorCard(context, picasso, (Actor) items.get(i), toolbarColor), i, lp);
 				} else if (type == SEASONS) {
                     addView(ViewUtils.setupTvShowSeasonCard(context, picasso, (GridSeason) items.get(i), toolbarColor), i, lp);
                 }

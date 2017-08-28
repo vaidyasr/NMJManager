@@ -71,6 +71,24 @@ public class NMJAdapterMovies {
         return false;
     }
 
+    public String getShowIdByTmdbId(String movieId){
+        for (int i = 0; i < mLibrary.size(); i++) {
+            if (mLibrary.get(i).getId().equals("tmdb" + movieId))
+                return mLibrary.get(i).getShowId();
+        }
+        return "0";
+    }
+
+    public boolean hasWatched(String movieId){
+        for (int i = 0; i < mLibrary.size(); i++) {
+            if (mLibrary.get(i).getId().equals("tmdb" + movieId)) {
+                if(!mLibrary.get(i).getPlayCount().equals("0"))
+                    return true;
+            }
+        }
+        return false;
+    }
+
     public boolean movieExistsbyTvdbId(String movieId) {
         for (int i = 0; i < mLibrary.size(); i++) {
             if (mLibrary.get(i).getId().equals("tvdb" + movieId))
@@ -78,16 +96,6 @@ public class NMJAdapterMovies {
         }
         return false;
     }
-
-    public String getShowIdByTmdbId(String tmdbId) {
-        for (int i = 0; i < mLibrary.size(); i++) {
-            System.out.println("tmdbid final: " + tmdbId);
-            if (mLibrary.get(i).getId().equals("tmdb" + tmdbId))
-                return mLibrary.get(i).getShowId();
-        }
-        return "";
-    }
-
 
     /**
      * Create a new movie

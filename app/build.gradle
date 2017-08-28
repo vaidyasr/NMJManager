@@ -60,6 +60,7 @@ dependencies {
     compile 'com.jpardogo.materialtabstrip:library:1.0.9'
     compile 'com.google.code.gson:gson:2.7'
     compile 'com.iainconnor:objectcache:0.0.19-SNAPSHOT'
+    compile 'org.apache.commons:commons-lang3:3.4'
     compile files('libs/cling-core-1.0.5.jar')
     compile files('libs/cling-support-1.0.5.jar')
     compile files('libs/jcifs.jar')

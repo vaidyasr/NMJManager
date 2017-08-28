@@ -2,18 +2,61 @@
 <resources>
 
     <string-array name="startup_screen">
-        <item>@string/welcomeScreen</item>
         <item>@string/drawerMyMovies</item>
         <item>@string/drawerMyTvShows</item>
-        <item>@string/drawerOnlineMovies</item>
-        <item>@string/drawerWebVideos</item>
+        <item>@string/drawerMyMusic</item>
+    </string-array>
+    <string-array name="movie_tabs">
+        <item>@string/choiceFavorites</item>
+        <item>@string/choiceNewReleases</item>
+        <item>@string/chooserWatchList</item>
+        <item>@string/choiceWatchedMovies</item>
+        <item>@string/choiceUnwatchedMovies</item>
+        <item>@string/choiceCollections</item>
+        <item>@string/choiceLists</item>
+        <item>@string/choiceUpcoming</item>
+        <item>@string/choicePopular</item>
+        <item>@string/choiceNowPlaying</item>
+        <item>@string/choiceTopRated</item>
+    </string-array>
+    <string-array name="empty_array"/>
+    <string-array name="movie_tabs_values">
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+    </string-array>
+    <string-array name="show_tabs">
+        <item>@string/choiceFavorites</item>
+        <item>@string/recently_aired</item>
+        <item>@string/watched_tv_shows</item>
+        <item>@string/unwatched_tv_shows</item>
+        <item>@string/popular_shows</item>
+        <item>@string/toprated_shows</item>
+        <item>@string/ontv</item>
+        <item>@string/airing_today</item>
+    </string-array>
+    <string-array name="show_tabs_values">
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
     </string-array>
     <string-array name="startup_screen_codes">
         <item>0</item>
         <item>1</item>
         <item>2</item>
-        <item>3</item>
-        <item>4</item>
     </string-array>
     <string-array name="subjects">
         <item>@string/problem</item>

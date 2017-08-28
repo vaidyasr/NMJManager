@@ -39,6 +39,7 @@ import android.widget.TextView;
 import com.nmj.apis.tmdb.TMDbTvShowService;
 import com.nmj.functions.Actor;
 import com.nmj.functions.CoverItem;
+import com.nmj.functions.IntentKeys;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.utils.IntentUtils;
@@ -50,7 +51,7 @@ import java.util.List;
 
 public class ActorBrowserTvFragment extends Fragment {
 
-	private int mImageThumbSize, mImageThumbSpacing;
+	private int mImageThumbSize, mImageThumbSpacing, mToolbarColor;
 	private ImageAdapter mAdapter;
 	private List<Actor> mActors = new ArrayList<Actor>();
 	private GridView mGridView = null;
@@ -64,10 +65,11 @@ public class ActorBrowserTvFragment extends Fragment {
 	 */
 	public ActorBrowserTvFragment() {}
 
-	public static ActorBrowserTvFragment newInstance(String showId) { 
+	public static ActorBrowserTvFragment newInstance(String showId, String loadType) {
 		ActorBrowserTvFragment pageFragment = new ActorBrowserTvFragment();
 		Bundle bundle = new Bundle();
 		bundle.putString("showId", showId);
+		bundle.putString("loadType", loadType);
 		pageFragment.setArguments(bundle);		
 		return pageFragment;
 	}
@@ -83,6 +85,8 @@ public class ActorBrowserTvFragment extends Fragment {
 
 		mPicasso = NMJManagerApplication.getPicasso(getActivity());
 		mConfig = NMJManagerApplication.getBitmapConfig();
+
+		mToolbarColor = getArguments().getInt(IntentKeys.TOOLBAR_COLOR);
 		
 		new GetActorDetails(getActivity(), getArguments().getString("showId")).execute();
 	}
@@ -120,7 +124,7 @@ public class ActorBrowserTvFragment extends Fragment {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), arg1.findViewById(R.id.cover), "cover");
-                ActivityCompat.startActivity(getActivity(), IntentUtils.getActorIntent(getActivity(), mActors.get(arg2)), options.toBundle());
+                ActivityCompat.startActivity(getActivity(), IntentUtils.getActorIntent(getActivity(), mActors.get(arg2), mToolbarColor), options.toBundle());
 			}
 		});
 		

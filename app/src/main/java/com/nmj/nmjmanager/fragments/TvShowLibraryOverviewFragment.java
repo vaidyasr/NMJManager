@@ -69,7 +69,7 @@ public class TvShowLibraryOverviewFragment extends Fragment {
 
         private final String[] TITLES = {getString(R.string.choiceAllShows), getString(R.string.choiceFavorites), getString(R.string.recently_aired),
                 getString(R.string.watched_tv_shows), getString(R.string.unwatched_tv_shows), getString(R.string.popular_shows),
-                getString(R.string.toprated_shows), getString(R.string.ontv), getString(R.string.airing_today),};
+                getString(R.string.toprated_shows), getString(R.string.ontv), getString(R.string.airing_today)};
 
         public PagerAdapter(FragmentManager fm) {
             super(fm);
