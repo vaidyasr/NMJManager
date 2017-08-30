@@ -22,7 +22,7 @@ import android.text.TextUtils;
 import android.util.SparseBooleanArray;
 
 import com.nmj.abstractclasses.MovieApiService;
-import com.nmj.apis.tmdb.Movie;
+import com.nmj.apis.nmj.Movie;
 import com.nmj.db.DbAdapterMovieMappings;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.NMJLib;
@@ -204,7 +204,7 @@ public class MovieIdentification {
 
             if (!overrideMovieId() && results.size() > 0) {
                 // Automatic library update
-                movie = service.get(results.get(0).getId(), mLocale);
+                movie = service.get(results.get(0).getTmdbId(), mLocale);
             }
 
             // Last check - is movie still null?
@@ -218,20 +218,20 @@ public class MovieIdentification {
     private void createMovie(MovieStructure ms, Movie movie) {
         boolean downloadCovers = true;
 
-        if (!movie.getId().equals(DbAdapterMovies.UNIDENTIFIED_ID) && !TextUtils.isEmpty(movie.getId()))
+        if (!movie.getTmdbId().equals(DbAdapterMovies.UNIDENTIFIED_ID) && !TextUtils.isEmpty(movie.getTmdbId()))
             // We only want to download covers if the movie doesn't already exist
-            downloadCovers = !NMJManagerApplication.getMovieAdapter().movieExists(movie.getId());
+            downloadCovers = !NMJManagerApplication.getMovieAdapter().movieExists(movie.getTmdbId());
 
         if (downloadCovers) {
-            String thumb_filepath = FileUtils.getMovieThumb(mContext, movie.getId()).getAbsolutePath();
+            String thumb_filepath = FileUtils.getMovieThumb(mContext, movie.getTmdbId()).getAbsolutePath();
 
             // Download the cover image and try again if it fails
-            if (!NMJLib.downloadFile(movie.getCover(), thumb_filepath))
-                NMJLib.downloadFile(movie.getCover(), thumb_filepath);
+            if (!NMJLib.downloadFile(movie.getPoster(), thumb_filepath))
+                NMJLib.downloadFile(movie.getPoster(), thumb_filepath);
 
             // Download the backdrop image and try again if it fails
             if (!TextUtils.isEmpty(movie.getBackdrop())) {
-                String backdropFile = FileUtils.getMovieBackdrop(mContext, movie.getId()).getAbsolutePath();
+                String backdropFile = FileUtils.getMovieBackdrop(mContext, movie.getTmdbId()).getAbsolutePath();
 
                 if (!NMJLib.downloadFile(movie.getBackdrop(), backdropFile))
                     NMJLib.downloadFile(movie.getBackdrop(), backdropFile);
@@ -288,11 +288,11 @@ public class MovieIdentification {
 
             // Just create the filepath mapping - if the filepath / movie
             // combination already exists, it won't do anything
-            dbHelperMovieMapping.createFilepathMapping(ms.getFilepath(), movie.getId());
+            dbHelperMovieMapping.createFilepathMapping(ms.getFilepath(), movie.getTmdbId());
         }
 
         // Finally, create or update the movie
-        dbHelper.createOrUpdateMovie(movie.getId(), movie.getTitle(), movie.getPlot(), movie.getImdbId(), movie.getRating(), movie.getTagline(),
+        dbHelper.createOrUpdateMovie(movie.getTmdbId(), movie.getTitle(), movie.getPlot(), movie.getImdbId(), movie.getRating(), movie.getTagline(),
                 movie.getReleasedate(), movie.getCertification(), movie.getRuntime(), movie.getTrailer(), movie.getGenres(), "0",
                 movie.getCastString(), movie.getCollectionTitle(), movie.getCollectionId(), "0", "0", String.valueOf(System.currentTimeMillis()));
 
@@ -300,14 +300,14 @@ public class MovieIdentification {
     }
 
     private void updateNotification(Movie movie) {
-        File backdropFile = FileUtils.getMovieBackdrop(mContext, movie.getId());
+        File backdropFile = FileUtils.getMovieBackdrop(mContext, movie.getTmdbId());
         if (!backdropFile.exists())
-            backdropFile = FileUtils.getMovieThumb(mContext, movie.getId());
+            backdropFile = FileUtils.getMovieThumb(mContext, movie.getTmdbId());
 
         if (mCallback != null) {
             try {
                 mCallback.onMovieAdded(movie.getTitle(),
-                        mPicasso.load(FileUtils.getMovieThumb(mContext, movie.getId())).resize(getNotificationImageSizeSmall(), (int) (getNotificationImageSizeSmall() * 1.5)).get(),
+                        mPicasso.load(FileUtils.getMovieThumb(mContext, movie.getTmdbId())).resize(getNotificationImageSizeSmall(), (int) (getNotificationImageSizeSmall() * 1.5)).get(),
                         mPicasso.load(backdropFile).resize(getNotificationImageWidth(), getNotificationImageHeight()).skipMemoryCache().get(), mCount);
             } catch (Exception e) {
                 mCallback.onMovieAdded(movie.getTitle(), null, null, mCount);

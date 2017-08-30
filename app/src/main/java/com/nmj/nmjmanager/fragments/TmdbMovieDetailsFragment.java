@@ -42,7 +42,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.melnykov.fab.FloatingActionButton;
-import com.nmj.apis.tmdb.Movie;
+import com.nmj.apis.nmj.Movie;
 import com.nmj.apis.tmdb.TMDbMovieService;
 import com.nmj.apis.trakt.Trakt;
 import com.nmj.base.NMJActivity;
@@ -110,7 +110,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
 
         // Get the database ID of the movie in question
         mMovie = new Movie();
-        mMovie.setId(getArguments().getString("movieId"));
+        mMovie.setTmdbId(getArguments().getString("movieId"));
 
         mPicasso = NMJManagerApplication.getPicassoDetailsView(getActivity());
     }
@@ -306,7 +306,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
             mCastLayout.setSeeMoreOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startActivity(IntentUtils.getActorBrowserMovies(mContext, mMovie.getTitle(), mMovie.getId(), mToolbarColor, "cast"));
+                    startActivity(IntentUtils.getActorBrowserMovies(mContext, mMovie.getTitle(), mMovie.getTmdbId(), mToolbarColor, "cast"));
                 }
             });
 
@@ -329,7 +329,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
             mCrewLayout.setSeeMoreOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startActivity(IntentUtils.getActorBrowserMovies(mContext, mMovie.getTitle(), mMovie.getId(), mToolbarColor, "crew"));
+                    startActivity(IntentUtils.getActorBrowserMovies(mContext, mMovie.getTitle(), mMovie.getTmdbId(), mToolbarColor, "crew"));
                 }
             });
 
@@ -352,7 +352,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
             mSimilarMoviesLayout.setSeeMoreOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startActivity(IntentUtils.getSimilarMovies(mContext, mMovie.getTitle(), mMovie.getId(), mToolbarColor));
+                    startActivity(IntentUtils.getSimilarMovies(mContext, mMovie.getTitle(), mMovie.getTmdbId(), mToolbarColor));
                 }
             });
 
@@ -365,12 +365,12 @@ public class TmdbMovieDetailsFragment extends Fragment {
     }
 
     private void loadImages() {
-        if (!mMovie.getCover().isEmpty())
-            mPicasso.load(mMovie.getCover()).placeholder(R.drawable.gray).error(R.drawable.loading_image).into(mCover, new Callback() {
+        if (!mMovie.getPoster().isEmpty())
+            mPicasso.load(mMovie.getPoster()).placeholder(R.drawable.gray).error(R.drawable.loading_image).into(mCover, new Callback() {
                 @Override
                 public void onSuccess() {
                     if (mPaletteLoader == null) {
-                        mPaletteLoader = new PaletteLoader(mPicasso, Uri.parse(mMovie.getCover()), new PaletteLoader.OnPaletteLoadedCallback() {
+                        mPaletteLoader = new PaletteLoader(mPicasso, Uri.parse(mMovie.getPoster()), new PaletteLoader.OnPaletteLoadedCallback() {
                             @Override
                             public void onPaletteLoaded(int swatchColor) {
                                 mToolbarColor = swatchColor;
@@ -412,8 +412,8 @@ public class TmdbMovieDetailsFragment extends Fragment {
                     if (!isAdded())
                         return;
 
-                    if (!mMovie.getCover().isEmpty())
-                        mPicasso.load(mMovie.getCover()).placeholder(R.drawable.bg).error(R.drawable.bg).into(mBackground);
+                    if (!mMovie.getPoster().isEmpty())
+                        mPicasso.load(mMovie.getPoster()).placeholder(R.drawable.bg).error(R.drawable.bg).into(mBackground);
                     else
                         mBackground.setImageResource(R.drawable.bg);
                 }
@@ -423,8 +423,8 @@ public class TmdbMovieDetailsFragment extends Fragment {
                 }
             });
         else {
-            if (!mMovie.getCover().isEmpty())
-                mPicasso.load(mMovie.getCover()).placeholder(R.drawable.bg).error(R.drawable.bg).into(mBackground);
+            if (!mMovie.getPoster().isEmpty())
+                mPicasso.load(mMovie.getPoster()).placeholder(R.drawable.bg).error(R.drawable.bg).into(mBackground);
             else
                 mBackground.setImageResource(R.drawable.bg);
         }
@@ -474,25 +474,25 @@ public class TmdbMovieDetailsFragment extends Fragment {
     public void shareMovie() {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_TEXT, "http://www.themoviedb.org/movie/" + mMovie.getId());
+        intent.putExtra(Intent.EXTRA_TEXT, "http://www.themoviedb.org/movie/" + mMovie.getTmdbId());
         startActivity(Intent.createChooser(intent, getString(R.string.shareWith)));
     }
 
     public void openInBrowser() {
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse("http://www.themoviedb.org/movie/" + mMovie.getId()));
+        intent.setData(Uri.parse("http://www.themoviedb.org/movie/" + mMovie.getTmdbId()));
         startActivity(Intent.createChooser(intent, getString(R.string.openWith)));
     }
 
     public void watchTrailer() {
-        new TmdbTrailerSearch(getActivity(), mMovie.getId(), mMovie.getTitle()).execute();
+        new TmdbTrailerSearch(getActivity(), mMovie.getTmdbId(), mMovie.getTitle()).execute();
     }
 
     public void checkIn() {
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(Void... params) {
-                return Trakt.performMovieCheckin(mMovie.getId(), mContext);
+                return Trakt.performMovieCheckin(mMovie.getTmdbId(), mContext);
             }
 
             @Override
@@ -508,11 +508,11 @@ public class TmdbMovieDetailsFragment extends Fragment {
     private class MovieLoader extends AsyncTask<String, Object, Object> {
         @Override
         protected Object doInBackground(String... params) {
-            mMovie = mMovieApiService.getCompleteMovie(mMovie.getId(), "en");
+            mMovie = mMovieApiService.getCompleteTMDbMovie(mMovie.getTmdbId(), "en");
 
             for (int i = 0; i < mMovie.getSimilarMovies().size(); i++) {
                 String id = mMovie.getSimilarMovies().get(i).getId();
-                mMovie.getSimilarMovies().get(i).setInLibrary(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(id));
+                mMovie.getSimilarMovies().get(i).setInLibrary(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(id));
             }
 
             return null;

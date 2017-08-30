@@ -259,8 +259,6 @@ public class NMJTvShowDetailsFragment extends Fragment {
                         background, mScrollView, this);
             }
         });
-
-        System.out.println("Executing TvShowLoader...");
         new TvShowLoader().execute();
 
     }
@@ -368,6 +366,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
             }
         });
 
+/*
         mCastLayout.setTitle(R.string.detailsActors);
         mCastLayout.setSeeMoreVisibility(true);
         mCastLayout.getViewTreeObserver().addOnGlobalLayoutListener(
@@ -411,6 +410,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
                 startActivity(IntentUtils.getActorBrowserTvShows(mContext, mShow.getTitle(), mShow.getTmdbId(), mToolbarColor, "cast"));
             }
         });
+*/
 
         ViewUtils.updateToolbarBackground(getActivity(), mToolbar, 0, mShow.getTitle(), mToolbarColor);
 
@@ -465,6 +465,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
                 mPicasso.load(mShow.getBackdrop()).skipMemoryCache().error(R.drawable.bg).placeholder(R.drawable.bg).into(background);
             }
         } else {
+            if (!mShow.getBackdrop().isEmpty())
             mPicasso.load(mShow.getBackdrop()).skipMemoryCache().placeholder(R.drawable.bg).into(background, new Callback() {
                 @Override
                 public void onError() {
@@ -801,10 +802,15 @@ public class NMJTvShowDetailsFragment extends Fragment {
     private class TvShowLoader extends AsyncTask<String, Object, Object> {
         @Override
         protected Object doInBackground(String... params) {
-/*            if (mShow.getShowId().equals("0"))
-                mShow = mShowApiService.getCompleteTMDbTvShow(mShow.getTmdbId(), "en");
+            if (mShow.getShowId().equals("0")) {
+                if (mShow.getIdType() == 1) {
+                    mShow = mShowApiService.getCompleteTMDbTvShow(mShow.getTmdbId(), "en");
+                } else {
+                    mShow = mShowApiService.getCompleteTVDbTvShow(mShow.getTmdbId(), "en");
+                }
+            }
             else
-                mShow = mShowApiService.getCompleteNMJTvShow(mShow.getShowId());*/
+                mShow = mShowApiService.getCompleteNMJTvShow(mShow.getShowId());
             for (int i = 0; i < mShow.getSimilarMovies().size(); i++) {
                 String id = mShow.getSimilarMovies().get(i).getId();
                 mShow.getSimilarMovies().get(i).setInLibrary(NMJManagerApplication.getMovieAdapter().movieExists(id));

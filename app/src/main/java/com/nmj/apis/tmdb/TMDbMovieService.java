@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import com.iainconnor.objectcache.CacheManager;
 import com.nmj.abstractclasses.MovieApiService;
 import com.nmj.apis.trakt.Trakt;
+import com.nmj.apis.nmj.Movie;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.Actor;
 import com.nmj.functions.CompleteActor;
@@ -105,8 +106,8 @@ public class TMDbMovieService extends MovieApiService {
                 movie.setReleasedate(array.getJSONObject(i).getString("release_date"));
                 movie.setPlot(""); // TMDb doesn't support descriptions in search results
                 movie.setRating(String.valueOf(array.getJSONObject(i).getDouble("vote_average")));
-                movie.setId(String.valueOf(array.getJSONObject(i).getInt("id")));
-                movie.setCover(baseUrl + imageSizeUrl + array.getJSONObject(i).getString("poster_path"));
+                movie.setTmdbId(String.valueOf(array.getJSONObject(i).getInt("id")));
+                movie.setPoster(baseUrl + imageSizeUrl + array.getJSONObject(i).getString("poster_path"));
                 results.add(movie);
             }
         } catch (JSONException e) {
@@ -118,7 +119,7 @@ public class TMDbMovieService extends MovieApiService {
     @Override
     public Movie get(String id, String json, String language) {
         Movie movie = new Movie();
-        movie.setId(id);
+        movie.setTmdbId(id);
 
         if (id.equals(DbAdapterMovies.UNIDENTIFIED_ID))
             return movie;
@@ -170,7 +171,7 @@ public class TMDbMovieService extends MovieApiService {
             }
 
             try {
-                movie.setCover(baseUrl + NMJLib.getImageUrlSize(mContext) + jObject.getString("poster_path"));
+                movie.setPoster(baseUrl + NMJLib.getImageUrlSize(mContext) + jObject.getString("poster_path"));
             } catch (Exception e) {
             }
 
@@ -316,7 +317,7 @@ public class TMDbMovieService extends MovieApiService {
         } catch (Exception e) {
             // If something goes wrong here, i.e. API error, we won't get any details
             // about the movie - in other words, it's unidentified
-            movie.setId(DbAdapterMovies.UNIDENTIFIED_ID);
+            movie.setTmdbId(DbAdapterMovies.UNIDENTIFIED_ID);
         }
 
         return movie;
@@ -327,7 +328,131 @@ public class TMDbMovieService extends MovieApiService {
         return get(id, null, language);
     }
 
-    public Movie getCompleteMovie(String id, String language) {
+    public Movie getCompleteTMDbMovie(String id, String language) {
+        Movie movie = new Movie();
+        movie.setTmdbId(id);
+
+        if (id.equals(DbAdapterMovies.UNIDENTIFIED_ID))
+            return movie;
+
+        try {
+            // Get the base URL from the preferences
+            String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
+            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
+
+            JSONObject jObject;
+            String CacheId = "movie_" + id;
+            if (!cacheManager.exists(CacheId)) {
+                System.out.println("Putting Cache in " + CacheId);
+                jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "?api_key=" + mTmdbApiKey + (language.equals("en") ? "" : "&language=" + language) + "&append_to_response=releases,trailers,credits,images,similar_movies");
+                NMJLib.putCache(cacheManager, CacheId, jObject.toString());
+            }
+            System.out.println("Getting Cache from " + CacheId);
+            jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
+
+            movie.setTitle(NMJLib.getStringFromJSONObject(jObject, "title", ""));
+            movie.setPlot(NMJLib.getStringFromJSONObject(jObject, "overview", ""));
+            movie.setImdbId(NMJLib.getStringFromJSONObject(jObject, "imdb_id", ""));
+            movie.setRating(NMJLib.getStringFromJSONObject(jObject, "vote_average", "0.0"));
+            movie.setTagline(NMJLib.getStringFromJSONObject(jObject, "tagline", ""));
+            movie.setReleasedate(NMJLib.getStringFromJSONObject(jObject, "release_date", ""));
+            movie.setRuntime(NMJLib.getStringFromJSONObject(jObject, "runtime", "0"));
+
+            if (!language.equals("en")) { // This is a localized search - let's fill in the blanks
+                JSONObject englishResults = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases");
+
+                if (TextUtils.isEmpty(movie.getTitle()))
+                    movie.setTitle(NMJLib.getStringFromJSONObject(englishResults, "title", ""));
+
+                if (TextUtils.isEmpty(movie.getPlot()))
+                    movie.setPlot(NMJLib.getStringFromJSONObject(englishResults, "overview", ""));
+
+                if (TextUtils.isEmpty(movie.getTagline()))
+                    movie.setTagline(NMJLib.getStringFromJSONObject(englishResults, "tagline", ""));
+
+                if (TextUtils.isEmpty(movie.getRating()))
+                    movie.setRating(NMJLib.getStringFromJSONObject(englishResults, "vote_average", "0.0"));
+
+                if (TextUtils.isEmpty(movie.getReleasedate()))
+                    movie.setReleasedate(NMJLib.getStringFromJSONObject(englishResults, "release_date", ""));
+
+                if (movie.getRuntime().equals("0"))
+                    movie.setRuntime(NMJLib.getStringFromJSONObject(englishResults, "runtime", "0"));
+            }
+
+            try {
+                movie.setPoster(baseUrl + NMJLib.getImageUrlSize(mContext) + jObject.getString("poster_path"));
+            } catch (Exception e) {
+            }
+
+            try {
+                String genres = "";
+                for (int i = 0; i < jObject.getJSONArray("genres").length(); i++)
+                    genres = genres + jObject.getJSONArray("genres").getJSONObject(i).getString("name") + ", ";
+                movie.setGenres(genres.substring(0, genres.length() - 2));
+            } catch (Exception e) {
+            }
+
+            try {
+                if (jObject.getJSONObject("trailers").getJSONArray("youtube").length() > 0) {
+
+                    // Go through all YouTube links and looks for trailers
+                    JSONArray youtube = jObject.getJSONObject("trailers").getJSONArray("youtube");
+                    for (int i = 0; i < youtube.length(); i++) {
+                        if (youtube.getJSONObject(i).getString("type").equals("Trailer")) {
+                            movie.setTrailer("http://www.youtube.com/watch?v=" + youtube.getJSONObject(i).getString("source"));
+                            break;
+                        }
+                    }
+
+                    // If no trailer was set, use whatever YouTube link is available (featurette, interviews, etc.)
+                    if (TextUtils.isEmpty(movie.getTrailer())) {
+                        movie.setTrailer("http://www.youtube.com/watch?v=" + jObject.getJSONObject("trailers").getJSONArray("youtube").getJSONObject(0).getString("source"));
+                    }
+                }
+            } catch (Exception e) {
+            }
+
+            try {
+                for (int i = 0; i < jObject.getJSONObject("releases").getJSONArray("countries").length(); i++) {
+                    JSONObject jo = jObject.getJSONObject("releases").getJSONArray("countries").getJSONObject(i);
+                    if (jo.getString("iso_3166_1").equalsIgnoreCase("us") || jo.getString("iso_3166_1").equalsIgnoreCase(language))
+                        movie.setCertification(jo.getString("certification"));
+                }
+            } catch (Exception e) {
+            }
+            movie.setCast(NMJLib.getTMDbCast(mContext, id));
+            movie.setCrew(NMJLib.getTMDbCrew(mContext, id));
+            movie.setSimilarMovies(NMJLib.getTMDbSimilarMovies(mContext, id));
+            try {
+                JSONArray array = jObject.getJSONObject("images").getJSONArray("backdrops");
+
+                if (array.length() > 0) {
+                    movie.setBackdrop(baseUrl + NMJLib.getBackdropUrlSize(mContext) + array.getJSONObject(0).getString("file_path"));
+                } else { // Try with English set as the language, if no results are returned (usually caused by a server-side cache error)
+                    try {
+                        jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "/images?api_key=" + mTmdbApiKey);
+
+                        JSONArray array2 = jObject.getJSONArray("backdrops");
+                        if (array2.length() > 0) {
+                            movie.setBackdrop(baseUrl + NMJLib.getBackdropUrlSize(mContext) + array2.getJSONObject(0).getString("file_path"));
+                        }
+                    } catch (Exception e) {
+                    }
+                }
+            } catch (Exception e) {
+            }
+
+        } catch (Exception e) {
+            // If something goes wrong here, i.e. API error, we won't get any details
+            // about the movie - in other words, it's unidentified
+            movie.setTmdbId(DbAdapterMovies.UNIDENTIFIED_ID);
+        }
+
+        return movie;
+    }
+
+    /*public Movie getCompleteTMDbMovie(String id, String language) {
         Movie movie = new Movie();
         movie.setId(id);
 
@@ -517,7 +642,7 @@ public class TMDbMovieService extends MovieApiService {
         }
 
         return movie;
-    }
+    }*/
 
     @Override
     public List<String> getCovers(String id) {
@@ -570,8 +695,8 @@ public class TMDbMovieService extends MovieApiService {
                 movie.setReleasedate(array.getJSONObject(i).getString("release_date"));
                 movie.setPlot(""); // TMDb doesn't support descriptions in search results
                 movie.setRating(String.valueOf(array.getJSONObject(i).getDouble("vote_average")));
-                movie.setId(String.valueOf(array.getJSONObject(i).getInt("id")));
-                movie.setCover(baseUrl + imageSizeUrl + array.getJSONObject(i).getString("poster_path"));
+                movie.setTmdbId(String.valueOf(array.getJSONObject(i).getInt("id")));
+                movie.setPoster(baseUrl + imageSizeUrl + array.getJSONObject(i).getString("poster_path"));
                 results.add(movie);
             }
         } catch (JSONException e) {

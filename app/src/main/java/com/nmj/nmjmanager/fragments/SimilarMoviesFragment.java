@@ -224,10 +224,10 @@ public class SimilarMoviesFragment extends Fragment {
 			holder.text.setText(movie.getTitle());
 			holder.subtext.setText(movie.getSubtitle());
 
-			if(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(movie.getId()))
+			if(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(movie.getId()))
 				holder.inLibrary.setVisibility(View.VISIBLE);
 
-			if(NMJManagerApplication.getNMJMovieAdapter().hasWatched(movie.getId()))
+			if(NMJManagerApplication.getNMJAdapter().hasWatched(movie.getId()))
 				holder.hasWatched.setVisibility(View.VISIBLE);
 
 			if (!mSimilarMovies.get(position).getUrl().contains("null"))
@@ -276,7 +276,7 @@ public class SimilarMoviesFragment extends Fragment {
 
 			for (int i = 0; i < mSimilarMovies.size(); i++) {
 				String id = mSimilarMovies.get(i).getId();
-				mSimilarMovies.get(i).setInLibrary(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(id));
+				mSimilarMovies.get(i).setInLibrary(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(id));
 			}
 
 			return null;

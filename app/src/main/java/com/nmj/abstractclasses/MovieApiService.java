@@ -18,7 +18,7 @@ package com.nmj.abstractclasses;
 
 import android.text.TextUtils;
 
-import com.nmj.apis.tmdb.Movie;
+import com.nmj.apis.nmj.Movie;
 import com.nmj.functions.WebMovie;
 
 import java.util.List;

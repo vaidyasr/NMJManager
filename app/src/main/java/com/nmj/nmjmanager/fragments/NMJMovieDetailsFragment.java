@@ -49,6 +49,7 @@ import android.widget.Toast;
 import com.melnykov.fab.FloatingActionButton;
 import com.nmj.apis.nmj.Movie;
 import com.nmj.apis.nmj.NMJMovieService;
+import com.nmj.apis.tmdb.TMDbMovieService;
 import com.nmj.apis.trakt.Trakt;
 import com.nmj.base.NMJActivity;
 import com.nmj.functions.FileSource;
@@ -87,7 +88,7 @@ public class NMJMovieDetailsFragment extends Fragment {
     private boolean mRetained = false, mShowFileLocation;
     private Picasso mPicasso;
     private Typeface mMediumItalic, mMedium, mBold, mCondensedRegular;
-    private NMJMovieService mMovieApiService;
+    private NMJMovieService mNMJMovieApiService;
     private HorizontalCardLayout mCastLayout, mCrewLayout, mSimilarMoviesLayout;
     private int mImageThumbSize, mImageThumbSpacing, mToolbarColor = 0;
     private Toolbar mToolbar;
@@ -124,7 +125,7 @@ public class NMJMovieDetailsFragment extends Fragment {
         mBold = TypefaceUtils.getRobotoBold(mContext);
         mCondensedRegular = TypefaceUtils.getRobotoCondensedRegular(mContext);
 
-        mMovieApiService = NMJMovieService.getInstance(mContext);
+        mNMJMovieApiService = NMJMovieService.getInstance(mContext);
 
         // Get the database ID of the movie in question
         mMovie = new Movie();
@@ -400,9 +401,9 @@ public class NMJMovieDetailsFragment extends Fragment {
 
             ViewUtils.updateToolbarBackground(getActivity(), mToolbar, 0, mMovie.getTitle(), mToolbarColor);
 
-
-            if (!mMovie.getVideo().get(0).getPlayCount().equals("0"))
-                mHasWatched.setVisibility(View.VISIBLE);
+            if(mMovie.getVideo().size() > 0)
+                if (!mMovie.getVideo().get(0).getPlayCount().equals("0"))
+                    mHasWatched.setVisibility(View.VISIBLE);
 
             setLoading(false);
 
@@ -577,9 +578,9 @@ public class NMJMovieDetailsFragment extends Fragment {
         @Override
         protected Object doInBackground(String... params) {
             if (mMovie.getShowId().equals("0"))
-                mMovie = mMovieApiService.getCompleteTMDbMovie(mMovie.getTmdbId(), "en");
+                mMovie = mNMJMovieApiService.getCompleteTMDbMovie(mMovie.getTmdbId(), "en");
             else
-                mMovie = mMovieApiService.getCompleteNMJMovie(mMovie.getShowId());
+                mMovie = mNMJMovieApiService.getCompleteNMJMovie(mMovie.getShowId());
             for (int i = 0; i < mMovie.getSimilarMovies().size(); i++) {
                 String id = mMovie.getSimilarMovies().get(i).getId();
                 mMovie.getSimilarMovies().get(i).setInLibrary(NMJManagerApplication.getMovieAdapter().movieExists(id));

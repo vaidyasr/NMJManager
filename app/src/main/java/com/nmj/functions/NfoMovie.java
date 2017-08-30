@@ -19,7 +19,7 @@ package com.nmj.functions;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.nmj.apis.tmdb.Movie;
+import com.nmj.apis.nmj.Movie;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.squareup.picasso.Picasso;
@@ -197,9 +197,9 @@ public class NfoMovie {
 						list = firstElement.getElementsByTagName("thumb");
 						element = (Element) list.item(0);
 						tag = element.getChildNodes();
-						mMovie.setCover(tag.item(0).getNodeValue().trim());
+						mMovie.setPoster(tag.item(0).getNodeValue().trim());
 					} catch(Exception e) {
-						mMovie.setCover("");
+						mMovie.setPoster("");
 					}
 
 					if (firstElement.getElementsByTagName("mpaa").getLength() > 0) {
@@ -235,9 +235,9 @@ public class NfoMovie {
 						list = firstElement.getElementsByTagName("tmdbid");
 						element = (Element) list.item(0);
 						tag = element.getChildNodes();
-						mMovie.setId(tag.item(0).getNodeValue().trim());
+						mMovie.setTmdbId(tag.item(0).getNodeValue().trim());
 					} catch(Exception e) {
-						mMovie.setId(DbAdapterMovies.UNIDENTIFIED_ID);
+						mMovie.setTmdbId(DbAdapterMovies.UNIDENTIFIED_ID);
 					}
 
 					try {
@@ -312,14 +312,14 @@ public class NfoMovie {
 		DbAdapterMovies dbHelper = NMJManagerApplication.getMovieAdapter();
 
 		// Create the movie entry
-		dbHelper.createMovie(TextUtils.isEmpty(mMovie.getId()) ? mFilepath : mMovie.getId(), mMovie.getTitle(), mMovie.getPlot(), mMovie.getImdbId(),
+		dbHelper.createMovie(TextUtils.isEmpty(mMovie.getTmdbId()) ? mFilepath : mMovie.getTmdbId(), mMovie.getTitle(), mMovie.getPlot(), mMovie.getImdbId(),
 				mMovie.getRating(), mMovie.getTagline(), mMovie.getReleasedate(), mMovie.getCertification(), mMovie.getRuntime(), mMovie.getTrailer(),
 				mMovie.getGenres(), "0", mMovie.getCastString(), mMovie.getCollectionTitle(), mMovie.getCollectionId(), "0", "0", String.valueOf(System.currentTimeMillis()));
 
 		// Create the filepath mapping
-		NMJManagerApplication.getMovieMappingAdapter().createFilepathMapping(mFilepath, TextUtils.isEmpty(mMovie.getId()) ? mFilepath : mMovie.getId());
+		NMJManagerApplication.getMovieMappingAdapter().createFilepathMapping(mFilepath, TextUtils.isEmpty(mMovie.getTmdbId()) ? mFilepath : mMovie.getTmdbId());
 
-		com.nmj.functions.Movie temp = new com.nmj.functions.Movie(mContext, mMovie.getTitle(), mMovie.getPlot(), mMovie.getTagline(), mMovie.getId(), mMovie.getImdbId(), mMovie.getRating(),
+		com.nmj.functions.Movie temp = new com.nmj.functions.Movie(mContext, mMovie.getTitle(), mMovie.getPlot(), mMovie.getTagline(), mMovie.getTmdbId(), mMovie.getImdbId(), mMovie.getRating(),
 				mMovie.getReleasedate(), mMovie.getCertification(), mMovie.getRuntime(), mMovie.getTrailer(), mMovie.getGenres(), "0", mMovie.getCastString(),
                 mMovie.getCollectionTitle(), mMovie.getCollectionId(), "0", "0", String.valueOf(System.currentTimeMillis()), "0", "", false);
 

@@ -325,7 +325,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 mMovieLoader.getType() == MovieLibraryType.POPULAR ||
                 mMovieLoader.getType() == MovieLibraryType.NOW_PLAYING) { // Collection
             intent.putExtra("tmdbId", tmdbId);
-            intent.putExtra("showId", NMJManagerApplication.getNMJMovieAdapter().getShowIdByTmdbId(tmdbId));
+            intent.putExtra("showId", NMJManagerApplication.getNMJAdapter().getShowIdByTmdbId(tmdbId));
             intent.setClass(mContext, NMJMovieDetails.class);
         }else {
             intent.putExtra("tmdbId", tmdbId);
@@ -675,7 +675,8 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             if (movie.getTitleType() == "tmdb")
                 mURL = baseUrl + imageSizeUrl;
             else
-                mURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/My_Book/";
+                mURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/";
+
             mPicasso.load(mURL + movie.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
             if (mChecked.contains(position)) {
                 holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));
@@ -684,14 +685,14 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             }
             holder.hasWatched.setVisibility(View.GONE);
 
-            if (hasWatched(position) && movie.getTitleType() != "tmdb")
+            if (hasWatched(position))
                 holder.hasWatched.setVisibility(View.VISIBLE);
 
             holder.inLibrary.setVisibility(View.GONE);
 
-            if (movie.getTitleType() == "tmdb" && NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(getItem(position).getTmdbId())) {
+            if (movie.getTitleType() == "tmdb" && NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(getItem(position).getTmdbId())) {
                 holder.inLibrary.setVisibility(View.VISIBLE);
-                if (NMJManagerApplication.getNMJMovieAdapter().hasWatched(getItem(position).getTmdbId()))
+                if (NMJManagerApplication.getNMJAdapter().hasWatched(getItem(position).getTmdbId()))
                     holder.hasWatched.setVisibility(View.VISIBLE);
             }
             return convertView;

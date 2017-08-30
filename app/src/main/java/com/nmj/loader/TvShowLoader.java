@@ -32,7 +32,7 @@ import com.nmj.functions.FileSource;
 import com.nmj.functions.Filepath;
 import com.nmj.functions.LibrarySectionAsyncTask;
 import com.nmj.functions.NMJLib;
-import com.nmj.functions.NMJMovie;
+import com.nmj.functions.NMJTvShow;
 import com.nmj.functions.PreferenceKeys;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
@@ -89,7 +89,7 @@ public class TvShowLoader {
     private final DbAdapterTvShowEpisodes mTvShowEpisodeDatabase;
 
     private TvShowSortType mSortType;
-    private ArrayList<NMJMovie> mResults = new ArrayList<>();
+    private ArrayList<NMJTvShow> mResults = new ArrayList<>();
     private HashSet<TvShowFilter> mFilters = new HashSet<>();
     private TvShowLoaderAsyncTask mAsyncTask;
     private boolean mIgnorePrefixes = false,
@@ -242,7 +242,7 @@ public class TvShowLoader {
      * Get the results of the most recently loaded TV shows.
      * @return List of TV show objects.
      */
-    public ArrayList<NMJMovie> getResults() {
+    public ArrayList<NMJTvShow> getResults() {
         return mResults;
     }
 
@@ -394,14 +394,14 @@ public class TvShowLoader {
      */
     private class TvShowLoaderAsyncTask extends LibrarySectionAsyncTask<Void, Void, Void> {
 
-        private final ArrayList<NMJMovie> mTvShowList;
+        private final ArrayList<NMJTvShow> mTvShowList;
         private final String mSearchQuery;
 
         public TvShowLoaderAsyncTask(String searchQuery) {
             // Lowercase in order to search more efficiently
             mSearchQuery = searchQuery.toLowerCase(Locale.getDefault());
 
-            mTvShowList = new ArrayList<NMJMovie>();
+            mTvShowList = new ArrayList<NMJTvShow>();
         }
 
         @Override
@@ -409,31 +409,31 @@ public class TvShowLoader {
 
             switch (mLibraryType) {
                 case ALL_SHOWS:
-                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "TV Shows", "all", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "all", ""));
                     break;
                 case FAVORITES:
-                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "TV Shows", "favorites", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "favorites", ""));
                     break;
                 case RECENTLY_AIRED:
-                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "TV Shows", "newReleases", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "newReleases", ""));
                     break;
                 case UNWATCHED:
-                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "TV Shows", "unwatched", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "unwatched", ""));
                     break;
                 case WATCHED:
-                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "TV Shows", "watched", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "watched", ""));
                     break;
                 case POPULAR:
-                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "tv", "popular", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "tv", "popular", ""));
                     break;
                 case TOP_RATED:
-                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "tv", "top_rated", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "tv", "top_rated", ""));
                     break;
                 case ON_TV:
-                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "tv", "on_the_air", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "tv", "on_the_air", ""));
                     break;
                 case AIRING_TODAY:
-                    mTvShowList.addAll(NMJLib.getVideoFromJSON(mContext, "tv", "airing_today", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "tv", "airing_today", ""));
                     break;
                 default:
                     break;
@@ -581,7 +581,7 @@ public class TvShowLoader {
             // If we've got a search query, we should search based on it
             if (!TextUtils.isEmpty(mSearchQuery)) {
 
-                ArrayList<NMJMovie> tempCollection = Lists.newArrayList();
+                ArrayList<NMJTvShow> tempCollection = Lists.newArrayList();
 
 /*
                 if (mSearchQuery.startsWith("actor:")) {

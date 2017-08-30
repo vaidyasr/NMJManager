@@ -225,10 +225,10 @@ public class ActorMoviesFragment extends Fragment {
 			holder.text.setText(movie.getTitle());
 			holder.subtext.setText(movie.getSubtitle());
 
-			if(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(movie.getId()))
+			if(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(movie.getId()))
 				holder.inLibrary.setVisibility(View.VISIBLE);
 
-			if(NMJManagerApplication.getNMJMovieAdapter().hasWatched(movie.getId()))
+			if(NMJManagerApplication.getNMJAdapter().hasWatched(movie.getId()))
 				holder.hasWatched.setVisibility(View.VISIBLE);
 
 			if (!movie.getUrl().contains("null"))
@@ -278,7 +278,7 @@ public class ActorMoviesFragment extends Fragment {
 
 			for (int i = 0; i < mActor.getMovies().size(); i++) {
 				String id = mActor.getMovies().get(i).getId();
-				mActor.getMovies().get(i).setInLibrary(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(id));
+				mActor.getMovies().get(i).setInLibrary(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(id));
 			}
 
 			return null;

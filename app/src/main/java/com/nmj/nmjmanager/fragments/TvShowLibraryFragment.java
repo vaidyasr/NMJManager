@@ -56,7 +56,8 @@ import android.widget.TextView;
 import com.github.ksoichiro.android.observablescrollview.ObservableGridView;
 import com.nmj.functions.CoverItem;
 import com.nmj.functions.NMJLib;
-import com.nmj.functions.NMJMovie;
+import com.nmj.functions.NMJTvShow;
+import com.nmj.functions.NMJTvShow;
 import com.nmj.loader.OnLoadCompletedCallback;
 import com.nmj.loader.TvShowFilter;
 import com.nmj.loader.TvShowLibraryType;
@@ -530,7 +531,7 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
         }
 
         @Override
-        public NMJMovie getItem(int position) {
+        public NMJTvShow getItem(int position) {
             return mTvShowLoader.getResults().get(position);
         }
 
@@ -545,7 +546,7 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
 
         @Override
         public View getView(int position, View convertView, ViewGroup container) {
-            final NMJMovie show = getItem(position);
+            final NMJTvShow show = getItem(position);
             String mURL;
 
             CoverItem holder;
@@ -577,20 +578,26 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
             if (show.getTitleType() == "tmdb")
                 mURL = baseUrl + imageSizeUrl;
             else
-                mURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/My_Book/";
-            mPicasso.load(mURL + show.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
+                mURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/";
 
+            mPicasso.load(mURL + show.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
             if (mChecked.contains(position)) {
                 holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));
             } else {
                 holder.cardview.setForeground(null);
             }
+            holder.hasWatched.setVisibility(View.GONE);
+
             if (hasWatched(position))
                 holder.hasWatched.setVisibility(View.VISIBLE);
-            else
-                holder.hasWatched.setVisibility(View.GONE);
-            ;
+
             holder.inLibrary.setVisibility(View.GONE);
+
+            if (show.getTitleType() == "tmdb" && NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(getItem(position).getTmdbId())) {
+                holder.inLibrary.setVisibility(View.VISIBLE);
+                if (NMJManagerApplication.getNMJAdapter().hasWatched(getItem(position).getTmdbId()))
+                    holder.hasWatched.setVisibility(View.VISIBLE);
+            }
             return convertView;
         }
 

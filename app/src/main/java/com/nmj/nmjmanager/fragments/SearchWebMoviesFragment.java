@@ -47,7 +47,7 @@ import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.nmj.abstractclasses.MovieApiService;
-import com.nmj.apis.tmdb.Movie;
+import com.nmj.apis.nmj.Movie;
 import com.nmj.base.NMJActivity;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.AsyncTask;
@@ -215,8 +215,8 @@ public class SearchWebMoviesFragment extends Fragment {
                 for (int i = 0; i < count; i++) {
                     mResults.add(new Result(
                                     movieResults.get(i).getTitle(),
-                                    movieResults.get(i).getId(),
-                                    movieResults.get(i).getCover(),
+                                    movieResults.get(i).getTmdbId(),
+                                    movieResults.get(i).getPoster(),
                                     movieResults.get(i).getRating(),
                                     movieResults.get(i).getReleasedate())
                     );

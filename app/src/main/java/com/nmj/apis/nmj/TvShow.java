@@ -18,6 +18,8 @@ package com.nmj.apis.nmj;
 
 import android.text.TextUtils;
 
+import com.nmj.apis.thetvdb.Episode;
+import com.nmj.apis.thetvdb.Season;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.Actor;
 import com.nmj.functions.Filepath;
@@ -33,10 +35,14 @@ public class TvShow {
     public static final int TMDB = 1, THETVDB = 2;
     private String showid = "", title = "", originalTitle = "", plot = "", thumbnail = "", poster = "", backdrop = "",
             rating = "0.0", tagline = "", releasedate = "", imdbId = "", certification = "", runtime = "0",
-            trailer = "", genres = "", cast = "", crew = "", collectionTitle = "", collectionId = "",
-            collectionImage = "", year = "", tmdbId = "", filepath = "";
+            trailer = "", genres = "", cast = "", crew = "", collectionTitle = "", collectionId = "", mCoverUrl = "",
+            collectionImage = "", year = "", tmdbId = "", filepath = "",mDescription = "", mActors = "", mBackdropUrl = "",
+            mFirstAired = "", mImdbId= "";
+    ;
     private boolean mFavorite;
     private List<Video> mVideo = new ArrayList<>();
+    private ArrayList<Episode> mEpisodes = new ArrayList<>();
+    private ArrayList<Season> mSeasons = new ArrayList<>();
     private List<Actor> mCast = new ArrayList<Actor>();
     private List<Actor> mCrew = new ArrayList<Actor>();
     private List<WebMovie> mSimilarMovies = new ArrayList<WebMovie>();
@@ -47,22 +53,89 @@ public class TvShow {
         setTmdbId(DbAdapterMovies.UNIDENTIFIED_ID);
     }
 
+    public String getBackdropUrl() {
+        return mBackdropUrl;
+    }
+
+    public void setBackdropUrl(String backdropUrl) {
+        mBackdropUrl = backdropUrl;
+    }
+
     public String getTmdbId() {
         if (TextUtils.isEmpty(tmdbId))
             return title;
         return tmdbId.replace("tmdb", "");
     }
 
+    public String getFirstAired() {
+        return mFirstAired;
+    }
+
+    public void setFirstAired(String firstAired) {
+        mFirstAired = firstAired;
+    }
+
+    public String getCoverUrl() {
+        return mCoverUrl;
+    }
+
+    public void setCoverUrl(String coverUrl) {
+        mCoverUrl = coverUrl;
+    }
+
+    public String getTvdbId() {
+        if (TextUtils.isEmpty(tmdbId))
+            return title;
+        return tmdbId.replace("tvdb", "");
+    }
+
+    public void setIMDbId(String id) {
+        mImdbId = id;
+    }
+
     public void setTmdbId(String id) {
         this.tmdbId = id;
     }
 
+    public void setTvdbId(String id) {
+        this.tmdbId = id;
+    }
+
     public int getIdType() {
-        if (tmdbId.startsWith("tmdb_"))
+        if (tmdbId.startsWith("tmdb"))
             return TMDB;
         return THETVDB;
     }
 
+    public String getActors() {
+        return mActors;
+    }
+
+    public void setActors(String actors) {
+        mActors = actors;
+    }
+
+    public void addSeason(Season s) {
+        mSeasons.add(s);
+    }
+
+    public ArrayList<Season> getSeasons() {
+        return mSeasons;
+    }
+
+    public boolean hasSeason(int season) {
+        for (Season s : mSeasons)
+            if (s.getSeason() == season)
+                return true;
+        return false;
+    }
+
+    public Season getSeason(int season) {
+        for (Season s : mSeasons)
+            if (s.getSeason() == season)
+                return s;
+        return new Season();
+    }
     public boolean isFavorite() {
         return mFavorite;
     }
@@ -96,6 +169,15 @@ public class TvShow {
     public void setTitle(String title) {
         this.title = title;
     }
+
+    public String getDescription() {
+        return mDescription;
+    }
+
+    public void setDescription(String description) {
+        mDescription = description;
+    }
+
 
     public String getOriginalTitle() {
         return originalTitle;
@@ -237,8 +319,12 @@ public class TvShow {
         return imdbId;
     }
 
-    public void setImdbId(String imdbId) {
-        this.imdbId = imdbId;
+    public void addEpisode(Episode ep) {
+        mEpisodes.add(ep);
+    }
+
+    public ArrayList<Episode> getEpisodes() {
+        return mEpisodes;
     }
 
     public String getYear() {

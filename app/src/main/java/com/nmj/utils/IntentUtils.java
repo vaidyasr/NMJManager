@@ -24,7 +24,7 @@ import android.text.TextUtils;
 import com.nmj.functions.Actor;
 import com.nmj.functions.IntentKeys;
 import com.nmj.functions.Library;
-import com.nmj.functions.NMJAdapterMovies;
+import com.nmj.functions.NMJAdapter;
 import com.nmj.functions.NMJMovie;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.WebMovie;
@@ -128,7 +128,7 @@ public class IntentUtils {
 	}
 	
 	public static Intent getTmdbMovieDetails(Context context, WebMovie movie, int toolbarColor) {
-		NMJAdapterMovies mDatabase = NMJManagerApplication.getNMJMovieAdapter();
+		NMJAdapter mDatabase = NMJManagerApplication.getNMJAdapter();
 		ArrayList<Library> list = mDatabase.getLibrary();
 		Intent movieDetailsIntent = new Intent(context, movie.isInLibrary() ? NMJMovieDetails.class : TMDbMovieDetails.class);
 		System.out.println("tmdbId: " + movie.getId());

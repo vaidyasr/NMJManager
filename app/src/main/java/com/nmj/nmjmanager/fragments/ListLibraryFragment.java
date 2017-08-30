@@ -580,7 +580,7 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
             if (movie.getTitleType() == "tmdb")
                 mURL = baseUrl + imageSizeUrl;
             else
-                mURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/My_Book/";
+                mURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/";
             mPicasso.load(mURL + movie.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
             if (mChecked.contains(position)) {
                 holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));

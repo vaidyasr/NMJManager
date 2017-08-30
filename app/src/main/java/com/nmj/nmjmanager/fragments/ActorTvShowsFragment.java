@@ -218,10 +218,10 @@ public class ActorTvShowsFragment extends Fragment {
 			holder.text.setText(show.getTitle());
 			holder.subtext.setText(show.getSubtitle());
 
-			if(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(show.getId()))
+			if(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(show.getId()))
 				holder.inLibrary.setVisibility(View.VISIBLE);
 
-			if(NMJManagerApplication.getNMJMovieAdapter().hasWatched(show.getId()))
+			if(NMJManagerApplication.getNMJAdapter().hasWatched(show.getId()))
 				holder.hasWatched.setVisibility(View.VISIBLE);
 
 			if (!show.getUrl().contains("null"))

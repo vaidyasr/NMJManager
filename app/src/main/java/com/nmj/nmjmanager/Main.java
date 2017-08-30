@@ -62,7 +62,7 @@ import com.nmj.db.DbAdapterMovies;
 import com.nmj.db.DbAdapterTvShows;
 import com.nmj.functions.BlurTransformation;
 import com.nmj.functions.MenuItem;
-import com.nmj.functions.NMJAdapterMovies;
+import com.nmj.functions.NMJAdapter;
 import com.nmj.functions.NMJLib;
 import com.nmj.nmjmanager.fragments.AccountsFragment;
 import com.nmj.nmjmanager.fragments.ContactDeveloperFragment;
@@ -98,7 +98,7 @@ public class Main extends NMJActivity {
     private Typeface mTfMedium, mTfRegular;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
-    private NMJAdapterMovies mDbHelper;
+    private NMJAdapter mDbHelper;
     private DbAdapterTvShows mDbHelperTv;
     private boolean mConfirmExit, mTriedOnce = false;
     private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
@@ -129,7 +129,7 @@ public class Main extends NMJActivity {
         mConfirmExit = settings.getBoolean(CONFIRM_BACK_PRESS, false);
         mStartup = Integer.valueOf(settings.getString(STARTUP_SELECTION, "0"));
 
-        mDbHelper = NMJManagerApplication.getNMJMovieAdapter();
+        mDbHelper = NMJManagerApplication.getNMJAdapter();
         mDbHelperTv = NMJManagerApplication.getTvDbAdapter();
 
         mTfMedium = TypefaceUtils.getRobotoMedium(getApplicationContext());

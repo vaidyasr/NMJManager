@@ -22,13 +22,13 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class NMJAdapterMovies {
+public class NMJAdapter {
     // Database fields
     public static final String KEY_TMDB_ID = "tmdbid"; // Unidentified movies and .nfo files without TMDb ID use the filepath
     public int movieCount, showCount, musicCount;
     ArrayList<Library> mLibrary;
 
-    public NMJAdapterMovies() {
+    public NMJAdapter() {
     }
 
     public int getMovieCount() {

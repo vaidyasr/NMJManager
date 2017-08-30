@@ -129,10 +129,10 @@ public class ViewUtils {
         v.findViewById(R.id.inLibrary).setVisibility(View.GONE);
         v.findViewById(R.id.hasWatched).setVisibility(View.GONE);
 
-        if(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(movie.getId()))
+        if(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(movie.getId()))
             v.findViewById(R.id.inLibrary).setVisibility(View.VISIBLE);
 
-        if(NMJManagerApplication.getNMJMovieAdapter().hasWatched(movie.getId()))
+        if(NMJManagerApplication.getNMJAdapter().hasWatched(movie.getId()))
             v.findViewById(R.id.hasWatched).setVisibility(View.VISIBLE);
 
         // Set click listener
@@ -172,10 +172,10 @@ public class ViewUtils {
         v.findViewById(R.id.inLibrary).setVisibility(View.GONE);
         v.findViewById(R.id.hasWatched).setVisibility(View.GONE);
 
-        if(NMJManagerApplication.getNMJMovieAdapter().movieExistsbyTmdbId(show.getId()))
+        if(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(show.getId()))
             v.findViewById(R.id.inLibrary).setVisibility(View.VISIBLE);
 
-        if(NMJManagerApplication.getNMJMovieAdapter().hasWatched(show.getId()))
+        if(NMJManagerApplication.getNMJAdapter().hasWatched(show.getId()))
             v.findViewById(R.id.hasWatched).setVisibility(View.VISIBLE);
 
         // Set click listener

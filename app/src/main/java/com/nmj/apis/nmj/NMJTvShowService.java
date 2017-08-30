@@ -9,6 +9,7 @@ import com.nmj.abstractclasses.TvShowApiService;
 import com.nmj.apis.thetvdb.Episode;
 import com.nmj.apis.thetvdb.Season;
 import com.nmj.apis.thetvdb.TvShow;
+import com.nmj.apis.trakt.Show;
 import com.nmj.apis.trakt.Trakt;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.Actor;
@@ -20,13 +21,22 @@ import com.nmj.nmjmanager.R;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import static com.nmj.functions.PreferenceKeys.TVSHOWS_RATINGS_SOURCE;
 
@@ -34,12 +44,13 @@ public class NMJTvShowService extends TvShowApiService {
 
     private static NMJTvShowService mService;
 
-    private final String mTmdbApiKey, mTmdbApiURL;
+    private final String mTmdbApiKey, mTmdbApiURL, mTvdbApiKey;
     private final Context mContext;
 
     private NMJTvShowService(Context context) {
         mContext = context;
         mTmdbApiKey = NMJLib.getTmdbApiKey(mContext);
+        mTvdbApiKey = NMJLib.getTvdbApiKey(mContext);
         mTmdbApiURL = NMJLib.getTmdbApiURL(mContext);
     }
 
@@ -311,13 +322,14 @@ public class NMJTvShowService extends TvShowApiService {
         return show;
     }
 
-    public Movie getCompleteNMJTvShow(String id) {
-        Movie movie = new Movie();
-        movie.setShowId(id);
-        String nmjImgURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/My_Book/";
+    public com.nmj.apis.nmj.TvShow getCompleteNMJTvShow(String id) {
+        System.out.println("TV Show Id: " + id);
+        com.nmj.apis.nmj.TvShow show = new com.nmj.apis.nmj.TvShow();
+        show.setShowId(id);
+        String nmjImgURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/";
 
         if (id.equals(DbAdapterMovies.UNIDENTIFIED_ID))
-            return movie;
+            return show;
 
         try {
             // Get the base URL from the preferences
@@ -325,34 +337,34 @@ public class NMJTvShowService extends TvShowApiService {
 
             JSONObject jObject;
             String CacheId = "nmj_" + id;
+            String showid;
 
             CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
             if (!cacheManager.exists(CacheId)) {
                 System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=My_Book&sourceurl=undefined&dbpath=My_Book/nmj_database/media.db&showid=" + id + "&title_type=1");
+                jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServer() + "NMJManagerTablet_web/gd.php?action=getVideoDetails&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&showid=" + id + "&title_type=2");
                 NMJLib.putCache(cacheManager, CacheId, jObject.toString());
             }
             System.out.println("Getting Cache from " + CacheId);
             jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
 
-            movie.setTitle(NMJLib.getStringFromJSONObject(jObject, "TITLE", ""));
+            show.setTitle(NMJLib.getStringFromJSONObject(jObject, "TITLE", ""));
+            show.setCertification(NMJLib.getStringFromJSONObject(jObject, "PARENTAL_CONTROL", ""));
+            show.setPlot(NMJLib.getStringFromJSONObject(jObject, "CONTENT", ""));
+            show.setIMDbId(NMJLib.getStringFromJSONObject(jObject, "TTID", ""));
 
-            movie.setCertification(NMJLib.getStringFromJSONObject(jObject, "PARENTAL_CONTROL", ""));
+            showid = NMJLib.getStringFromJSONObject(jObject, "CONTENT_TTID", "");
+            if(show.getIdType() == 1)
+                show.setTvdbId(showid);
+            else
+                show.setTvdbId(showid);
 
-            movie.setPlot(NMJLib.getStringFromJSONObject(jObject, "CONTENT", ""));
-
-            movie.setImdbId(NMJLib.getStringFromJSONObject(jObject, "TTID", ""));
-
-            movie.setTmdbId(NMJLib.getStringFromJSONObject(jObject, "CONTENT_TTID", ""));
-
-            movie.setRating(NMJLib.getStringFromJSONObject(jObject, "RATING", "0.0"));
-
-            movie.setReleasedate(NMJLib.getStringFromJSONObject(jObject, "RELEASE_DATE", ""));
-
-            movie.setRuntime(NMJLib.getStringFromJSONObject(jObject, "RUNTIME", "0"));
+            show.setRating(NMJLib.getStringFromJSONObject(jObject, "RATING", "0.0"));
+            show.setFirstAirdate(NMJLib.getStringFromJSONObject(jObject, "RELEASE_DATE", ""));
+            show.setRuntime(NMJLib.getStringFromJSONObject(jObject, "RUNTIME", "0"));
 
             try {
-                movie.setPoster(nmjImgURL + jObject.getString("POSTER"));
+                show.setPoster(nmjImgURL + jObject.getString("POSTER"));
             } catch (Exception e) {
             }
 
@@ -361,7 +373,7 @@ public class NMJTvShowService extends TvShowApiService {
                 String genres = "";
                 for (int i = 0; i < genre.length(); i++)
                     genres = genres + genre.get(i) + ", ";
-                movie.setGenres(genres.substring(0, genres.length() - 2));
+                show.setGenres(genres.substring(0, genres.length() - 2));
             } catch (Exception e) {
             }
 
@@ -375,107 +387,51 @@ public class NMJTvShowService extends TvShowApiService {
                             video.getJSONObject(i).getString("SIZE"),
                             video.getJSONObject(i).getString("PATH")
                     ));
-                    /*movie.setVideo(video.getJSONObject(i).getString("VIDEO_ID"));
-                    movie.setV.setVideoId();
-                    videos.setSize(video.getJSONObject(i).getString("SIZE"));
-                    videos.setPath(video.getJSONObject(i).getString("PATH"));
-                    videos.setWidth(video.getJSONObject(i).getString("WIDTH"));
-                    videos.setHeight(video.getJSONObject(i).getString("HEIGHT"));*/
-                    //videos.setWidth(video.getJSONObject(i).getString("WIDTH"));
-                    //videos.setWidth(video.getJSONObject(i).getString("WIDTH"));
+                    videoDetails.get(i).setPlayCount(video.getJSONObject(i).getString("PLAY_COUNT"));
+                    videoDetails.get(i).setWidth(video.getJSONObject(i).getString("WIDTH"));
+                    videoDetails.get(i).setHeight(video.getJSONObject(i).getString("HEIGHT"));
+                    videoDetails.get(i).setResolution();
+                    videoDetails.get(i).setRuntime(video.getJSONObject(i).getString("RUNTIME"));
+                    videoDetails.get(i).setAspectRatio(video.getJSONObject(i).getString("ASPECT_RATIO"));
+                    videoDetails.get(i).setFPS(video.getJSONObject(i).getString("FPS"));
+                    videoDetails.get(i).setSystem(video.getJSONObject(i).getString("SYSTEM"));
+                    videoDetails.get(i).setVideoCodec(video.getJSONObject(i).getString("VIDEO_CODEC"));
+                    videoDetails.get(i).setThreeD(video.getJSONObject(i).getString("THREE_D"));
                 }
-                movie.setVideo(videoDetails);
-                //System.out.println("Video Details: " + movie.getVideo().get(0).getPath());
-
+                show.setVideo(videoDetails);
             } catch (Exception e) {
             }
-
-            CacheId = "movie_" + movie.getTmdbId();
+            if(show.getIdType() == 1)
+                CacheId = "tmdb_tv_" + show.getTmdbId();
+            else
+                CacheId = "tvdb_tv_" + show.getTvdbId();
             if (!cacheManager.exists(CacheId)) {
                 System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + movie.getTmdbId() + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+                if (show.getIdType() == 1)
+                    jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "tv/" + show.getTmdbId() + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+                else
+                    jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "tv/" + show.getTvdbId() + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+
                 NMJLib.putCache(cacheManager, CacheId, jObject.toString());
             }
             System.out.println("Getting Cache from " + CacheId);
             jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
-            movie.setTagline(NMJLib.getStringFromJSONObject(jObject, "tagline", ""));
-
-            try {
-                ArrayList<Actor> actors = new ArrayList<Actor>();
-
-                JSONArray array = jObject.getJSONObject("credits").getJSONArray("cast");
-                Set<String> actorIds = new HashSet<String>();
-
-                for (int i = 0; i < array.length(); i++) {
-                    if (!actorIds.contains(array.getJSONObject(i).getString("id"))) {
-                        actorIds.add(array.getJSONObject(i).getString("id"));
-
-                        actors.add(new Actor(
-                                array.getJSONObject(i).getString("name"),
-                                array.getJSONObject(i).getString("character"),
-                                array.getJSONObject(i).getString("id"),
-                                "cast",
-                                baseUrl + NMJLib.getActorUrlSize(mContext) + array.getJSONObject(i).getString("profile_path")));
-                    }
-                }
-
-                movie.setCast(actors);
-            } catch (Exception e) {
-            }
-
-            try {
-                ArrayList<Actor> actors = new ArrayList<Actor>();
-
-                JSONArray array = jObject.getJSONObject("credits").getJSONArray("crew");
-                Set<String> actorIds = new HashSet<String>();
-
-                for (int i = 0; i < array.length(); i++) {
-                    if (!actorIds.contains(array.getJSONObject(i).getString("id"))) {
-                        actorIds.add(array.getJSONObject(i).getString("id"));
-
-                        actors.add(new Actor(
-                                array.getJSONObject(i).getString("name"),
-                                array.getJSONObject(i).getString("job"),
-                                array.getJSONObject(i).getString("id"),
-                                "crew",
-                                baseUrl + NMJLib.getActorUrlSize(mContext) + array.getJSONObject(i).getString("profile_path")));
-                    }
-                }
-
-                movie.setCrew(actors);
-            } catch (Exception e) {
-            }
-
-            try {
-                ArrayList<WebMovie> similarMovies = new ArrayList<WebMovie>();
-                JSONArray jArray = jObject.getJSONObject("similar_movies").getJSONArray("results");
-
-                for (int i = 0; i < jArray.length(); i++) {
-                    if (!NMJLib.isAdultContent(mContext, jArray.getJSONObject(i).getString("title")) && !NMJLib.isAdultContent(mContext, jArray.getJSONObject(i).getString("original_title"))) {
-                        similarMovies.add(new WebMovie(mContext,
-                                jArray.getJSONObject(i).getString("original_title"),
-                                jArray.getJSONObject(i).getString("id"),
-                                baseUrl + NMJLib.getImageUrlSize(mContext) + jArray.getJSONObject(i).getString("poster_path"),
-                                jArray.getJSONObject(i).getString("release_date")));
-                    }
-                }
-
-                movie.setSimilarMovies(similarMovies);
-            } catch (Exception ignored) {
-            }
-
+            show.setTagline(NMJLib.getStringFromJSONObject(jObject, "tagline", ""));
+            show.setCast(NMJLib.getTMDbCast(mContext, show.getTmdbId()));
+            show.setCrew(NMJLib.getTMDbCrew(mContext, show.getTmdbId()));
+            show.setSimilarMovies(NMJLib.getTMDbSimilarMovies(mContext, show.getTmdbId()));
             try {
                 JSONArray array = jObject.getJSONObject("images").getJSONArray("backdrops");
 
                 if (array.length() > 0) {
-                    movie.setBackdrop(baseUrl + NMJLib.getBackdropUrlSize(mContext) + array.getJSONObject(0).getString("file_path"));
+                    show.setBackdrop(baseUrl + NMJLib.getBackdropUrlSize(mContext) + array.getJSONObject(0).getString("file_path"));
                 } else { // Try with English set as the language, if no results are returned (usually caused by a server-side cache error)
                     try {
-                        jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + movie.getTmdbId() + "/images?api_key=" + mTmdbApiKey);
+                        jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + show.getTmdbId() + "/images?api_key=" + mTmdbApiKey);
 
                         JSONArray array2 = jObject.getJSONArray("backdrops");
                         if (array2.length() > 0) {
-                            movie.setBackdrop(baseUrl + NMJLib.getBackdropUrlSize(mContext) + array2.getJSONObject(0).getString("file_path"));
+                            show.setBackdrop(baseUrl + NMJLib.getBackdropUrlSize(mContext) + array2.getJSONObject(0).getString("file_path"));
                         }
                     } catch (Exception e) {
                     }
@@ -486,17 +442,335 @@ public class NMJTvShowService extends TvShowApiService {
         } catch (Exception e) {
             // If something goes wrong here, i.e. API error, we won't get any details
             // about the movie - in other words, it's unidentified
-            movie.setTmdbId(DbAdapterMovies.UNIDENTIFIED_ID);
+            show.setTmdbId(DbAdapterMovies.UNIDENTIFIED_ID);
         }
 
-        return movie;
+        return show;
     }
 
-    public TvShow getCompleteTMDbTvShow(String id, String language) {
+    public com.nmj.apis.nmj.TvShow getCompleteTVDbTvShow(String id, String language) {
+        com.nmj.apis.nmj.TvShow show = new com.nmj.apis.nmj.TvShow();
+        show.setTvdbId(id);
+
+        // Show details
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            URL url = new URL("http://thetvdb.com/api/" + mTvdbApiKey + "/series/" + show.getTvdbId() + "/" + language + ".xml");
+
+            URLConnection con = url.openConnection();
+            con.setReadTimeout(60000);
+            con.setConnectTimeout(60000);
+
+            Document doc = db.parse(con.getInputStream());
+            doc.getDocumentElement().normalize();
+
+            NodeList nodeList = doc.getElementsByTagName("Series");
+            if (nodeList.getLength() > 0) {
+                Node firstNode = nodeList.item(0);
+                if (firstNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element firstElement = (Element) firstNode;
+                    NodeList list;
+                    Element element;
+                    NodeList tag;
+
+                    try {
+                        list = firstElement.getElementsByTagName("SeriesName");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        show.setTitle((tag.item(0)).getNodeValue());
+                    } catch(Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("Overview");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        show.setDescription((tag.item(0)).getNodeValue());
+                    } catch(Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("Actors");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        show.setActors((tag.item(0)).getNodeValue());
+                    } catch(Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("Genre");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        show.setGenres((tag.item(0)).getNodeValue());
+                    } catch (Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("Rating");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        show.setRating((tag.item(0)).getNodeValue());
+                    } catch(Exception e) {
+                        show.setRating("0");
+                    }
+
+                    try {
+                        list = firstElement.getElementsByTagName("poster");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        show.setCoverUrl("http://thetvdb.com/banners/" + tag.item(0).getNodeValue());
+                    } catch(Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("fanart");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        show.setBackdropUrl("http://thetvdb.com/banners/" + tag.item(0).getNodeValue());
+                    } catch(Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("ContentRating");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        show.setCertification(tag.item(0).getNodeValue());
+                    } catch(Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("Runtime");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        show.setRuntime(tag.item(0).getNodeValue());
+                    } catch(Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("FirstAired");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        show.setFirstAired(tag.item(0).getNodeValue());
+                    } catch(Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("IMDB_ID");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        show.setIMDbId(tag.item(0).getNodeValue());
+                    } catch(Exception e) {}
+                }
+            }
+
+            // Trakt.tv
+            if (getRatingsProvider().equals(mContext.getString(R.string.ratings_option_2))) {
+                try {
+                    Show showSummary = Trakt.getShowSummary(mContext, id);
+                    double rating = Double.valueOf(showSummary.getRating() / 10);
+
+                    if (rating > 0 || show.getRating().equals("0.0"))
+                        show.setRating(String.valueOf(rating));
+                } catch (Exception e) {}
+            }
+
+            // OMDb API / IMDb
+            if (getRatingsProvider().equals(mContext.getString(R.string.ratings_option_3))) {
+                try {
+                    JSONObject jObject = NMJLib.getJSONObject(mContext, "http://www.omdbapi.com/?i=" + show.getImdbId());
+                    double rating = Double.valueOf(NMJLib.getStringFromJSONObject(jObject, "imdbRating", "0"));
+
+                    if (rating > 0 || show.getRating().equals("0.0"))
+                        show.setRating(String.valueOf(rating));
+                } catch (Exception e) {}
+            }
+        } catch (Exception e) {}
+
+        // Episode details
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            URL url = new URL("http://thetvdb.com/api/" + mTvdbApiKey + "/series/" + show.getTvdbId() + "/all/" + language + ".xml");
+
+            URLConnection con = url.openConnection();
+            con.setReadTimeout(60000);
+            con.setConnectTimeout(60000);
+
+            Document doc = db.parse(con.getInputStream());
+            doc.getDocumentElement().normalize();
+
+            NodeList nodeList = doc.getElementsByTagName("Episode");
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node firstNode = nodeList.item(i);
+                if (firstNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element firstElement = (Element) firstNode;
+                    NodeList list;
+                    Element element;
+                    NodeList tag;
+
+                    Episode episode = new Episode();
+
+                        try {
+                            list = firstElement.getElementsByTagName("DVD_episodenumber");
+                            element = (Element) list.item(0);
+                            tag = element.getChildNodes();
+                            episode.setEpisode(NMJLib.getInteger(Double.valueOf(tag.item(0).getNodeValue())));
+                        } catch (Exception e) {}
+
+                    if (episode.getEpisode() == -1) {
+                        try {
+                            list = firstElement.getElementsByTagName("EpisodeNumber");
+                            element = (Element) list.item(0);
+                            tag = element.getChildNodes();
+                            episode.setEpisode(NMJLib.getInteger(tag.item(0).getNodeValue()));
+                        } catch (Exception e) {
+                            episode.setEpisode(0);
+                        }
+                    }
+
+                        try {
+                            list = firstElement.getElementsByTagName("DVD_season");
+                            element = (Element) list.item(0);
+                            tag = element.getChildNodes();
+                            episode.setSeason(NMJLib.getInteger(tag.item(0).getNodeValue()));
+                        } catch (Exception e) {}
+
+                    if (episode.getSeason() == -1) {
+                        try {
+                            list = firstElement.getElementsByTagName("SeasonNumber");
+                            element = (Element) list.item(0);
+                            tag = element.getChildNodes();
+                            episode.setSeason(NMJLib.getInteger(tag.item(0).getNodeValue()));
+                        } catch (Exception e) {
+                            episode.setSeason(0);
+                        }
+                    }
+
+                    try {
+                        list = firstElement.getElementsByTagName("EpisodeName");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        episode.setTitle(tag.item(0).getNodeValue());
+                    } catch(Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("FirstAired");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        episode.setAirdate(tag.item(0).getNodeValue());
+                    } catch(Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("Overview");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        episode.setDescription(tag.item(0).getNodeValue());
+                    } catch(Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("filename");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        episode.setScreenshotUrl("http://thetvdb.com/banners/" + tag.item(0).getNodeValue());
+                    } catch (Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("Rating");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        episode.setRating(tag.item(0).getNodeValue());
+                    } catch(Exception e) {
+                        episode.setRating("0");
+                    }
+
+                    try {
+                        list = firstElement.getElementsByTagName("Director");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        episode.setDirector(tag.item(0).getNodeValue());
+                    } catch(Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("Writer");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        episode.setWriter(tag.item(0).getNodeValue());
+                    } catch(Exception e) {}
+
+                    try {
+                        list = firstElement.getElementsByTagName("GuestStars");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        episode.setGueststars(tag.item(0).getNodeValue());
+                    } catch(Exception e) {}
+
+                    show.addEpisode(episode);
+                }
+            }
+        } catch (Exception e) {}
+
+        // Season covers
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            URL url = new URL("http://thetvdb.com/api/" + mTvdbApiKey + "/series/" + show.getTvdbId() + "/banners.xml");
+
+            URLConnection con = url.openConnection();
+            con.setReadTimeout(60000);
+            con.setConnectTimeout(60000);
+
+            Document doc = db.parse(con.getInputStream());
+            doc.getDocumentElement().normalize();
+
+            NodeList nodeList = doc.getElementsByTagName("Banner");
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node firstNode = nodeList.item(i);
+                if (firstNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element firstElement = (Element) firstNode;
+                    NodeList list;
+                    Element element;
+                    NodeList tag;
+
+                    Season season = new Season();
+
+                    String bannerType = "";
+                    int seasonNumber = -1;
+
+                    try {
+                        list = firstElement.getElementsByTagName("BannerType");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        bannerType = tag.item(0).getNodeValue();
+                    } catch(Exception e) {}
+
+                    if (!bannerType.equals("season"))
+                        continue;
+
+                    try {
+                        list = firstElement.getElementsByTagName("Season");
+                        element = (Element) list.item(0);
+                        tag = element.getChildNodes();
+                        seasonNumber = Integer.valueOf(tag.item(0).getNodeValue());
+                    } catch(Exception e) {}
+
+                    if (seasonNumber >= 0 && !show.hasSeason(seasonNumber)) {
+                        season.setSeason(seasonNumber);
+
+                        try {
+                            list = firstElement.getElementsByTagName("BannerPath");
+                            element = (Element) list.item(0);
+                            tag = element.getChildNodes();
+                            season.setCoverPath("http://thetvdb.com/banners/" + tag.item(0).getNodeValue());
+                        } catch (Exception e) {
+                            season.setCoverPath("");
+                        }
+
+                        show.addSeason(season);
+                    }
+                }
+            }
+        } catch (Exception e) {}
+
+        return show;
+    }
+
+    public com.nmj.apis.nmj.TvShow getCompleteTMDbTvShow(String id, String language) {
         language = getLanguage(language);
 
-        TvShow show = new TvShow();
-        show.setId("tmdb_" + id); // this is a hack to store the TMDb ID for the show in the database without a separate column for it
+        com.nmj.apis.nmj.TvShow show = new com.nmj.apis.nmj.TvShow();
+        show.setTmdbId("tmdb_" + id); // this is a hack to store the TMDb ID for the show in the database without a separate column for it
 
         String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
