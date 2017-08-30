@@ -69,7 +69,7 @@ import com.nmj.nmjmanager.R;
 import com.nmj.nmjmanager.TvShowActorSearchActivity;
 import com.nmj.nmjmanager.NMJTvShowDetails;
 import com.nmj.nmjmanager.UnidentifiedTvShows;
-import com.nmj.apis.thetvdb.TvShow;
+import com.nmj.apis.nmj.TvShow;
 import com.nmj.nmjmanager.Update;
 import com.nmj.utils.LocalBroadcastUtils;
 import com.nmj.utils.TvShowDatabaseUtils;

@@ -18,7 +18,7 @@ package com.nmj.abstractclasses;
 
 import android.text.TextUtils;
 
-import com.nmj.apis.thetvdb.TvShow;
+import com.nmj.apis.nmj.TvShow;
 
 import java.util.List;
 

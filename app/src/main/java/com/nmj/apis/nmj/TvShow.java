@@ -18,15 +18,11 @@ package com.nmj.apis.nmj;
 
 import android.text.TextUtils;
 
-import com.nmj.apis.thetvdb.Episode;
-import com.nmj.apis.thetvdb.Season;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.Actor;
-import com.nmj.functions.Filepath;
 import com.nmj.functions.Video;
 import com.nmj.functions.WebMovie;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,12 +41,12 @@ public class TvShow {
     private ArrayList<Season> mSeasons = new ArrayList<>();
     private List<Actor> mCast = new ArrayList<Actor>();
     private List<Actor> mCrew = new ArrayList<Actor>();
-    private List<WebMovie> mSimilarMovies = new ArrayList<WebMovie>();
+    private List<WebMovie> mSimilarShows = new ArrayList<WebMovie>();
     private String mFilepaths = filepath;
 
     public TvShow() {
         // Unidentified by default
-        setTmdbId(DbAdapterMovies.UNIDENTIFIED_ID);
+        setId(DbAdapterMovies.UNIDENTIFIED_ID);
     }
 
     public String getBackdropUrl() {
@@ -61,10 +57,14 @@ public class TvShow {
         mBackdropUrl = backdropUrl;
     }
 
-    public String getTmdbId() {
+    public String getId() {
         if (TextUtils.isEmpty(tmdbId))
             return title;
-        return tmdbId.replace("tmdb", "");
+        return tmdbId.replace("tmdb", "").replace("tvdb", "");
+    }
+
+    public void setId(String id) {
+        this.tmdbId = id;
     }
 
     public String getFirstAired() {
@@ -83,22 +83,8 @@ public class TvShow {
         mCoverUrl = coverUrl;
     }
 
-    public String getTvdbId() {
-        if (TextUtils.isEmpty(tmdbId))
-            return title;
-        return tmdbId.replace("tvdb", "");
-    }
-
     public void setIMDbId(String id) {
         mImdbId = id;
-    }
-
-    public void setTmdbId(String id) {
-        this.tmdbId = id;
-    }
-
-    public void setTvdbId(String id) {
-        this.tmdbId = id;
     }
 
     public int getIdType() {
@@ -351,12 +337,12 @@ public class TvShow {
         mCrew = actors;
     }
 
-    public List<WebMovie> getSimilarMovies() {
-        return mSimilarMovies;
+    public List<WebMovie> getSimilarShows() {
+        return mSimilarShows;
     }
 
-    public void setSimilarMovies(List<WebMovie> movies) {
-        mSimilarMovies = movies;
+    public void setSimilarShows(List<WebMovie> movies) {
+        mSimilarShows = movies;
     }
 
     public String getAllFilepaths() {

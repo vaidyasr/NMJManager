@@ -65,7 +65,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
 
     private Activity mContext;
     private TextView mTitle, mPlot, mGenre, mRuntime, mReleaseDate, mRating, mTagline, mCertification;
-    private ImageView mBackground, mCover;
+    private ImageView mBackground, mCover, mHasWatched, mInLibrary;
     private Movie mMovie;
     private ObservableScrollView mScrollView;
     private View mProgressBar, mDetailsArea;
@@ -148,11 +148,18 @@ public class TmdbMovieDetailsFragment extends Fragment {
         mSimilarMoviesLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra_1);
         mScrollView = (ObservableScrollView) v.findViewById(R.id.observableScrollView);
         mFab = (FloatingActionButton) v.findViewById(R.id.fab);
-
+        mHasWatched = (ImageView) v.findViewById(R.id.hasWatched);
+        mInLibrary = (ImageView) v.findViewById(R.id.inLibrary);
 
         mFab.setVisibility(View.INVISIBLE);
 
-        System.out.println("TMDB Called");
+        if (mMovie.getShowId().equals("0"))
+            mFab.setVisibility(View.INVISIBLE);
+        else
+            mFab.setVisibility(View.VISIBLE);
+
+        mInLibrary.setVisibility(View.GONE);
+        mHasWatched.setVisibility(View.GONE);
 
         mFab.setOnClickListener(new OnClickListener() {
             @Override

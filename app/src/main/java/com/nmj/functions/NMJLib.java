@@ -130,6 +130,9 @@ import jcifs.smb.SmbFile;
 
 import com.iainconnor.objectcache.DiskCache;
 import com.iainconnor.objectcache.BuildConfig;
+import com.uwetrottmann.thetvdb.TheTvdb;
+import com.uwetrottmann.thetvdb.entities.Series;
+import com.uwetrottmann.thetvdb.entities.SeriesResponse;
 
 import static com.nmj.functions.PreferenceKeys.DISABLE_ETHERNET_WIFI_CHECK;
 import static com.nmj.functions.PreferenceKeys.IGNORE_FILE_SIZE;
@@ -191,8 +194,8 @@ public class NMJLib {
     }
 
     public static String getNMJServer() {
-        //String url = "http://www.pchportal.duckdns.org/";
-        String url = "http://192.168.1.108/";
+        String url = "http://www.pchportal.duckdns.org/";
+        //String url = "http://192.168.1.108/";
 
         return url;
     }
@@ -2484,6 +2487,21 @@ public class NMJLib {
         } catch (Exception ignored) {
         }
         return results;
+    }
+
+    public static void getTVDbresults(Context context, Integer id) {
+        TheTvdb theTvdb = new TheTvdb(NMJLib.getTvdbApiKey(context));
+        try {
+            retrofit2.Response<SeriesResponse> response = theTvdb.series()
+                    .series(id, "en")
+                    .execute();
+
+            if (response.isSuccessful()) {
+                Series results = response.body().data;
+                System.out.println(results.seriesName + " is awesome!");
+            }
+        } catch (IOException ignored) {
+        }
     }
 
     public static ArrayList<WebMovie> getTMDbSimilarMovies(Context context, String id) {

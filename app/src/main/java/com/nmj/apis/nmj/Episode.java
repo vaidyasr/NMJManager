@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nmj.apis.thetvdb;
+package com.nmj.apis.nmj;
 
 public class Episode {
 	

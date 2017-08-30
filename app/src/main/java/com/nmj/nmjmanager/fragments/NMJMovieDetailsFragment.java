@@ -89,6 +89,7 @@ public class NMJMovieDetailsFragment extends Fragment {
     private Picasso mPicasso;
     private Typeface mMediumItalic, mMedium, mBold, mCondensedRegular;
     private NMJMovieService mNMJMovieApiService;
+    private TMDbMovieService mTMDbMovieApiService;
     private HorizontalCardLayout mCastLayout, mCrewLayout, mSimilarMoviesLayout;
     private int mImageThumbSize, mImageThumbSpacing, mToolbarColor = 0;
     private Toolbar mToolbar;
@@ -126,6 +127,7 @@ public class NMJMovieDetailsFragment extends Fragment {
         mCondensedRegular = TypefaceUtils.getRobotoCondensedRegular(mContext);
 
         mNMJMovieApiService = NMJMovieService.getInstance(mContext);
+        mTMDbMovieApiService = TMDbMovieService.getInstance(mContext);
 
         // Get the database ID of the movie in question
         mMovie = new Movie();
@@ -578,9 +580,9 @@ public class NMJMovieDetailsFragment extends Fragment {
         @Override
         protected Object doInBackground(String... params) {
             if (mMovie.getShowId().equals("0"))
-                mMovie = mNMJMovieApiService.getCompleteTMDbMovie(mMovie.getTmdbId(), "en");
+                mMovie = mTMDbMovieApiService.getCompleteTMDbMovie(mMovie.getTmdbId(), "en");
             else
-                mMovie = mNMJMovieApiService.getCompleteNMJMovie(mMovie.getShowId());
+                mMovie = mNMJMovieApiService.getCompleteNMJMovie(mMovie.getShowId(), "en");
             for (int i = 0; i < mMovie.getSimilarMovies().size(); i++) {
                 String id = mMovie.getSimilarMovies().get(i).getId();
                 mMovie.getSimilarMovies().get(i).setInLibrary(NMJManagerApplication.getMovieAdapter().movieExists(id));
@@ -594,94 +596,6 @@ public class NMJMovieDetailsFragment extends Fragment {
             getActivity().invalidateOptionsMenu();
 
             setupFields();
-        }
-    }
-
-    private class GetSplitFiles extends AsyncTask<String, Void, List<NMJMovieDetailsFragment.SplitFile>> {
-
-        private ProgressDialog progress;
-        private String orig_filepath;
-        private int fileType;
-
-        public GetSplitFiles(String filepath, int filetype) {
-            this.orig_filepath = filepath;
-            fileType = filetype;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            progress = new ProgressDialog(getActivity());
-            progress.setIndeterminate(true);
-            progress.setTitle(getString(R.string.loading_movie_parts));
-            progress.setMessage(getString(R.string.few_moments));
-            progress.show();
-        }
-
-        @Override
-        protected List<NMJMovieDetailsFragment.SplitFile> doInBackground(String... params) {
-            List<NMJMovieDetailsFragment.SplitFile> parts = new ArrayList<NMJMovieDetailsFragment.SplitFile>();
-            List<String> temp;
-
-            try {
-                if (fileType == FileSource.SMB)
-                    temp = NMJLib.getSplitParts(orig_filepath, NMJLib.getLoginFromFilepath(NMJLib.TYPE_MOVIE, orig_filepath));
-                else
-                    temp = NMJLib.getSplitParts(orig_filepath, null);
-
-                for (int i = 0; i < temp.size(); i++)
-                    parts.add(new NMJMovieDetailsFragment.SplitFile(temp.get(i)));
-
-            } catch (Exception e) {
-            }
-
-            return parts;
-        }
-
-        @Override
-        protected void onPostExecute(final List<NMJMovieDetailsFragment.SplitFile> result) {
-            progress.dismiss();
-
-            //if (result.size() > 0)
-            //    mVideoPlaybackStarted = System.currentTimeMillis();
-
-            /*if (result.size() > 1) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                builder.setTitle(getString(R.string.playPart));
-                builder.setAdapter(new MovieDetailsFragment.SplitAdapter(mContext, result), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        boolean playbackStarted = VideoUtils.playVideo(getActivity(), result.get(which).getFilepath(), fileType, mMovie);
-                        if (playbackStarted)
-                            checkIn();
-                    }});
-                builder.show();
-            } else if (result.size() == 1) {
-                boolean playbackStarted = VideoUtils.playVideo(getActivity(), result.get(0).getFilepath(), fileType, mMovie);
-                if (playbackStarted)
-                    checkIn();
-            } else {
-                Toast.makeText(mContext, getString(R.string.errorSomethingWentWrong), Toast.LENGTH_LONG).show();
-            }*/
-        }
-    }
-
-    private class SplitFile {
-
-        String filepath;
-
-        public SplitFile(String filepath) {
-            this.filepath = filepath;
-        }
-
-        public String getFilepath() {
-            return filepath;
-        }
-
-        public String getUserFilepath() {
-            return NMJLib.transformSmbPath(filepath);
-        }
-
-        public int getPartNumber() {
-            return NMJLib.getPartNumberFromFilepath(getUserFilepath());
         }
     }
 }

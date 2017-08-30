@@ -21,12 +21,18 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import com.nmj.abstractclasses.TvShowApiService;
+import com.nmj.apis.nmj.Episode;
+import com.nmj.apis.nmj.Season;
+import com.nmj.apis.nmj.TvShow;
 import com.nmj.apis.trakt.Show;
 import com.nmj.apis.trakt.Trakt;
 import com.nmj.db.DbAdapterTvShows;
 import com.nmj.functions.Actor;
 import com.nmj.functions.NMJLib;
 import com.nmj.nmjmanager.R;
+import com.uwetrottmann.thetvdb.TheTvdb;
+import com.uwetrottmann.thetvdb.entities.Series;
+import com.uwetrottmann.thetvdb.entities.SeriesResponse;
 
 import org.json.JSONObject;
 import org.w3c.dom.Document;
@@ -34,6 +40,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;

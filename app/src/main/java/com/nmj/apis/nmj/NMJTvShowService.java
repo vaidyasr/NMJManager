@@ -6,16 +6,13 @@ import android.text.TextUtils;
 
 import com.iainconnor.objectcache.CacheManager;
 import com.nmj.abstractclasses.TvShowApiService;
-import com.nmj.apis.thetvdb.Episode;
-import com.nmj.apis.thetvdb.Season;
-import com.nmj.apis.thetvdb.TvShow;
+import com.nmj.apis.nmj.TvShow;
 import com.nmj.apis.trakt.Show;
 import com.nmj.apis.trakt.Trakt;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.Actor;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.Video;
-import com.nmj.functions.WebMovie;
 import com.nmj.nmjmanager.R;
 
 import org.json.JSONArray;
@@ -322,9 +319,8 @@ public class NMJTvShowService extends TvShowApiService {
         return show;
     }
 
-    public com.nmj.apis.nmj.TvShow getCompleteNMJTvShow(String id) {
-        System.out.println("TV Show Id: " + id);
-        com.nmj.apis.nmj.TvShow show = new com.nmj.apis.nmj.TvShow();
+    public TvShow getCompleteNMJTvShow(String id) {
+        TvShow show = new TvShow();
         show.setShowId(id);
         String nmjImgURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/";
 
@@ -337,7 +333,7 @@ public class NMJTvShowService extends TvShowApiService {
 
             JSONObject jObject;
             String CacheId = "nmj_" + id;
-            String showid;
+            String dbtype;
 
             CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
             if (!cacheManager.exists(CacheId)) {
@@ -353,11 +349,8 @@ public class NMJTvShowService extends TvShowApiService {
             show.setPlot(NMJLib.getStringFromJSONObject(jObject, "CONTENT", ""));
             show.setIMDbId(NMJLib.getStringFromJSONObject(jObject, "TTID", ""));
 
-            showid = NMJLib.getStringFromJSONObject(jObject, "CONTENT_TTID", "");
-            if(show.getIdType() == 1)
-                show.setTvdbId(showid);
-            else
-                show.setTvdbId(showid);
+            dbtype = NMJLib.getStringFromJSONObject(jObject, "CONTENT_TTID", "");
+            show.setId(dbtype);
 
             show.setRating(NMJLib.getStringFromJSONObject(jObject, "RATING", "0.0"));
             show.setFirstAirdate(NMJLib.getStringFromJSONObject(jObject, "RELEASE_DATE", ""));
@@ -401,25 +394,43 @@ public class NMJTvShowService extends TvShowApiService {
                 show.setVideo(videoDetails);
             } catch (Exception e) {
             }
+
+            try {
+                Season seasonDetails = new Season();
+                JSONArray seasons = jObject.getJSONArray("SEASONS");
+
+                for (int i = 0; i < seasons.length(); i++) {
+                    seasonDetails.setSeason(Integer.parseInt(seasons.getJSONObject(i).getString("SEASON")));
+                    seasonDetails.setCoverPath(seasons.getJSONObject(i).getString("POSTER"));
+                    /*episodeDetails.get(i).setPlayCount(video.getJSONObject(i).getString("PLAY_COUNT"));
+                    episodeDetails.get(i).setWidth(video.getJSONObject(i).getString("WIDTH"));*/
+                    show.addSeason(seasonDetails);
+                }
+            } catch (Exception e) {
+            }
+
             if(show.getIdType() == 1)
-                CacheId = "tmdb_tv_" + show.getTmdbId();
+                CacheId = "tmdb_tv_" + show.getId();
             else
-                CacheId = "tvdb_tv_" + show.getTvdbId();
+                CacheId = "tvdb_tv_" + show.getId();
+
             if (!cacheManager.exists(CacheId)) {
                 System.out.println("Putting Cache in " + CacheId);
                 if (show.getIdType() == 1)
-                    jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "tv/" + show.getTmdbId() + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+                    jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "tv/" + show.getId() + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
                 else
-                    jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "tv/" + show.getTvdbId() + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+                    jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "tv/" + show.getId() + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
 
                 NMJLib.putCache(cacheManager, CacheId, jObject.toString());
             }
+
             System.out.println("Getting Cache from " + CacheId);
             jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
+
             show.setTagline(NMJLib.getStringFromJSONObject(jObject, "tagline", ""));
-            show.setCast(NMJLib.getTMDbCast(mContext, show.getTmdbId()));
-            show.setCrew(NMJLib.getTMDbCrew(mContext, show.getTmdbId()));
-            show.setSimilarMovies(NMJLib.getTMDbSimilarMovies(mContext, show.getTmdbId()));
+            show.setCast(NMJLib.getTMDbCast(mContext, show.getId()));
+            show.setCrew(NMJLib.getTMDbCrew(mContext, show.getId()));
+            show.setSimilarShows(NMJLib.getTMDbSimilarMovies(mContext, show.getId()));
             try {
                 JSONArray array = jObject.getJSONObject("images").getJSONArray("backdrops");
 
@@ -427,7 +438,7 @@ public class NMJTvShowService extends TvShowApiService {
                     show.setBackdrop(baseUrl + NMJLib.getBackdropUrlSize(mContext) + array.getJSONObject(0).getString("file_path"));
                 } else { // Try with English set as the language, if no results are returned (usually caused by a server-side cache error)
                     try {
-                        jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + show.getTmdbId() + "/images?api_key=" + mTmdbApiKey);
+                        jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + show.getId() + "/images?api_key=" + mTmdbApiKey);
 
                         JSONArray array2 = jObject.getJSONArray("backdrops");
                         if (array2.length() > 0) {
@@ -442,7 +453,7 @@ public class NMJTvShowService extends TvShowApiService {
         } catch (Exception e) {
             // If something goes wrong here, i.e. API error, we won't get any details
             // about the movie - in other words, it's unidentified
-            show.setTmdbId(DbAdapterMovies.UNIDENTIFIED_ID);
+            show.setId(DbAdapterMovies.UNIDENTIFIED_ID);
         }
 
         return show;
@@ -450,13 +461,13 @@ public class NMJTvShowService extends TvShowApiService {
 
     public com.nmj.apis.nmj.TvShow getCompleteTVDbTvShow(String id, String language) {
         com.nmj.apis.nmj.TvShow show = new com.nmj.apis.nmj.TvShow();
-        show.setTvdbId(id);
+        show.setId(id);
 
         // Show details
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
-            URL url = new URL("http://thetvdb.com/api/" + mTvdbApiKey + "/series/" + show.getTvdbId() + "/" + language + ".xml");
+            URL url = new URL("http://thetvdb.com/api/" + mTvdbApiKey + "/series/" + show.getId() + "/" + language + ".xml");
 
             URLConnection con = url.openConnection();
             con.setReadTimeout(60000);
@@ -582,7 +593,7 @@ public class NMJTvShowService extends TvShowApiService {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
-            URL url = new URL("http://thetvdb.com/api/" + mTvdbApiKey + "/series/" + show.getTvdbId() + "/all/" + language + ".xml");
+            URL url = new URL("http://thetvdb.com/api/" + mTvdbApiKey + "/series/" + show.getId() + "/all/" + language + ".xml");
 
             URLConnection con = url.openConnection();
             con.setReadTimeout(60000);
@@ -705,7 +716,7 @@ public class NMJTvShowService extends TvShowApiService {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
-            URL url = new URL("http://thetvdb.com/api/" + mTvdbApiKey + "/series/" + show.getTvdbId() + "/banners.xml");
+            URL url = new URL("http://thetvdb.com/api/" + mTvdbApiKey + "/series/" + show.getId() + "/banners.xml");
 
             URLConnection con = url.openConnection();
             con.setReadTimeout(60000);
@@ -766,11 +777,11 @@ public class NMJTvShowService extends TvShowApiService {
         return show;
     }
 
-    public com.nmj.apis.nmj.TvShow getCompleteTMDbTvShow(String id, String language) {
+    public TvShow getCompleteTMDbTvShow(String id, String language) {
         language = getLanguage(language);
 
-        com.nmj.apis.nmj.TvShow show = new com.nmj.apis.nmj.TvShow();
-        show.setTmdbId("tmdb_" + id); // this is a hack to store the TMDb ID for the show in the database without a separate column for it
+        TvShow show = new TvShow();
+        show.setId("tmdb_" + id); // this is a hack to store the TMDb ID for the show in the database without a separate column for it
 
         String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 

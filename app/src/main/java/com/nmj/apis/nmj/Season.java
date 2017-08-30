@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-package com.nmj.apis.thetvdb;
+package com.nmj.apis.nmj;
 
 public class Season {
 
 	private String mCoverPath;
 	private int mSeason;
 	
-	public void setCoverPath(String cover) {
-		mCoverPath = cover;
-	}
-	
 	public String getCoverPath() {
 		return mCoverPath;
 	}
-	
-	public void setSeason(int season) {
-		mSeason = season;
-	}
+
+    public void setCoverPath(String cover) {
+        mCoverPath = cover;
+    }
 	
 	public int getSeason() {
 		return mSeason;
-	}
+    }
+
+    public void setSeason(int season) {
+        mSeason = season;
+    }
 }

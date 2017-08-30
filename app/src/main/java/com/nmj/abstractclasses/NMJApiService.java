@@ -32,7 +32,7 @@ public abstract class NMJApiService extends ApiService<Movie> {
      * @param language Two-letter ISO 639-1 language code. Can be {@link null}.
      * @return Content object based on the supplied ID.
      */
-    public abstract Movie get(String id, String json, String language);
+    public abstract Movie get(String id, String language);
 
     /**
      * Get a {@link List} of URL's to cover images.

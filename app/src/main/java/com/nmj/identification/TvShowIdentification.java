@@ -25,8 +25,8 @@ import android.util.SparseBooleanArray;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.nmj.abstractclasses.TvShowApiService;
-import com.nmj.apis.thetvdb.Episode;
-import com.nmj.apis.thetvdb.TvShow;
+import com.nmj.apis.nmj.Episode;
+import com.nmj.apis.nmj.TvShow;
 import com.nmj.db.DbAdapterTvShowEpisodes;
 import com.nmj.db.DbAdapterTvShows;
 import com.nmj.functions.NMJLib;
@@ -59,6 +59,8 @@ public class TvShowIdentification {
     private String mShowId = null, mLocale = null;
     private int mSeason = -1, mEpisode = -1;
     private boolean mCancel = false;
+    // These variables don't need to be re-initialized
+    private int widgetWidth = 0, smallSize = 0;
 
     public TvShowIdentification(Context context, TvShowLibraryUpdateCallback callback, ArrayList<ShowStructure> files) {
         mContext = context;
@@ -77,6 +79,14 @@ public class TvShowIdentification {
         mLocale = PreferenceManager.getDefaultSharedPreferences(mContext).getString(LANGUAGE_PREFERENCE, "en");
     }
 
+    public boolean overrideShowId() {
+        return null != getShowId();
+    }
+
+    public String getShowId() {
+        return mShowId;
+    }
+
     /**
      * Use this to disable TV show searching
      * and attempt identification based on the
@@ -85,14 +95,6 @@ public class TvShowIdentification {
      */
     public void setShowId(String showId) {
         mShowId = showId;
-    }
-
-    public boolean overrideShowId() {
-        return null != getShowId();
-    }
-
-    public String getShowId() {
-        return mShowId;
     }
 
     /**
@@ -384,9 +386,6 @@ public class TvShowIdentification {
                     null, null);
         }
     }
-
-    // These variables don't need to be re-initialized
-    private int widgetWidth = 0, smallSize = 0;
 
     private int getNotificationImageWidth() {
         if (widgetWidth == 0)

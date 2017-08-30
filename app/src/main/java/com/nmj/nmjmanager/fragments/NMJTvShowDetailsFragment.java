@@ -66,6 +66,7 @@ import com.nmj.functions.FileSource;
 import com.nmj.functions.Filepath;
 import com.nmj.functions.GridSeason;
 import com.nmj.functions.IntentKeys;
+import com.nmj.functions.NMJAdapter;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.PaletteLoader;
 import com.nmj.functions.PreferenceKeys;
@@ -105,7 +106,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
     private Activity mContext;
     private TvShow mShow;
     private TextView textTitle, textPlot, textGenre, textRuntime, textReleaseDate, textRating, textCertification;
-    private ImageView background, cover;
+    private ImageView background, cover, mHasWatched, mInLibrary;
     private ObservableScrollView mScrollView;
     private View mDetailsArea;
     private boolean ignorePrefixes;
@@ -166,7 +167,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
         System.out.println("Movie Id: " + getArguments().getString("movieId"));
         System.out.println("Show Id: " + getArguments().getString("showId"));
         mShow.setShowId(getArguments().getString("showId"));
-        mShow.setTmdbId(getArguments().getString("movieId"));
+        mShow.setId(getArguments().getString("movieId"));
 
         mPicasso = NMJManagerApplication.getPicassoDetailsView(getActivity());
 
@@ -223,6 +224,16 @@ public class NMJTvShowDetailsFragment extends Fragment {
         mCrewLayout.setVisibility(View.VISIBLE);
         mScrollView = (ObservableScrollView) v.findViewById(R.id.observableScrollView);
         mFab = (FloatingActionButton) v.findViewById(R.id.fab);
+        mHasWatched = (ImageView) v.findViewById(R.id.hasWatched);
+        mInLibrary = (ImageView) v.findViewById(R.id.inLibrary);
+
+        if (mShow.getShowId().equals("0"))
+            mFab.setVisibility(View.INVISIBLE);
+        else
+            mFab.setVisibility(View.VISIBLE);
+
+        mInLibrary.setVisibility(View.GONE);
+        mHasWatched.setVisibility(View.GONE);
 
         mFab.setOnClickListener(new OnClickListener() {
             @Override
@@ -259,6 +270,10 @@ public class NMJTvShowDetailsFragment extends Fragment {
                         background, mScrollView, this);
             }
         });
+        if (mShow.getVideo().size() > 0)
+            if (!mShow.getVideo().get(0).getPlayCount().equals("0"))
+                mHasWatched.setVisibility(View.VISIBLE);
+
         new TvShowLoader().execute();
 
     }
@@ -319,7 +334,10 @@ public class NMJTvShowDetailsFragment extends Fragment {
         }
 
         // Set the show runtime
-        textRuntime.setText(NMJLib.getPrettyRuntimeFromMinutes(getActivity(), Integer.parseInt(mShow.getRuntime())));
+        if (mShow.getShowId().equals("0"))
+            textRuntime.setText(NMJLib.getPrettyRuntimeFromMinutes(getActivity(), Integer.parseInt(mShow.getRuntime())));
+        else
+            textRuntime.setText(NMJLib.getPrettyRuntimeFromSeconds(getActivity(), Integer.parseInt(mShow.getRuntime())));
 
         // Set the show release date
         textReleaseDate.setTypeface(mMedium);
@@ -353,7 +371,6 @@ public class NMJTvShowDetailsFragment extends Fragment {
                         if (mSeasonsLayout.getWidth() > 0) {
                             final int numColumns = (int) Math.floor(mSeasonsLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
                             mImageThumbSize = (mSeasonsLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
-
                             loadSeasons(numColumns);
                             NMJLib.removeViewTreeObserver(mSeasonsLayout.getViewTreeObserver(), this);
                         }
@@ -362,7 +379,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
         mSeasonsLayout.setSeeMoreOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(IntentUtils.getTvShowSeasonsIntent(mContext, mShow.getTitle(), mShow.getTmdbId(), mToolbarColor));
+                startActivity(IntentUtils.getTvShowSeasonsIntent(mContext, mShow.getTitle(), mShow.getId(), mToolbarColor));
             }
         });
 
@@ -490,7 +507,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
             @Override
             protected Void doInBackground(Void... params) {
                 NMJTvShowService service = NMJTvShowService.getInstance(mContext);
-                mActors = service.getCast(mShow.getTmdbId());
+                mActors = service.getCast(mShow.getId());
 
                 return null;
             }
@@ -510,17 +527,18 @@ public class NMJTvShowDetailsFragment extends Fragment {
 
             @Override
             protected Void doInBackground(Void... params) {
+                NMJManagerApplication.getNMJAdapter().getEpisodes(mContext, Integer.parseInt(mShow.getId()));
 
-                HashMap<String, EpisodeCounter> seasons = NMJManagerApplication.getTvEpisodeDbAdapter().getSeasons(mShow.getTmdbId());
+/*                HashMap<String, EpisodeCounter> seasons = NMJManagerApplication.getNMJAdapter().getSeasons(mContext, Integer.parseInt(mShow.getId());
 
                 for (String key : seasons.keySet()) {
-                    File temp = FileUtils.getTvShowSeason(mContext, mShow.getTmdbId(), key);
-                    mSeasons.add(new GridSeason(mContext, mShow.getTmdbId(), Integer.valueOf(key), seasons.get(key).getEpisodeCount(), seasons.get(key).getWatchedCount(),
+                    File temp = FileUtils.getTvShowSeason(mContext, mShow.getId(), key);
+                    mSeasons.add(new GridSeason(mContext, mShow.getId(), Integer.valueOf(key), seasons.get(key).getEpisodeCount(), seasons.get(key).getWatchedCount(),
                             temp.exists() ? temp :
-                                    FileUtils.getTvShowThumb(mContext, mShow.getTmdbId())));
+                                    FileUtils.getTvShowThumb(mContext, mShow.getId())));
                 }
 
-                seasons.clear();
+                seasons.clear();*/
 
                 Collections.sort(mSeasons);
 
@@ -573,7 +591,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
                 if (mShow.getIdType() == TvShow.TMDB) {
                     browserIntent.setData(Uri.parse("https://www.themoviedb.org/tv/" + mShow.getIdWithoutHack()));
                 } else {
-                    browserIntent.setData(Uri.parse("http://thetvdb.com/?tab=series&id=" + mShow.getTmdbId()));
+                    browserIntent.setData(Uri.parse("http://thetvdb.com/?tab=series&id=" + mShow.getId()));
                 }
                 startActivity(browserIntent);
                 break;
@@ -591,7 +609,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
     private void identifyShow() {
         ArrayList<String> files = new ArrayList<String>();
 
-        Cursor cursor = NMJManagerApplication.getTvShowEpisodeMappingsDbAdapter().getAllFilepaths(mShow.getTmdbId());
+        Cursor cursor = NMJManagerApplication.getTvShowEpisodeMappingsDbAdapter().getAllFilepaths(mShow.getId());
         while (cursor.moveToNext())
             files.add(cursor.getString(cursor.getColumnIndex(DbAdapterTvShowEpisodeMappings.KEY_FILEPATH)));
 
@@ -600,14 +618,14 @@ public class NMJTvShowDetailsFragment extends Fragment {
         Intent i = new Intent();
         i.setClass(mContext, IdentifyTvShow.class);
         i.putExtra("showTitle", mShow.getTitle());
-        i.putExtra("showId", mShow.getTmdbId());
+        i.putExtra("showId", mShow.getId());
         i.putExtra(IntentKeys.TOOLBAR_COLOR, mToolbarColor);
         startActivityForResult(i, 0);
     }
 
     private void editTvShow() {
         Intent intent = new Intent(mContext, EditTvShow.class);
-        intent.putExtra("showId", mShow.getTmdbId());
+        intent.putExtra("showId", mShow.getId());
         intent.putExtra(IntentKeys.TOOLBAR_COLOR, mToolbarColor);
         startActivityForResult(intent, 1);
     }
@@ -638,7 +656,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
     private void searchCover() {
         Intent i = new Intent();
         i.setClass(mContext, ShowCoverFanartBrowser.class);
-        i.putExtra("id", mShow.getTmdbId());
+        i.putExtra("id", mShow.getId());
         i.putExtra(IntentKeys.TOOLBAR_COLOR, mToolbarColor);
         startActivity(i);
     }
@@ -666,7 +684,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
     private void playFirstEpisode() {
 
         DbAdapterTvShowEpisodes dbAdapter = NMJManagerApplication.getTvEpisodeDbAdapter();
-        Cursor cursor = dbAdapter.getEpisodes(mShow.getTmdbId());
+        Cursor cursor = dbAdapter.getEpisodes(mShow.getId());
         TvShowEpisode episode = null;
 
         if (cursor != null) {
@@ -804,16 +822,16 @@ public class NMJTvShowDetailsFragment extends Fragment {
         protected Object doInBackground(String... params) {
             if (mShow.getShowId().equals("0")) {
                 if (mShow.getIdType() == 1) {
-                    mShow = mShowApiService.getCompleteTMDbTvShow(mShow.getTmdbId(), "en");
+                    mShow = mShowApiService.getCompleteTMDbTvShow(mShow.getId(), "en");
                 } else {
-                    mShow = mShowApiService.getCompleteTVDbTvShow(mShow.getTmdbId(), "en");
+                    mShow = mShowApiService.getCompleteTVDbTvShow(mShow.getId(), "en");
                 }
             }
             else
                 mShow = mShowApiService.getCompleteNMJTvShow(mShow.getShowId());
-            for (int i = 0; i < mShow.getSimilarMovies().size(); i++) {
-                String id = mShow.getSimilarMovies().get(i).getId();
-                mShow.getSimilarMovies().get(i).setInLibrary(NMJManagerApplication.getMovieAdapter().movieExists(id));
+            for (int i = 0; i < mShow.getSimilarShows().size(); i++) {
+                String id = mShow.getSimilarShows().get(i).getId();
+                mShow.getSimilarShows().get(i).setInLibrary(NMJManagerApplication.getMovieAdapter().movieExists(id));
             }
 
             return null;

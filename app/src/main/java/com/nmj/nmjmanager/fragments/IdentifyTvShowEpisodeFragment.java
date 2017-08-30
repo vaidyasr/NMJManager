@@ -54,7 +54,7 @@ import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.nmj.abstractclasses.ApiService;
-import com.nmj.apis.thetvdb.TvShow;
+import com.nmj.apis.nmj.TvShow;
 import com.nmj.base.NMJActivity;
 import com.nmj.functions.AsyncTask;
 import com.nmj.functions.NMJLib;
@@ -245,6 +245,22 @@ public class IdentifyTvShowEpisodeFragment extends Fragment {
         return mLocale;
     }
 
+    private void showProgressBar() {
+        mListView.setVisibility(View.GONE);
+        mProgress.setVisibility(View.VISIBLE);
+    }
+
+    private void hideProgressBar() {
+        mListView.setVisibility(View.VISIBLE);
+        mProgress.setVisibility(View.GONE);
+    }
+
+    static class ViewHolder {
+        TextView title, originalTitle, release, description;
+        ImageView cover;
+        LinearLayout layout;
+    }
+
     protected class TvShowSearch extends AsyncTask<Void, Boolean, Boolean> {
 
         private final Context mContext;
@@ -323,16 +339,10 @@ public class IdentifyTvShowEpisodeFragment extends Fragment {
         }
     }
 
-    static class ViewHolder {
-        TextView title, originalTitle, release, description;
-        ImageView cover;
-        LinearLayout layout;
-    }
-
     public class ListAdapter extends BaseAdapter {
 
-        private LayoutInflater inflater;
         private final Context mContext;
+        private LayoutInflater inflater;
         private int mItemHeight = 0;
         private GridView.LayoutParams mImageViewLayoutParams;
         private ArrayList<Result> mItems = new ArrayList<Result>();
@@ -494,9 +504,9 @@ public class IdentifyTvShowEpisodeFragment extends Fragment {
 
     public class LanguageAdapter implements SpinnerAdapter {
 
-        private ArrayList<Locale> mLocales = new ArrayList<Locale>();
         private final Locale[] mSystemLocales;
         private final LayoutInflater mInflater;
+        private ArrayList<Locale> mLocales = new ArrayList<Locale>();
 
         public LanguageAdapter() {
 
@@ -603,15 +613,5 @@ public class IdentifyTvShowEpisodeFragment extends Fragment {
             return convertView;
         }
 
-    }
-
-    private void showProgressBar() {
-        mListView.setVisibility(View.GONE);
-        mProgress.setVisibility(View.VISIBLE);
-    }
-
-    private void hideProgressBar() {
-        mListView.setVisibility(View.VISIBLE);
-        mProgress.setVisibility(View.GONE);
     }
 }

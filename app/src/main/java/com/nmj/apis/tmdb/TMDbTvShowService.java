@@ -5,9 +5,9 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import com.nmj.abstractclasses.TvShowApiService;
-import com.nmj.apis.thetvdb.Episode;
-import com.nmj.apis.thetvdb.Season;
-import com.nmj.apis.thetvdb.TvShow;
+import com.nmj.apis.nmj.Episode;
+import com.nmj.apis.nmj.Season;
+import com.nmj.apis.nmj.TvShow;
 import com.nmj.apis.trakt.Trakt;
 import com.nmj.functions.Actor;
 import com.nmj.functions.NMJLib;
