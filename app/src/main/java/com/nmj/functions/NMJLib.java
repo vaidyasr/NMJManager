@@ -130,9 +130,7 @@ import jcifs.smb.SmbFile;
 
 import com.iainconnor.objectcache.DiskCache;
 import com.iainconnor.objectcache.BuildConfig;
-import com.uwetrottmann.thetvdb.TheTvdb;
-import com.uwetrottmann.thetvdb.entities.Series;
-import com.uwetrottmann.thetvdb.entities.SeriesResponse;
+
 
 import static com.nmj.functions.PreferenceKeys.DISABLE_ETHERNET_WIFI_CHECK;
 import static com.nmj.functions.PreferenceKeys.IGNORE_FILE_SIZE;
@@ -194,8 +192,8 @@ public class NMJLib {
     }
 
     public static String getNMJServer() {
-        String url = "http://www.pchportal.duckdns.org/";
-        //String url = "http://192.168.1.108/";
+        //String url = "http://www.pchportal.duckdns.org/";
+        String url = "http://192.168.1.108/";
 
         return url;
     }
@@ -2398,7 +2396,7 @@ public class NMJLib {
      */
     public static void setLibrary(Context context, NMJAdapter mDatabase) {
         ArrayList<Library> list = new ArrayList<>();
-        String url = NMJLib.getNMJServer() + "NMJManagerTablet_web/gd.php?action=getCount&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db";
+        String url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getCount&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db";
 
         JSONObject jObject;
         try {
@@ -2489,21 +2487,6 @@ public class NMJLib {
         return results;
     }
 
-    public static void getTVDbresults(Context context, Integer id) {
-        TheTvdb theTvdb = new TheTvdb(NMJLib.getTvdbApiKey(context));
-        try {
-            retrofit2.Response<SeriesResponse> response = theTvdb.series()
-                    .series(id, "en")
-                    .execute();
-
-            if (response.isSuccessful()) {
-                Series results = response.body().data;
-                System.out.println(results.seriesName + " is awesome!");
-            }
-        } catch (IOException ignored) {
-        }
-    }
-
     public static ArrayList<WebMovie> getTMDbSimilarMovies(Context context, String id) {
         ArrayList<WebMovie> results = new ArrayList<WebMovie>();
         try {
@@ -2542,7 +2525,7 @@ public class NMJLib {
                 mode = "add";
             else
                 mode = "remove";
-            String url = getNMJServer() + "NMJManagerTablet_web/gd.php?action=editWatched&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&TTYPE=1&mode=" +
+            String url = getNMJServer() + "NMJManagerTablet_web/getData.php?action=editWatched&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&TTYPE=1&mode=" +
                     mode + "&showid=" + StringUtils.join(showIds, ",");
             JSONArray array = new JSONArray();
             int count = showIds.size();
@@ -2573,7 +2556,7 @@ public class NMJLib {
                 mode = "add";
             else
                 mode = "remove";
-            String url = getNMJServer() + "NMJManagerTablet_web/gd.php?action=editFavorite&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&TTYPE=1&mode=" +
+            String url = getNMJServer() + "NMJManagerTablet_web/getData.php?action=editFavorite&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&TTYPE=1&mode=" +
                     mode + "&showid=" + StringUtils.join(showIds, ",");
             ;
             jObject = NMJLib.getJSONObject(mContext, url.replace(" ", "%20"));
@@ -2685,13 +2668,13 @@ public class NMJLib {
         String url;
         System.out.println("LoadType: " + loadType);
         if (id != null && loadType.equals("list"))
-            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/gd.php?action=getLists&drivepath=guerilla&sourceurl=guerilla&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
+            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getLists&drivepath=guerilla&sourceurl=guerilla&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
         else if (id != null && loadType.equals("collection"))
-            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/gd.php?action=getCollections&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
+            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
         else if (videoType.equals("tv"))
             url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" + getTmdbApiKey(mContext) + "&language=en";
         else
-            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/gd.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
+            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
 
         try {
             JSONObject jObject;
@@ -2771,13 +2754,13 @@ public class NMJLib {
         String url;
         System.out.println("LoadType: " + loadType);
         if (id != null && loadType.equals("list"))
-            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/gd.php?action=getLists&drivepath=guerilla&sourceurl=guerilla&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
+            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getLists&drivepath=guerilla&sourceurl=guerilla&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
         else if (id != null && loadType.equals("collection"))
-            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/gd.php?action=getCollections&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
+            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
         else if (videoType.equals("movie"))
             url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" + getTmdbApiKey(mContext) + "&language=en";
         else
-            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/gd.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
+            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
 
         try {
             JSONObject jObject;

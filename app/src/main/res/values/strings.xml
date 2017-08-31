@@ -448,6 +448,7 @@
     <string name="checked_in">Successfully checked in on Trakt!</string>
     <string name="openWith">Open with…</string>
     <string name="seasons">Seasons</string>
+    <string name="detailsActors">Cast</string>
     <string name="unwatchedEpisodesCount">%d unwatched</string>
     <string name="leftEpisodesCount">%d left</string>
     <string name="tvShowSeasonsOrderType">TV show seasons order type</string>

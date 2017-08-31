@@ -33,7 +33,7 @@
     <string name="menuFavouriteTitleRemove">Remove favourite</string>
     <string name="chooserMovies">Movies</string>
     <string name="chooserTVShows">TV Shows</string>
-    <string name="showSeason">Series</string>
+    <string name="showSeason">Season</string>
     <string name="updateTvShowsTitle">Update TV Shows</string>
     <string name="updateMoviesTitle">Update Movies</string>
     <string name="prefsShowGridTitles">Enable film and shows titles in library overview.</string>
@@ -103,7 +103,8 @@
     <string name="traktSyncFailed">Trakt synchronisation failed</string>
     <string name="downloadingMovie">Downloading film</string>
     <string name="downloadingEpisode">Downloading TV shows episode</string>
-    <string name="seasons">Series</string>
+    <string name="seasons">Seasons</string>
+    <string name="detailsActors">Cast</string>
     <string name="tvShowSeasonsOrderType">TV shows series order type</string>
     <string name="tvShowSeasonsOrderTypeDescription">Show newest or oldest series first.</string>
     <string name="sync_error">Error synchronising with Trakt!</string>

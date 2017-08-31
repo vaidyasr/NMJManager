@@ -419,9 +419,9 @@ public class TvShowSeasonsFragment extends Fragment {
             File temp;
             for (String key : seasons.keySet()) {
                 temp = FileUtils.getTvShowSeason(mContext, mShowId, key);
-                mItems.add(new GridSeason(mContext, mShowId, Integer.valueOf(key), seasons.get(key).getEpisodeCount(), seasons.get(key).getWatchedCount(),
+/*                mItems.add(new GridSeason(mContext, mShowId, Integer.valueOf(key), seasons.get(key).getEpisodeCount(), seasons.get(key).getWatchedCount(),
                         temp.exists() ? temp :
-                                FileUtils.getTvShowThumb(mContext, mShowId)));
+                                FileUtils.getTvShowThumb(mContext, mShowId)));*/
             }
 
             seasons.clear();

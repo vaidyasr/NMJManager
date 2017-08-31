@@ -109,6 +109,10 @@ public class TvShow {
         return mSeasons;
     }
 
+    public Integer getSeasonsCount() {
+        return mSeasons.size();
+    }
+
     public boolean hasSeason(int season) {
         for (Season s : mSeasons)
             if (s.getSeason() == season)
@@ -311,6 +315,10 @@ public class TvShow {
 
     public ArrayList<Episode> getEpisodes() {
         return mEpisodes;
+    }
+
+    public Integer getEpisodeCount() {
+        return mEpisodes.size();
     }
 
     public String getYear() {

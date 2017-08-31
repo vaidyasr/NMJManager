@@ -17,19 +17,13 @@
 package com.nmj.functions;
 
 import android.content.Context;
-
-import com.uwetrottmann.thetvdb.TheTvdb;
-import com.uwetrottmann.thetvdb.entities.Episode;
-import com.uwetrottmann.thetvdb.entities.EpisodeResponse;
-import com.uwetrottmann.thetvdb.entities.EpisodesResponse;
-import com.uwetrottmann.thetvdb.entities.Series;
-import com.uwetrottmann.thetvdb.entities.SeriesResponse;
-
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.omertron.thetvdbapi.TheTVDBApi;
+import com.omertron.thetvdbapi.TvDbException;
+import com.omertron.thetvdbapi.model.*;
+import com.omertron.thetvdbapi.model.Actor;
 
 public class NMJAdapter {
     // Database fields
@@ -112,29 +106,38 @@ public class NMJAdapter {
         return certifications;
     }
 
-    public void getEpisodes(Context context, Integer tvdbid) {
-        TheTvdb theTvdb = new TheTvdb(NMJLib.getTvdbApiKey(context));
+    public Episode getTVDBEpisodes(Context context, String tvdbid, int seasonNbr, int episodeNbr, String language) {
+        TheTVDBApi theTvdb = new TheTVDBApi(NMJLib.getTvdbApiKey(context));
+        Episode episode = new Episode();
         try {
-            retrofit2.Response<EpisodeResponse> response = theTvdb.episodes().get(tvdbid, "en").execute();
+            episode = theTvdb.getEpisode(tvdbid, seasonNbr, episodeNbr, language);
+        }catch (TvDbException ignored){
 
-            if (response.isSuccessful()) {
-                Episode results = response.body().data;
-                System.out.println(results.toString() + " is awesome!");
-            }
-        } catch (IOException ignored) {
         }
+        return episode;
     }
 
-    public void getSeasons(Context context, Integer tvdbid) {
-        TheTvdb theTvdb = new TheTvdb(NMJLib.getTvdbApiKey(context));
+    public Series getTVDBSeasons(Context context, String tvdbid, String language) {
+        TheTVDBApi theTvdb = new TheTVDBApi(NMJLib.getTvdbApiKey(context));
+        Series series = new Series();
         try {
-            retrofit2.Response<SeriesResponse> response = theTvdb.series().series(tvdbid, "en").execute();
+            series = theTvdb.getSeries(tvdbid, language);
+        }catch (TvDbException ignored){
 
-            if (response.isSuccessful()) {
-                Series results = response.body().data;
-                System.out.println(results.toString() + " is awesome!");
-            }
-        } catch (IOException ignored) {
         }
+        return series;
+    }
+
+    public List<com.omertron.thetvdbapi.model.Actor> getTVDBActors(Context context, String tvdbid, String language) {
+        TheTVDBApi theTvdb = new TheTVDBApi(NMJLib.getTvdbApiKey(context));
+        List<com.omertron.thetvdbapi.model.Actor> actors = new ArrayList<Actor>();
+        try {
+            actors = theTvdb.getActors(tvdbid);
+        }catch (TvDbException ignored){
+
+        }
+        for(int i=0;i<actors.size();i++)
+            System.out.println("Actor: " + actors.get(i).getName());
+        return actors;
     }
 }

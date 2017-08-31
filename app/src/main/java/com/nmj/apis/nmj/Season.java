@@ -18,8 +18,8 @@ package com.nmj.apis.nmj;
 
 public class Season {
 
-	private String mCoverPath;
-	private int mSeason;
+	private String mCoverPath, mSeasonId, mSeasonTitle, mSeasonRating;
+	private int mSeason, mEpisode;
 	
 	public String getCoverPath() {
 		return mCoverPath;
@@ -36,4 +36,24 @@ public class Season {
     public void setSeason(int season) {
         mSeason = season;
     }
+
+    public void setSeasonId(String seasonId){
+        mSeasonId = seasonId;
+    }
+
+    public void setSeasonTitle(String seasonTitle){
+        mSeasonTitle = seasonTitle;
+    }
+
+    public String getSeasonId(){
+        return mSeasonId;
+    }
+
+    public String getSeasonTitle(){
+        return mSeasonTitle;
+    }
+
+    public void setEpisodeCount(int episode) { mEpisode = episode;}
+
+    public int getEpisodeCount() { return mEpisode;}
 }

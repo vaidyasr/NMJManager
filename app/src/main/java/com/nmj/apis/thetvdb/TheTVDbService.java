@@ -30,9 +30,6 @@ import com.nmj.db.DbAdapterTvShows;
 import com.nmj.functions.Actor;
 import com.nmj.functions.NMJLib;
 import com.nmj.nmjmanager.R;
-import com.uwetrottmann.thetvdb.TheTvdb;
-import com.uwetrottmann.thetvdb.entities.Series;
-import com.uwetrottmann.thetvdb.entities.SeriesResponse;
 
 import org.json.JSONObject;
 import org.w3c.dom.Document;

@@ -158,6 +158,7 @@ public class ViewUtils {
     public static View setupTvShowCard(final Context context, Picasso picasso, final WebMovie show, final int toolbarColor) {
         View v = LayoutInflater.from(context).inflate(R.layout.horizontal_grid_item_small, null);
 
+        System.out.println("Image: " + show.getUrl());
         // Load image
         picasso.load(show.getUrl()).placeholder(R.color.card_background_dark).error(R.drawable.loading_image).config(NMJManagerApplication.getBitmapConfig()).into(((ImageView) v.findViewById(R.id.cover)));
 
@@ -211,6 +212,9 @@ public class ViewUtils {
         // Set subtitle
         ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setText(season.getSimpleSubtitleText());
         ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setSingleLine(true);
+
+        v.findViewById(R.id.inLibrary).setVisibility(View.GONE);
+        v.findViewById(R.id.hasWatched).setVisibility(View.GONE);
 
         // Set click listener
         v.setOnClickListener(new OnClickListener() {

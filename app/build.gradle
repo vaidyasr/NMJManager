@@ -61,7 +61,11 @@ dependencies {
     compile 'com.google.code.gson:gson:2.7'
     compile 'com.iainconnor:objectcache:0.0.19-SNAPSHOT'
     compile 'org.apache.commons:commons-lang3:3.4'
-    compile 'com.uwetrottmann.thetvdb-java:thetvdb-java:1.5.0'
+    compile ('com.omertron:thetvdbapi:1.9') {
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+        exclude module: 'junit'
+    }
+    compile 'org.apache.httpcomponents:httpclient-android:4.3.5.1'
     compile files('libs/cling-core-1.0.5.jar')
     compile files('libs/cling-support-1.0.5.jar')
     compile files('libs/jcifs.jar')

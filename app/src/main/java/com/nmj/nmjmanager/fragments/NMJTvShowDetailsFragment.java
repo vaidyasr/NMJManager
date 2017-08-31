@@ -88,6 +88,7 @@ import com.nmj.utils.ViewUtils;
 import com.nmj.views.HorizontalCardLayout;
 import com.nmj.views.ObservableScrollView;
 import com.nmj.views.ObservableScrollView.OnScrollChangedListener;
+import com.omertron.thetvdbapi.model.Series;
 import com.squareup.otto.Bus;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -383,7 +384,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
             }
         });
 
-/*
+
         mCastLayout.setTitle(R.string.detailsActors);
         mCastLayout.setSeeMoreVisibility(true);
         mCastLayout.getViewTreeObserver().addOnGlobalLayoutListener(
@@ -402,10 +403,10 @@ public class NMJTvShowDetailsFragment extends Fragment {
         mCastLayout.setSeeMoreOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(IntentUtils.getActorBrowserTvShows(mContext, mShow.getTitle(), mShow.getTmdbId(), mToolbarColor, "cast"));
+                startActivity(IntentUtils.getActorBrowserTvShows(mContext, mShow.getTitle(), mShow.getId(), mToolbarColor, "cast"));
             }
         });
-
+/*
         mCrewLayout.setTitle(R.string.detailsActors);
         mCrewLayout.setSeeMoreVisibility(true);
         mCrewLayout.getViewTreeObserver().addOnGlobalLayoutListener(
@@ -431,7 +432,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
 
         ViewUtils.updateToolbarBackground(getActivity(), mToolbar, 0, mShow.getTitle(), mToolbarColor);
 
-        loadImages();
+        //loadImages();
     }
 
     private void loadImages() {
@@ -488,7 +489,6 @@ public class NMJTvShowDetailsFragment extends Fragment {
                 public void onError() {
                     if (!isAdded())
                         return;
-
                     mPicasso.load(mShow.getThumbnail()).skipMemoryCache().placeholder(R.drawable.bg).error(R.drawable.bg).into(background);
                 }
 
@@ -502,20 +502,37 @@ public class NMJTvShowDetailsFragment extends Fragment {
     private void loadActors(final int capacity) {
         // Show ProgressBar
         new AsyncTask<Void, Void, Void>() {
-            private List<Actor> mActors;
+            private List<Actor> mActors = new ArrayList<Actor>();
 
             @Override
             protected Void doInBackground(Void... params) {
-                NMJTvShowService service = NMJTvShowService.getInstance(mContext);
+                if (mShow.getIdType() == 1) {
+                } else {
+                    List<com.omertron.thetvdbapi.model.Actor> actors = NMJManagerApplication.getNMJAdapter().getTVDBActors(mContext, mShow.getId(), "en");
+                    for(Integer i=0; i < actors.size();i++) {
+                        System.out.println("Actor Name: " + actors.get(i).getName());
+                        System.out.println("Role: " + actors.get(i).getRole());
+                        mActors.add(new Actor(
+                                actors.get(i).getName(),
+                                actors.get(i).getRole(),
+                                String.valueOf(actors.get(i).getId()),
+                                "cast",
+                                NMJLib.getTmdbImageBaseUrl(mContext) + NMJLib.getActorUrlSize(mContext) + actors.get(i).getImage()));
+                    }
+/*                        mSeasons.add(new GridSeason(mContext, mShow.getId(), mShow.getSeasons().get(i).getSeason(), mShow.getSeasons().get(i).getEpisodeCount(), 0,
+                                NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/" + mShow.getSeasons().get(i).getCoverPath()));*/
+                    }
+               /* NMJTvShowService service = NMJTvShowService.getInstance(mContext);
                 mActors = service.getCast(mShow.getId());
-
+*/
+               System.out.println("Actors size: " + mActors.size());
                 return null;
             }
 
             @Override
             protected void onPostExecute(Void result) {
                 mCastLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
-                mCrewLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
+                //mCrewLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
             }
         }.execute();
     }
@@ -527,7 +544,15 @@ public class NMJTvShowDetailsFragment extends Fragment {
 
             @Override
             protected Void doInBackground(Void... params) {
-                NMJManagerApplication.getNMJAdapter().getEpisodes(mContext, Integer.parseInt(mShow.getId()));
+                if (!mShow.getShowId().equals("0")) {
+                    for(Integer i=0; i < mShow.getSeasonsCount();i++) {
+                        mSeasons.add(new GridSeason(mContext, mShow.getId(), mShow.getSeasons().get(i).getSeason(), mShow.getSeasons().get(i).getEpisodeCount(), 0,
+                                NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/" + mShow.getSeasons().get(i).getCoverPath()));
+                    }
+                } else {
+                    Series seasons = NMJManagerApplication.getNMJAdapter().getTVDBSeasons(mContext, mShow.getId(), "en");
+            }
+                //NMJManagerApplication.getNMJAdapter().getTVDBEpisodes(mContext, mShow.getId());
 
 /*                HashMap<String, EpisodeCounter> seasons = NMJManagerApplication.getNMJAdapter().getSeasons(mContext, Integer.parseInt(mShow.getId());
 
@@ -539,7 +564,6 @@ public class NMJTvShowDetailsFragment extends Fragment {
                 }
 
                 seasons.clear();*/
-
                 Collections.sort(mSeasons);
 
                 return null;
@@ -548,7 +572,8 @@ public class NMJTvShowDetailsFragment extends Fragment {
             @Override
             protected void onPostExecute(Void result) {
                 mSeasonsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mSeasons, HorizontalCardLayout.SEASONS, mToolbarColor);
-                mSeasonsLayout.setSeeMoreVisibility(true);
+                mSeasonsLayout.setSeeMoreVisibility(mSeasons.size() > capacity);
+                //mSeasonsLayout.setSeeMoreVisibility(true);
             }
         }.execute();
     }

@@ -78,6 +78,8 @@ public class HorizontalCardLayout extends LinearLayout {
 			mProgressBar = (ProgressBar) getChildAt(1).findViewById(R.id.progress_bar);
 			mErrorTextView = (TextView) getChildAt(1).findViewById(R.id.error_message);
 		}
+
+
 	}
 
 	public void setSeeMoreVisibility(boolean visible) {

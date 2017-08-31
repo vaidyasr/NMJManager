@@ -13,6 +13,7 @@ import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.Actor;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.Video;
+import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 
 import org.json.JSONArray;
@@ -338,7 +339,7 @@ public class NMJTvShowService extends TvShowApiService {
             CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
             if (!cacheManager.exists(CacheId)) {
                 System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServer() + "NMJManagerTablet_web/gd.php?action=getVideoDetails&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&showid=" + id + "&title_type=2");
+                jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&showid=" + id + "&title_type=2");
                 NMJLib.putCache(cacheManager, CacheId, jObject.toString());
             }
             System.out.println("Getting Cache from " + CacheId);
@@ -396,42 +397,42 @@ public class NMJTvShowService extends TvShowApiService {
             }
 
             try {
-                Season seasonDetails = new Season();
                 JSONArray seasons = jObject.getJSONArray("SEASONS");
-
                 for (int i = 0; i < seasons.length(); i++) {
+                    Season seasonDetails = new Season();
                     seasonDetails.setSeason(Integer.parseInt(seasons.getJSONObject(i).getString("SEASON")));
                     seasonDetails.setCoverPath(seasons.getJSONObject(i).getString("POSTER"));
-                    /*episodeDetails.get(i).setPlayCount(video.getJSONObject(i).getString("PLAY_COUNT"));
-                    episodeDetails.get(i).setWidth(video.getJSONObject(i).getString("WIDTH"));*/
+                    seasonDetails.setEpisodeCount(Integer.parseInt(seasons.getJSONObject(i).getString("episode_count")));
+                    seasonDetails.setSeasonId(seasons.getJSONObject(i).getString("SEASON_ID"));
+                    seasonDetails.setSeasonTitle(seasons.getJSONObject(i).getString("TITLE"));
                     show.addSeason(seasonDetails);
                 }
             } catch (Exception e) {
             }
-
             if(show.getIdType() == 1)
                 CacheId = "tmdb_tv_" + show.getId();
             else
                 CacheId = "tvdb_tv_" + show.getId();
 
-            if (!cacheManager.exists(CacheId)) {
-                System.out.println("Putting Cache in " + CacheId);
                 if (show.getIdType() == 1)
                     jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "tv/" + show.getId() + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
-                else
-                    jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "tv/" + show.getId() + "?api_key=" + mTmdbApiKey + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+                else {
 
-                NMJLib.putCache(cacheManager, CacheId, jObject.toString());
-            }
+                }
 
-            System.out.println("Getting Cache from " + CacheId);
+/*            System.out.println("Getting Cache from " + CacheId);
             jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
 
             show.setTagline(NMJLib.getStringFromJSONObject(jObject, "tagline", ""));
             show.setCast(NMJLib.getTMDbCast(mContext, show.getId()));
             show.setCrew(NMJLib.getTMDbCrew(mContext, show.getId()));
-            show.setSimilarShows(NMJLib.getTMDbSimilarMovies(mContext, show.getId()));
-            try {
+            show.setSimilarShows(NMJLib.getTMDbSimilarMovies(mContext, show.getId()));*/
+
+//            List<com.omertron.thetvdbapi.model.Actor> actors = NMJManagerApplication.getNMJAdapter().getTVDBActors(mContext, show.getId(), "en");
+/*            for(int i=0;i<actors.size();i++){
+                System.out.println("Actor Detail: " + actors.get(i).getName());
+            }*/
+/*            try {
                 JSONArray array = jObject.getJSONObject("images").getJSONArray("backdrops");
 
                 if (array.length() > 0) {
@@ -448,7 +449,7 @@ public class NMJTvShowService extends TvShowApiService {
                     }
                 }
             } catch (Exception e) {
-            }
+            }*/
 
         } catch (Exception e) {
             // If something goes wrong here, i.e. API error, we won't get any details

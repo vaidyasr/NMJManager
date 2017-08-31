@@ -32,9 +32,9 @@ public class GridSeason implements Comparable<GridSeason> {
 	private String mShowId, mHeaderText, mSubtitleText, mSubtitleTextSimple;
 	private int mSeason, mEpisodeCount, mWatchedCount;
 	private boolean mUseGridView;
-	private File mCover;
+	private String mCover;
 	
-	public GridSeason(Context context, String showId, int season, int episodeCount, int watchedCount, File cover) {
+	public GridSeason(Context context, String showId, int season, int episodeCount, int watchedCount, String cover) {
 		mContext = context;
         mShowId = showId;
 		mSeason = season;
@@ -105,7 +105,7 @@ public class GridSeason implements Comparable<GridSeason> {
         return mSubtitleTextSimple;
     }
 
-	public File getCover() {
+	public String getCover() {
 		return mCover;
 	}
 
