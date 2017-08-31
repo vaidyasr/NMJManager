@@ -89,9 +89,14 @@ public abstract class BaseMovie implements Comparable<BaseMovie> {
 		return FileUtils.getMovieThumb(mContext, mTmdbId);
 	}
 
-	public String getTmdbId() {
-		return mTmdbId;
+    public String getId() {
+        return mTmdbId;
 	}
+
+    public String getTmdbId() {
+        return mTmdbId.replace("tmdb", "");
+    }
+
 
     public String getShowId() {
         return mShowId;

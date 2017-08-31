@@ -214,8 +214,8 @@ public class TMDbMovieService extends MovieApiService {
                 }
             } catch (Exception e) {
             }
-            movie.setCast(NMJLib.getTMDbCast(mContext, id));
-            movie.setCrew(NMJLib.getTMDbCrew(mContext, id));
+            movie.setCast(NMJLib.getTMDbCast(mContext, "movie", id, "en"));
+            movie.setCrew(NMJLib.getTMDbCrew(mContext, "movie", id, "en"));
             movie.setSimilarMovies(NMJLib.getTMDbSimilarMovies(mContext, id));
             try {
                 JSONArray array = jObject.getJSONObject("images").getJSONArray("backdrops");

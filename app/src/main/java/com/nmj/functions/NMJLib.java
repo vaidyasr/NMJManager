@@ -18,8 +18,6 @@ package com.nmj.functions;
 
 import android.annotation.SuppressLint;
 
-import org.apache.commons.lang3.StringUtils;
-
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.app.AlertDialog;
@@ -77,13 +75,15 @@ import com.nmj.service.MovieLibraryUpdate;
 import com.nmj.service.TvShowsLibraryUpdate;
 import com.nmj.utils.FileUtils;
 import com.nmj.utils.ViewUtils;
-import com.squareup.okhttp.FormEncodingBuilder;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
 
+import okhttp3.FormBody;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.OkHttpClient;
+import okhttp3.MediaType;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -192,8 +192,8 @@ public class NMJLib {
     }
 
     public static String getNMJServer() {
-        //String url = "http://www.pchportal.duckdns.org/";
-        String url = "http://192.168.1.108/";
+        String url = "http://www.pchportal.duckdns.org/";
+        //String url = "http://192.168.1.108/";
 
         return url;
     }
@@ -2418,16 +2418,29 @@ public class NMJLib {
         //return jObject;
     }
 
-    public static ArrayList<Actor> getTMDbCast(Context context, String id) {
+    public static ArrayList<Actor> getTMDbCast(Context context, String type, String id, String language) {
         ArrayList<Actor> results = new ArrayList<Actor>();
         try {
             JSONObject jObject;
+            String CacheId, URL = "";
+            if (!id.startsWith("tmdb_")) {
+                jObject = NMJLib.getJSONObject(context, getTmdbApiURL(context) + "find/" + id + "?api_key=" + getTmdbApiKey(context) + "&external_source=tvdb_id");
+                id = NMJLib.getStringFromJSONObject(jObject.getJSONArray("tv_results").getJSONObject(0), "id", "");
+            } else {
+                id = id.replace("tmdb_", "");
+            }
             CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(context));
-            String CacheId = "movie_" + id;
+            URL = getTmdbApiURL(context) + type + "/" + id + "?api_key=" + getTmdbApiKey(context) + "&language=" + language;
+            if (type.equals("movie")) {
+                CacheId = "movie_" + id;
+                URL += "&append_to_response=recommendations,releases,trailers,credits,images,similar_movies";
+            } else {
+                CacheId = "tv_" + id;
+                URL += "&append_to_response=recommendations,credits,images,similar";
+            }
             if (!cacheManager.exists(CacheId)) {
                 System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(context, getTmdbApiURL(context) + "movie/" + id + "?api_key=" +
-                        getTmdbApiKey(context) + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+                jObject = NMJLib.getJSONObject(context, URL);
                 NMJLib.putCache(cacheManager, CacheId, jObject.toString());
             }
             System.out.println("Getting Cache from " + CacheId);
@@ -2452,16 +2465,30 @@ public class NMJLib {
         return results;
     }
 
-    public static ArrayList<Actor> getTMDbCrew(Context context, String id) {
+    public static ArrayList<Actor> getTMDbCrew(Context context, String type, String id, String language) {
         ArrayList<Actor> results = new ArrayList<Actor>();
         try {
             JSONObject jObject;
+            String CacheId, URL = "";
+            if (!id.startsWith("tmdb_")) {
+                jObject = NMJLib.getJSONObject(context, getTmdbApiURL(context) + "find/" + id + "?api_key=" + getTmdbApiKey(context) + "&external_source=tvdb_id");
+                id = NMJLib.getStringFromJSONObject(jObject.getJSONArray("tv_results").getJSONObject(0), "id", "");
+            } else {
+                id = id.replace("tmdb_", "");
+            }
             CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(context));
-            String CacheId = "movie_" + id;
+            if (type.equals("movie")) {
+                CacheId = "movie_" + id;
+                URL = getTmdbApiURL(context) + type + "/" + id + "?api_key=" + getTmdbApiKey(context) + "&language=" +
+                        language + "&append_to_response=recommendations,releases,trailers,credits,images,similar_movies";
+            } else {
+                CacheId = "tv_" + id;
+                URL = getTmdbApiURL(context) + type + "/" + id + "?api_key=" + getTmdbApiKey(context) + "&language=" +
+                        language + "&append_to_response=recommendations,credits,images,similar";
+            }
             if (!cacheManager.exists(CacheId)) {
                 System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(context, getTmdbApiURL(context) + "movie/" + id + "?api_key=" +
-                        getTmdbApiKey(context) + "&language=en&append_to_response=releases,trailers,credits,images,similar_movies");
+                jObject = NMJLib.getJSONObject(context, URL);
                 NMJLib.putCache(cacheManager, CacheId, jObject.toString());
             }
             System.out.println("Getting Cache from " + CacheId);
@@ -2686,7 +2713,7 @@ public class NMJLib {
                 CacheId = "collection_" + id;
             else
                 CacheId = videoType + "_" + loadType;
-            NMJLib.getDiskCache(mContext).clearCache();
+            //NMJLib.getDiskCache(mContext).clearCache();
             CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
 
             if (!cacheManager.exists(CacheId)) {
@@ -2705,7 +2732,7 @@ public class NMJLib {
                 JSONObject dObject = jArray.getJSONObject(i);
                 String title, release_date, tmdbid, rating, poster;
                 if (videoType.equals("tv")) {
-                    tmdbid = NMJLib.getStringFromJSONObject(dObject, "id", "");
+                    tmdbid = "tmdb" + NMJLib.getStringFromJSONObject(dObject, "id", "");
                     rating = NMJLib.getStringFromJSONObject(dObject, "vote_average", "");
                     title = NMJLib.getStringFromJSONObject(dObject, "name", "");
                     release_date = NMJLib.getStringFromJSONObject(dObject, "first_air_date", "");
@@ -2895,6 +2922,10 @@ public class NMJLib {
         }
     }
 
+    public static String getTVDbImageBaseUrl() {
+        return "http://thetvdb.com/banners/";
+    }
+
     public static String getTmdbImageBaseUrl(Context context) {
         long time = PreferenceManager.getDefaultSharedPreferences(context).getLong(TMDB_BASE_URL_TIME, 0);
         long currentTime = System.currentTimeMillis();
@@ -2958,7 +2989,7 @@ public class NMJLib {
 
         final OkHttpClient client = NMJManagerApplication.getOkHttpClient();
 
-        RequestBody formBody = new FormEncodingBuilder()
+        RequestBody formBody = new FormBody.Builder()
                 .add("filepaths", sb.toString())
                 .add("type", movie ? "0" : "1")
                 .add("key", getNMJManagerKey(context))

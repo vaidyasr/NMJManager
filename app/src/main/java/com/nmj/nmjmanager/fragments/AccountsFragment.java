@@ -44,8 +44,9 @@ import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.service.TraktMoviesSyncService;
 import com.nmj.service.TraktTvShowsSyncService;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
+
+import okhttp3.Request;
+import okhttp3.Response;
 
 import org.json.JSONObject;
 
@@ -256,6 +257,98 @@ public class AccountsFragment extends Fragment {
 		traktRemoveAccount.setVisibility(View.GONE);
 
 		Toast.makeText(getActivity(), getString(R.string.removedAccount), Toast.LENGTH_LONG).show();
+	}
+
+	private class TraktLogin extends AsyncTask<Void, Void, Boolean> {
+
+		private String username, password;
+
+		@Override
+		protected void onPreExecute() {
+			traktLogIn.setText(R.string.authenticating);
+			traktLogIn.setEnabled(false);
+		}
+
+		@Override
+		protected Boolean doInBackground(Void... params) {
+			username = traktUser.getText().toString().trim();
+			password = traktPass.getText().toString().trim();
+
+			boolean success = false;
+
+			try {
+
+				Request request = NMJLib.getTraktAuthenticationRequest("http://api.trakt.tv/account/test/" + mTraktApiKey, username, NMJLib.SHA1(password));
+				Response response = NMJManagerApplication.getOkHttpClient().newCall(request).execute();
+				JSONObject jObject = new JSONObject(response.body().string());
+
+				if (response.isSuccessful()) {
+					String status = jObject.getString("status");
+					success = status.equals("success");
+				}
+			} catch (Exception e) {
+				success = false;
+			}
+
+			if (success) {
+
+				Editor editor = settings.edit();
+				editor.putString(TRAKT_USERNAME, username);
+				editor.putString(TRAKT_PASSWORD, NMJLib.SHA1(password));
+				editor.apply();
+
+				try {
+					Request request = NMJLib.getTraktAuthenticationRequest("http://api.trakt.tv/user/profile.json/" + mTraktApiKey + "/" + username, username, NMJLib.SHA1(password));
+					Response response = NMJManagerApplication.getOkHttpClient().newCall(request).execute();
+					JSONObject jObject = new JSONObject(response.body().string());
+
+					if (response.isSuccessful()) {
+						String name = jObject.getString("full_name");
+						if (TextUtils.isEmpty(name) || name.equals("null"))
+							name = jObject.getString("username");
+						String avatar = jObject.getString("avatar");
+
+						editor.putString(TRAKT_FULL_NAME, name);
+						editor.apply();
+
+						if (isAdded() && (avatar.contains("gravatar") || (avatar.contains("trakt") && !avatar.contains("avatar-large.jpg"))))
+							NMJLib.downloadFile(avatar, new File(NMJManagerApplication.getCacheFolder(getActivity()), "avatar.jpg").getAbsolutePath());
+					}
+				} catch (Exception e) {
+					success = false;
+				}
+			}
+
+			return success;
+		}
+
+		@Override
+		protected void onPostExecute(Boolean success) {
+			if (success) {
+				if (isAdded()) {
+					Toast.makeText(getActivity(), getString(R.string.loginSucceeded), Toast.LENGTH_LONG).show();
+
+					traktUser.setEnabled(false);
+					traktPass.setEnabled(false);
+					syncTrakt.setVisibility(View.VISIBLE);
+					;
+					syncTrakt.setChecked(true);
+
+					traktLogIn.setVisibility(View.GONE);
+					traktSyncNow.setVisibility(View.VISIBLE);
+					traktRemoveAccount.setVisibility(View.VISIBLE);
+
+					startServices();
+				}
+			} else {
+				if (isAdded()) {
+					Toast.makeText(getActivity(), getString(R.string.failedToLogin), Toast.LENGTH_LONG).show();
+					traktLogIn.setText(R.string.logIn);
+					traktLogIn.setEnabled(true);
+				}
+			}
+		}
+
 	}
 
 	private void startServices() {

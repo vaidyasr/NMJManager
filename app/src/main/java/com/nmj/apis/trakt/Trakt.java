@@ -28,8 +28,9 @@ import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.nmjmanager.TvShow;
 import com.nmj.nmjmanager.TvShowEpisode;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
+
+import okhttp3.Request;
+import okhttp3.Response;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -42,6 +43,8 @@ import static com.nmj.functions.PreferenceKeys.TRAKT_PASSWORD;
 import static com.nmj.functions.PreferenceKeys.TRAKT_USERNAME;
 
 public class Trakt {
+
+	public static int WATCHED = 1, RATINGS = 2, WATCHLIST = 3, COLLECTION = 4;
 	
 	private Trakt() {} // No instantiation
 	
@@ -52,7 +55,7 @@ public class Trakt {
 			throw new RuntimeException("You need to add a Trakt API key!");
 		return key;
 	}
-	
+
 	public static boolean performMovieCheckin(String tmdbId, Context c) {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
 		String username = settings.getString(TRAKT_USERNAME, "").trim();
@@ -177,7 +180,7 @@ public class Trakt {
 			JSONObject holder = new JSONObject();
 			holder.put("username", username);
 			holder.put("password", password);
-			
+
 			JSONArray array = new JSONArray();
 			int count = movies.size();
 			for (int i = 0; i < count; i++) {
@@ -291,7 +294,7 @@ public class Trakt {
 			return false;
 		}
 	}
-	
+
 	public static boolean markTvShowAsWatched(TraktTvShow show, Context c) {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
 		String username = settings.getString(TRAKT_USERNAME, "").trim();
@@ -567,7 +570,6 @@ public class Trakt {
 		}
 	}
 
-	public static int WATCHED = 1, RATINGS = 2, WATCHLIST = 3, COLLECTION = 4;
 	public static JSONArray getMovieLibrary(Context c, int type) {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
 		String username = settings.getString(TRAKT_USERNAME, "").trim();

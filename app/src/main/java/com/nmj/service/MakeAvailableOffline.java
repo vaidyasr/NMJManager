@@ -37,8 +37,9 @@ import com.nmj.nmjmanager.CancelOfflineDownload;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.utils.FileUtils;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
+
+import okhttp3.Request;
+import okhttp3.Response;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -60,11 +61,10 @@ import static com.nmj.functions.PreferenceKeys.IGNORE_FILESIZE_CHECK;
 
 public class MakeAvailableOffline extends IntentService {
 
-	private static final int NOTIFICATION_ID = 20;
-
 	public static final String FILEPATH = "filepath";
 	public static final String TYPE = "type";
-	private String mFileUrl;
+    private static final int NOTIFICATION_ID = 20;
+    private String mFileUrl;
 	private int mType, mBufferSize;
 	private SmbLogin mAuth;
 	private SmbFile mSmb;
@@ -78,6 +78,12 @@ public class MakeAvailableOffline extends IntentService {
 	private boolean mStopDownload = false;
 	private long mLastTime, mCurrentTime, mLastLength, mTotalLength, mCurrentLength;
 	private DecimalFormat mOneDecimal = new DecimalFormat("#.#");
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mStopDownload = true;
+        }
+    };
 
 	public MakeAvailableOffline() {
 		super("MakeAvailableOffline");
@@ -89,13 +95,6 @@ public class MakeAvailableOffline extends IntentService {
 
 		mHandler = new Handler(Looper.getMainLooper());
 	}
-
-	private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			mStopDownload = true;
-		}
-	};
 
 	@Override
 	public void onDestroy() {

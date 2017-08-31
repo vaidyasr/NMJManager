@@ -56,6 +56,10 @@ public class Movie {
         this.tmdbId = id;
     }
 
+    public String getId() {
+        return tmdbId;
+    }
+
     public String getShowId() {
         if (TextUtils.isEmpty(showid))
             return "0";
@@ -258,12 +262,12 @@ public class Movie {
         return sb.toString().trim();
     }
 
-    public void setVideo(List<Video> video) {
-        mVideo = video;
-    }
-
     public List<Video> getVideo() {
         return mVideo;
+    }
+
+    public void setVideo(List<Video> video) {
+        mVideo = video;
     }
 
 

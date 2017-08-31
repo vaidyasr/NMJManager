@@ -395,7 +395,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
                             final int numColumns = (int) Math.floor(mCastLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
                             mImageThumbSize = (mCastLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
 
-                            loadActors(numColumns);
+                            loadCast(numColumns);
                             NMJLib.removeViewTreeObserver(mCastLayout.getViewTreeObserver(), this);
                         }
                     }
@@ -406,7 +406,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
                 startActivity(IntentUtils.getActorBrowserTvShows(mContext, mShow.getTitle(), mShow.getId(), mToolbarColor, "cast"));
             }
         });
-/*
+
         mCrewLayout.setTitle(R.string.detailsActors);
         mCrewLayout.setSeeMoreVisibility(true);
         mCrewLayout.getViewTreeObserver().addOnGlobalLayoutListener(
@@ -417,18 +417,17 @@ public class NMJTvShowDetailsFragment extends Fragment {
                             final int numColumns = (int) Math.floor(mCrewLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
                             mImageThumbSize = (mCrewLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
 
-                            loadActors(numColumns);
+                            loadCrew(numColumns);
                             NMJLib.removeViewTreeObserver(mCrewLayout.getViewTreeObserver(), this);
                         }
-                    }
+                        }
                 });
         mCrewLayout.setSeeMoreOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(IntentUtils.getActorBrowserTvShows(mContext, mShow.getTitle(), mShow.getTmdbId(), mToolbarColor, "cast"));
+                startActivity(IntentUtils.getActorBrowserTvShows(mContext, mShow.getTitle(), mShow.getId(), mToolbarColor, "cast"));
             }
         });
-*/
 
         ViewUtils.updateToolbarBackground(getActivity(), mToolbar, 0, mShow.getTitle(), mToolbarColor);
 
@@ -484,55 +483,73 @@ public class NMJTvShowDetailsFragment extends Fragment {
             }
         } else {
             if (!mShow.getBackdrop().isEmpty())
-            mPicasso.load(mShow.getBackdrop()).skipMemoryCache().placeholder(R.drawable.bg).into(background, new Callback() {
-                @Override
-                public void onError() {
-                    if (!isAdded())
-                        return;
-                    mPicasso.load(mShow.getThumbnail()).skipMemoryCache().placeholder(R.drawable.bg).error(R.drawable.bg).into(background);
-                }
+                mPicasso.load(mShow.getBackdrop()).skipMemoryCache().placeholder(R.drawable.bg).into(background, new Callback() {
+                    @Override
+                    public void onError() {
+                        if (!isAdded())
+                            return;
+                        mPicasso.load(mShow.getThumbnail()).skipMemoryCache().placeholder(R.drawable.bg).error(R.drawable.bg).into(background);
+                    }
 
-                @Override
-                public void onSuccess() {
-                }
-            });
+                    @Override
+                    public void onSuccess() {
+                    }
+                });
         }
     }
 
-    private void loadActors(final int capacity) {
+    private void loadCast(final int capacity) {
         // Show ProgressBar
         new AsyncTask<Void, Void, Void>() {
             private List<Actor> mActors = new ArrayList<Actor>();
 
             @Override
             protected Void doInBackground(Void... params) {
-                if (mShow.getIdType() == 1) {
-                } else {
-                    List<com.omertron.thetvdbapi.model.Actor> actors = NMJManagerApplication.getNMJAdapter().getTVDBActors(mContext, mShow.getId(), "en");
-                    for(Integer i=0; i < actors.size();i++) {
-                        System.out.println("Actor Name: " + actors.get(i).getName());
-                        System.out.println("Role: " + actors.get(i).getRole());
-                        mActors.add(new Actor(
-                                actors.get(i).getName(),
-                                actors.get(i).getRole(),
-                                String.valueOf(actors.get(i).getId()),
-                                "cast",
-                                NMJLib.getTmdbImageBaseUrl(mContext) + NMJLib.getActorUrlSize(mContext) + actors.get(i).getImage()));
-                    }
-/*                        mSeasons.add(new GridSeason(mContext, mShow.getId(), mShow.getSeasons().get(i).getSeason(), mShow.getSeasons().get(i).getEpisodeCount(), 0,
-                                NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/" + mShow.getSeasons().get(i).getCoverPath()));*/
-                    }
-               /* NMJTvShowService service = NMJTvShowService.getInstance(mContext);
-                mActors = service.getCast(mShow.getId());
-*/
-               System.out.println("Actors size: " + mActors.size());
+                String Id = mShow.getId();
+                NMJManagerApplication.getNMJTvShowService(mContext);
+                List<Actor> actors = NMJLib.getTMDbCast(mContext, "tv", Id, "en");
+                for (Integer i = 0; i < actors.size(); i++) {
+                    mActors.add(new Actor(
+                            actors.get(i).getName(),
+                            actors.get(i).getCharacter(),
+                            String.valueOf(actors.get(i).getId()),
+                            "cast",
+                            actors.get(i).getUrl()));
+                }
                 return null;
             }
 
             @Override
             protected void onPostExecute(Void result) {
                 mCastLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
-                //mCrewLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
+            }
+        }.execute();
+    }
+
+    private void loadCrew(final int capacity) {
+        // Show ProgressBar
+        new AsyncTask<Void, Void, Void>() {
+            private List<Actor> mActors = new ArrayList<Actor>();
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                String Id = mShow.getId();
+                NMJManagerApplication.getNMJTvShowService(mContext);
+                List<Actor> actors = NMJLib.getTMDbCrew(mContext, "tv", Id, "en");
+                for (Integer i = 0; i < actors.size(); i++) {
+                    mActors.add(new Actor(
+                            actors.get(i).getName(),
+                            actors.get(i).getCharacter(),
+                            String.valueOf(actors.get(i).getId()),
+                            "crew",
+                            actors.get(i).getUrl()));
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void result) {
+                mCrewLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
             }
         }.execute();
     }
@@ -545,25 +562,24 @@ public class NMJTvShowDetailsFragment extends Fragment {
             @Override
             protected Void doInBackground(Void... params) {
                 if (!mShow.getShowId().equals("0")) {
-                    for(Integer i=0; i < mShow.getSeasonsCount();i++) {
+                    for (Integer i = 0; i < mShow.getSeasonsCount(); i++) {
                         mSeasons.add(new GridSeason(mContext, mShow.getId(), mShow.getSeasons().get(i).getSeason(), mShow.getSeasons().get(i).getEpisodeCount(), 0,
                                 NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/" + mShow.getSeasons().get(i).getCoverPath()));
                     }
                 } else {
-                    Series seasons = NMJManagerApplication.getNMJAdapter().getTVDBSeasons(mContext, mShow.getId(), "en");
-            }
-                //NMJManagerApplication.getNMJAdapter().getTVDBEpisodes(mContext, mShow.getId());
+                    System.out.println("ID Type: " + mShow.getIdType());
+                    if (mShow.getIdType() == 1) {
 
-/*                HashMap<String, EpisodeCounter> seasons = NMJManagerApplication.getNMJAdapter().getSeasons(mContext, Integer.parseInt(mShow.getId());
+                    } else {
+                        Series seasons = NMJManagerApplication.getNMJAdapter().getTVDBSeasons(mContext, mShow.getId(), "en");
+                        System.out.println("Season: " + seasons.getSeriesName());
+                        /*                        for (Integer i = 0; i < seasons.; i++) {
+                            mSeasons.add(new GridSeason(mContext, mShow.getId(), mShow.getSeasons().get(i).getSeason(), mShow.getSeasons().get(i).getEpisodeCount(), 0,
+                                    NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/" + mShow.getSeasons().get(i).getCoverPath()));
 
-                for (String key : seasons.keySet()) {
-                    File temp = FileUtils.getTvShowSeason(mContext, mShow.getId(), key);
-                    mSeasons.add(new GridSeason(mContext, mShow.getId(), Integer.valueOf(key), seasons.get(key).getEpisodeCount(), seasons.get(key).getWatchedCount(),
-                            temp.exists() ? temp :
-                                    FileUtils.getTvShowThumb(mContext, mShow.getId())));
+                        }*/
+                    }
                 }
-
-                seasons.clear();*/
                 Collections.sort(mSeasons);
 
                 return null;
@@ -851,8 +867,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
                 } else {
                     mShow = mShowApiService.getCompleteTVDbTvShow(mShow.getId(), "en");
                 }
-            }
-            else
+            } else
                 mShow = mShowApiService.getCompleteNMJTvShow(mShow.getShowId());
             for (int i = 0; i < mShow.getSimilarShows().size(); i++) {
                 String id = mShow.getSimilarShows().get(i).getId();

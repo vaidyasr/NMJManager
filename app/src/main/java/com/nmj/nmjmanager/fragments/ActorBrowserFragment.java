@@ -244,9 +244,9 @@ public class ActorBrowserFragment extends Fragment {
         protected Void doInBackground(Void... params) {
             MovieApiService service = NMJManagerApplication.getMovieService(mContext);
             if (loadType.equals("cast"))
-                mCast = new ArrayList<Actor>(NMJLib.getTMDbCast(mContext, mMovieId));
+                mCast = new ArrayList<Actor>(NMJLib.getTMDbCast(mContext, loadType, mMovieId, "en"));
             else
-                mCast = new ArrayList<Actor>(NMJLib.getTMDbCrew(mContext,mMovieId));
+                mCast = new ArrayList<Actor>(NMJLib.getTMDbCrew(mContext, loadType, mMovieId, "en"));
             return null;
         }
 

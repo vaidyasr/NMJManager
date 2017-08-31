@@ -22,9 +22,10 @@ import android.text.TextUtils;
 
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.utils.StringUtils;
-import com.squareup.okhttp.Cache;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.OkUrlFactory;
+
+import okhttp3.Cache;
+import okhttp3.OkHttpClient;
+import okhttp3.OkUrlFactory;
 import com.squareup.picasso.Downloader;
 
 import java.io.BufferedInputStream;
@@ -42,12 +43,10 @@ import static com.nmj.functions.PreferenceKeys.IGNORED_NFO_FILES;
 /** A {@link Downloader} which uses OkHttp to download images. */
 public class OkHttpDownloader implements Downloader {
 
-	private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
-	private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
-
 	static final String RESPONSE_SOURCE_ANDROID = "X-Android-Response-Source";
 	static final String RESPONSE_SOURCE_OKHTTP = "OkHttp-Response-Source";
-
+	private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
+	private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
 	private final Context mContext;
 	private final File mCacheDir;
 	private final OkUrlFactory mUrlFactory;
@@ -63,12 +62,10 @@ public class OkHttpDownloader implements Downloader {
 		if (!mCacheDir.exists()) {
 			mCacheDir.mkdirs();
 		}
-
+		File httpCacheDirectory = new File(mCacheDir, "responses");
 		mUrlFactory = new OkUrlFactory(NMJManagerApplication.getOkHttpClient());
 
-		try {
-			mUrlFactory.client().setCache(new Cache(mCacheDir, calculateDiskCacheSize(mCacheDir)));
-		} catch (IOException e) {}
+		mUrlFactory.client().newBuilder().cache(new Cache(mCacheDir, calculateDiskCacheSize(mCacheDir)));
 
 		// Set context
 		mContext = context;

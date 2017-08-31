@@ -45,14 +45,16 @@ import com.nmj.functions.FileRequestTransformer;
 import com.nmj.functions.OkHttpDownloader;
 import com.nmj.functions.NMJAdapter;
 
-import com.squareup.okhttp.Cache;
-import com.squareup.okhttp.OkHttpClient;
 import com.squareup.otto.Bus;
 import com.squareup.picasso.Downloader;
 import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONObject;
+import org.apache.http.client.HttpClient;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Cache;
+import okhttp3.apache.OkApacheClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -335,6 +337,10 @@ public class NMJManagerApplication extends Application {
 		return NMJMovieService.getInstance(context);
 	}
 
+	public static TvShowApiService getNMJTvShowService(Context context) {
+		return NMJTvShowService.getInstance(context);
+	}
+
 	/**
 	 * This is used as an optimization to loading the movie library view.
 	 * @param filepaths
@@ -348,20 +354,24 @@ public class NMJManagerApplication extends Application {
 		    return mMovieFilepaths.get(id);
         return null;
 	}
-	
+
+	public static HttpClient getHttpClient() {
+		HttpClient httpClient = new OkApacheClient();
+
+		return httpClient;
+	}
+
 	/**
 	 * OkHttpClient singleton with 2 MB cache.
 	 * @return
 	 */
 	public static OkHttpClient getOkHttpClient() {
 		if (mOkHttpClient == null) {
-			mOkHttpClient = new OkHttpClient();
-
-            try {
 				File cacheDir = getContext().getCacheDir();
 			    Cache cache = new Cache(cacheDir, 2 * 1024 * 1024); // 25 MB cache
-			    mOkHttpClient.setCache(cache);
-			} catch (IOException e) {}
+			mOkHttpClient = new OkHttpClient.Builder()
+					.cache(cache)
+					.build();
 		}
 
         return mOkHttpClient;

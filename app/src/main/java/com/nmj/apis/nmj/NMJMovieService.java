@@ -202,8 +202,8 @@ public class NMJMovieService extends NMJApiService {
             System.out.println("Getting Cache from " + CacheId);
             jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
             movie.setTagline(NMJLib.getStringFromJSONObject(jObject, "tagline", ""));
-            movie.setCast(NMJLib.getTMDbCast(mContext, movie.getTmdbId()));
-            movie.setCrew(NMJLib.getTMDbCrew(mContext, movie.getTmdbId()));
+            movie.setCast(NMJLib.getTMDbCast(mContext, "movie", movie.getTmdbId(), "en"));
+            movie.setCrew(NMJLib.getTMDbCrew(mContext, "movie", movie.getTmdbId(), "en"));
             movie.setSimilarMovies(NMJLib.getTMDbSimilarMovies(mContext, movie.getTmdbId()));
         } catch (Exception e) {
             // If something goes wrong here, i.e. API error, we won't get any details

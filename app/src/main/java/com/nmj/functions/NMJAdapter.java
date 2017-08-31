@@ -20,6 +20,7 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.nmj.nmjmanager.NMJManagerApplication;
 import com.omertron.thetvdbapi.TheTVDBApi;
 import com.omertron.thetvdbapi.TvDbException;
 import com.omertron.thetvdbapi.model.*;
@@ -129,7 +130,7 @@ public class NMJAdapter {
     }
 
     public List<com.omertron.thetvdbapi.model.Actor> getTVDBActors(Context context, String tvdbid, String language) {
-        TheTVDBApi theTvdb = new TheTVDBApi(NMJLib.getTvdbApiKey(context));
+        TheTVDBApi theTvdb = new TheTVDBApi(NMJLib.getTvdbApiKey(context), NMJManagerApplication.getHttpClient());
         List<com.omertron.thetvdbapi.model.Actor> actors = new ArrayList<Actor>();
         try {
             actors = theTvdb.getActors(tvdbid);
