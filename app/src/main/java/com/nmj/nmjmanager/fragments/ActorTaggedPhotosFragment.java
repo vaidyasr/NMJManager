@@ -176,7 +176,7 @@ public class ActorTaggedPhotosFragment extends Fragment {
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			mActor = TMDbMovieService.getInstance(mContext).getCompleteActorDetails(mActorId);
+			mActor = TMDbMovieService.getInstance(mContext).getCompleteActorDetails(mActorId, "");
 
 			return null;
 		}

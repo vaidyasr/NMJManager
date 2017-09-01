@@ -137,7 +137,10 @@ public class TMDbMovieService extends MovieApiService {
             String CacheId = "movie_" + id;
             if (!cacheManager.exists(CacheId)) {
                 System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + id + "?api_key=" + mTmdbApiKey + (language.equals("en") ? "" : "&language=" + language) + "&append_to_response=releases,trailers,credits,images,similar_movies");
+                jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" +
+                        id.replace("tmdb", "") + "?api_key=" +
+                        mTmdbApiKey + (language.equals("en") ? "" : "&language=" + language) +
+                        "&append_to_response=recommendations,releases,trailers,credits,images,similar");
                 NMJLib.putCache(cacheManager, CacheId, jObject.toString());
             }
             System.out.println("Getting Cache from " + CacheId);
@@ -214,9 +217,7 @@ public class TMDbMovieService extends MovieApiService {
                 }
             } catch (Exception e) {
             }
-            movie.setCast(NMJLib.getTMDbCast(mContext, "movie", id, "en"));
-            movie.setCrew(NMJLib.getTMDbCrew(mContext, "movie", id, "en"));
-            movie.setSimilarMovies(NMJLib.getTMDbSimilarMovies(mContext, id));
+
             try {
                 JSONArray array = jObject.getJSONObject("images").getJSONArray("backdrops");
 
@@ -320,7 +321,7 @@ public class TMDbMovieService extends MovieApiService {
         return getListFromUrl(serviceUrl);
     }
 
-    public CompleteActor getCompleteActorDetails(final String actorId) {
+    public CompleteActor getCompleteActorDetails(final String actorId, String personType) {
         JSONObject jObject = new JSONObject();
         try {
             String CacheId = "person_" + actorId;
@@ -349,6 +350,7 @@ public class TMDbMovieService extends MovieApiService {
         actor.setBirthday(NMJLib.getStringFromJSONObject(jObject, "birthday", ""));
         actor.setDayOfDeath(NMJLib.getStringFromJSONObject(jObject, "deathday", ""));
         actor.setPlaceOfBirth(NMJLib.getStringFromJSONObject(jObject, "place_of_birth", ""));
+        actor.setPersonType(personType);
 
         String profilePhoto = NMJLib.getStringFromJSONObject(jObject, "profile_path", "");
         if (!TextUtils.isEmpty(profilePhoto))
@@ -364,7 +366,8 @@ public class TMDbMovieService extends MovieApiService {
         List<WebMovie> movies = new ArrayList<WebMovie>();
         try {
             JSONArray movieArray;
-            movieArray = jObject.getJSONObject("movie_credits").getJSONArray("cast");
+            String subtitle;
+            movieArray = jObject.getJSONObject("movie_credits").getJSONArray(personType);
             for (int i = 0; i < movieArray.length(); i++) {
 
                 final JSONObject thisObject = movieArray.getJSONObject(i);
@@ -376,12 +379,16 @@ public class TMDbMovieService extends MovieApiService {
                 // Continue to the next loop iteration if this is an adult title
                 if (!includeAdult && isAdult)
                     continue;
-
+                if (personType.equals("crew"))
+                    subtitle = NMJLib.getStringFromJSONObject(thisObject, "job", "");
+                else
+                    subtitle = "";
                 WebMovie movie = new WebMovie(mContext,
                         NMJLib.getStringFromJSONObject(thisObject, "title", ""),
                         String.valueOf(thisObject.getInt("id")),
                         baseUrl + NMJLib.getImageUrlSize(mContext) + NMJLib.getStringFromJSONObject(thisObject, "poster_path", ""),
-                        NMJLib.getStringFromJSONObject(thisObject, "release_date", ""));
+                        NMJLib.getStringFromJSONObject(thisObject, "release_date", ""),
+                        subtitle);
 
                 movies.add(movie);
             }
@@ -394,8 +401,9 @@ public class TMDbMovieService extends MovieApiService {
         List<WebMovie> shows = new ArrayList<WebMovie>();
         try {
             JSONArray showArray;
+            String subtitle;
 
-            showArray = jObject.getJSONObject("tv_credits").getJSONArray("cast");
+            showArray = jObject.getJSONObject("tv_credits").getJSONArray(personType);
             for (int i = 0; i < showArray.length(); i++) {
 
                 final JSONObject thisObject = showArray.getJSONObject(i);
@@ -407,12 +415,16 @@ public class TMDbMovieService extends MovieApiService {
                 // Continue to the next loop iteration if this is an adult title
                 if (!includeAdult && isAdult)
                     continue;
-
+                if (personType.equals("crew"))
+                    subtitle = NMJLib.getStringFromJSONObject(thisObject, "job", "");
+                else
+                    subtitle = "";
                 WebMovie show = new WebMovie(mContext,
                         NMJLib.getStringFromJSONObject(thisObject, "name", ""),
                         String.valueOf(thisObject.getInt("id")),
                         baseUrl + NMJLib.getImageUrlSize(mContext) + NMJLib.getStringFromJSONObject(thisObject, "poster_path", ""),
-                        NMJLib.getStringFromJSONObject(thisObject, "first_air_date", ""));
+                        NMJLib.getStringFromJSONObject(thisObject, "first_air_date", ""),
+                        subtitle);
 
                 shows.add(show);
             }

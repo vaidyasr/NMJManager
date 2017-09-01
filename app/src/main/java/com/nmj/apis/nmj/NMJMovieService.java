@@ -196,15 +196,13 @@ public class NMJMovieService extends NMJApiService {
             CacheId = "movie_" + movie.getTmdbId();
             if (!cacheManager.exists(CacheId)) {
                 System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + movie.getTmdbId() + "?api_key=" + mTmdbApiKey + "&language=" + language + "&append_to_response=releases,trailers,credits,images,similar_movies");
+                jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + movie.getId() + "?api_key=" + mTmdbApiKey + "&language=" + language + "&append_to_response=recommendations,releases,trailers,credits,images,similar");
                 NMJLib.putCache(cacheManager, CacheId, jObject.toString());
             }
             System.out.println("Getting Cache from " + CacheId);
             jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
             movie.setTagline(NMJLib.getStringFromJSONObject(jObject, "tagline", ""));
-            movie.setCast(NMJLib.getTMDbCast(mContext, "movie", movie.getTmdbId(), "en"));
-            movie.setCrew(NMJLib.getTMDbCrew(mContext, "movie", movie.getTmdbId(), "en"));
-            movie.setSimilarMovies(NMJLib.getTMDbSimilarMovies(mContext, movie.getTmdbId()));
+
         } catch (Exception e) {
             // If something goes wrong here, i.e. API error, we won't get any details
             // about the movie - in other words, it's unidentified

@@ -55,7 +55,7 @@ import com.squareup.picasso.Picasso;
 
 public class ActorDetailsFragment extends Fragment {
 
-    private String mActorId;
+    private String mActorId, mpersonType;
     private CompleteActor mActor;
     private Activity mContext;
     private TextView mName, mPlaceOfBirth, mBirthday, mKnownCredits, mBiography;
@@ -71,11 +71,12 @@ public class ActorDetailsFragment extends Fragment {
 
     public ActorDetailsFragment() {}
 
-    public static ActorDetailsFragment newInstance(String actorId) {
+    public static ActorDetailsFragment newInstance(String actorId, String personType) {
         ActorDetailsFragment frag = new ActorDetailsFragment();
 
         Bundle args = new Bundle();
         args.putString("actorId", actorId);
+        args.putString("personType", personType);
 
         frag.setArguments(args);
 
@@ -91,10 +92,9 @@ public class ActorDetailsFragment extends Fragment {
         mContext = getActivity();
 
         mActorId = getArguments().getString("actorId");
+        mpersonType = getArguments().getString("personType");
+
         mToolbarColor = getArguments().getInt(IntentKeys.TOOLBAR_COLOR);
-
-        System.out.println("Debug: Actor Details Toolbar Color: " + mToolbarColor);
-
         mPicasso = NMJManagerApplication.getPicassoDetailsView(mContext);
 
         mMedium = TypefaceUtils.getRobotoMedium(mContext);
@@ -242,7 +242,7 @@ public class ActorDetailsFragment extends Fragment {
         mMovieCards.setSeeMoreOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(IntentUtils.getActorMoviesIntent(mContext, mActor.getName(), mActor.getId(), mToolbarColor));
+                startActivity(IntentUtils.getActorMoviesIntent(mContext, mActor.getName(), mActor.getId(), mActor.getPersonType(), mToolbarColor));
             }
         });
 
@@ -264,7 +264,7 @@ public class ActorDetailsFragment extends Fragment {
         mTvCards.setSeeMoreOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(IntentUtils.getActorTvShowsIntent(mContext, mActor.getName(), mActor.getId(), mToolbarColor));
+                startActivity(IntentUtils.getActorTvShowsIntent(mContext, mActor.getName(), mActor.getId(), mActor.getPersonType(), mToolbarColor));
             }
         });
 
@@ -380,11 +380,11 @@ public class ActorDetailsFragment extends Fragment {
 
             // Load the actor details
             TMDbMovieService service = TMDbMovieService.getInstance(mContext);
-            mActor = service.getCompleteActorDetails(mActorId);
+            mActor = service.getCompleteActorDetails(mActorId, mpersonType);
 
             for (int i = 0; i < mActor.getMovies().size(); i++) {
-                String id = mActor.getMovies().get(i).getId();
-                mActor.getMovies().get(i).setInLibrary(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(id));
+                String id = "tmdb" + mActor.getMovies().get(i).getId();
+                mActor.getMovies().get(i).setInLibrary(NMJManagerApplication.getNMJAdapter().movieExistsbyId(id));
             }
 
             for (int i = 0; i < mActor.getTvShows().size(); i++) {

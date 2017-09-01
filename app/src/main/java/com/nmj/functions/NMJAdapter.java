@@ -21,10 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.nmj.nmjmanager.NMJManagerApplication;
-import com.omertron.thetvdbapi.TheTVDBApi;
-import com.omertron.thetvdbapi.TvDbException;
-import com.omertron.thetvdbapi.model.*;
-import com.omertron.thetvdbapi.model.Actor;
 
 public class NMJAdapter {
     // Database fields
@@ -67,9 +63,9 @@ public class NMJAdapter {
         this.mLibrary = library;
     }
 
-    public boolean movieExistsbyTmdbId(String movieId) {
+    public boolean movieExistsbyId(String movieId) {
         for (int i = 0; i < mLibrary.size(); i++) {
-            if (mLibrary.get(i).getId().equals("tmdb" + movieId))
+            if (mLibrary.get(i).getId().equals(movieId))
                 return true;
         }
         return false;
@@ -107,7 +103,7 @@ public class NMJAdapter {
         return certifications;
     }
 
-    public Episode getTVDBEpisodes(Context context, String tvdbid, int seasonNbr, int episodeNbr, String language) {
+ /*   public Episode getTVDBEpisodes(Context context, String tvdbid, int seasonNbr, int episodeNbr, String language) {
         TheTVDBApi theTvdb = new TheTVDBApi(NMJLib.getTvdbApiKey(context));
         Episode episode = new Episode();
         try {
@@ -140,5 +136,5 @@ public class NMJAdapter {
         for(int i=0;i<actors.size();i++)
             System.out.println("Actor: " + actors.get(i).getName());
         return actors;
-    }
+    }*/
 }

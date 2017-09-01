@@ -39,7 +39,7 @@ import java.util.List;
 public class HorizontalCardLayout extends LinearLayout {
 
 	public static final int MOVIES = 1000, TV_SHOWS = 1100, PHOTOS = 1200,
-			TAGGED_PHOTOS = 1300, RELATED_MOVIES = 1400, ACTORS = 1500, SEASONS = 1600;
+			TAGGED_PHOTOS = 1300, RELATED_MOVIES = 1400, ACTORS = 1500, SEASONS = 1600, RELATED_SHOWS = 1800;
 
 	private final View mTitleLayout;
 	private final TextView mTitleTextView, mSeeMoreTextView;
@@ -144,7 +144,7 @@ public class HorizontalCardLayout extends LinearLayout {
 			for (int i = 0; i < items.size() && i < capacity; i++) {
 				if (type == MOVIES || type == RELATED_MOVIES) {
 					addView(ViewUtils.setupMovieCard(context, picasso, (WebMovie) items.get(i), toolbarColor), i, lp);
-				} else if (type == TV_SHOWS) {
+				} else if (type == TV_SHOWS || type == RELATED_SHOWS) {
 					addView(ViewUtils.setupTvShowCard(context, picasso, (WebMovie) items.get(i), toolbarColor), i, lp);
 				} else if (type == PHOTOS) {
 					addView(ViewUtils.setupPhotoCard(context, picasso, (String) items.get(i), (List<String>) items, i, toolbarColor), i, lp);

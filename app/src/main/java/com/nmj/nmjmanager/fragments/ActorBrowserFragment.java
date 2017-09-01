@@ -52,8 +52,7 @@ public class ActorBrowserFragment extends Fragment {
 
     private int mImageThumbSize, mImageThumbSpacing, mToolbarColor;
     private ArrayList<Actor> mCast = new ArrayList<Actor>();
-    private ArrayList<Actor> mCrew = new ArrayList<Actor>();
-    private String loadType;
+    private String loadType, videoType;
     private GridView mGridView = null;
     private ProgressBar mProgressBar;
     private Picasso mPicasso;
@@ -68,11 +67,13 @@ public class ActorBrowserFragment extends Fragment {
     public ActorBrowserFragment() {
     }
 
-    public static ActorBrowserFragment newInstance(String movieId, String loadType) {
+    public static ActorBrowserFragment newInstance(String movieId, String loadType, String videoType) {
         ActorBrowserFragment pageFragment = new ActorBrowserFragment();
         Bundle bundle = new Bundle();
         bundle.putString("movieId", movieId);
         bundle.putString("loadType", loadType);
+        bundle.putString("videoType", videoType);
+
         pageFragment.setArguments(bundle);
         return pageFragment;
     }
@@ -141,6 +142,8 @@ public class ActorBrowserFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         loadType = getArguments().getString("loadType");
+        videoType = getArguments().getString("videoType");
+
         if (mCast.size() == 0)
             new GetPeopleDetails(getArguments().getString("movieId"), getActivity()).execute();
     }
@@ -242,11 +245,10 @@ public class ActorBrowserFragment extends Fragment {
 
         @Override
         protected Void doInBackground(Void... params) {
-            MovieApiService service = NMJManagerApplication.getMovieService(mContext);
             if (loadType.equals("cast"))
-                mCast = new ArrayList<Actor>(NMJLib.getTMDbCast(mContext, loadType, mMovieId, "en"));
+                mCast = new ArrayList<Actor>(NMJLib.getTMDbCast(mContext, videoType, mMovieId, "en"));
             else
-                mCast = new ArrayList<Actor>(NMJLib.getTMDbCrew(mContext, loadType, mMovieId, "en"));
+                mCast = new ArrayList<Actor>(NMJLib.getTMDbCrew(mContext, videoType, mMovieId, "en"));
             return null;
         }
 

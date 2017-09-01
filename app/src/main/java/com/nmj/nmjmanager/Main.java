@@ -340,9 +340,10 @@ public class Main extends NMJActivity {
             @Override
             public void run() {
                 try {
+                    NMJLib.setLibrary(NMJManagerApplication.getContext(), mDbHelper);
                     mNumMovies = mDbHelper.getMovieCount();
-                    mNumShows = mDbHelperTv.count();
-                    mNumMusic = mDbHelperTv.count();
+                    mNumShows = mDbHelper.getShowCount();
+                    mNumMusic = mDbHelper.getMusicCount();
 
                     runOnUiThread(new Runnable() {
                         @Override

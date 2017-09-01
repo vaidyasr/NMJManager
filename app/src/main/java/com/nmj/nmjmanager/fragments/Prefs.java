@@ -171,7 +171,7 @@ public class Prefs extends PreferenceFragment implements OnSharedPreferenceChang
 	}
 	
 	private void savePreference(String key, String value) {
-		PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().putString(key, value).commit();
+		PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().putString(key, value).apply();
 	}
 	
 	private boolean hasLocale(Locale l) {

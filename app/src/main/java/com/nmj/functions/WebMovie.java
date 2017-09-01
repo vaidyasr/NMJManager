@@ -22,21 +22,23 @@ import com.nmj.nmjmanager.R;
 
 public class WebMovie {
 
-	private String mTitle, mId, mUrl, mDate;
+	private String mTitle, mId, mUrl, mDate, mJob;
 	private Context mContext;
 	private boolean mInLibrary;
 
-	public WebMovie(Context context, String title, String id, String url, String date) {
+	public WebMovie(Context context, String title, String id, String url, String date, String job) {
 		mContext = context;
 		mTitle = title;
 		mId = id;
 		mUrl = url;
 		mDate = date;
+		mJob = job;
 	}
 
 	public String getTitle() { return mTitle; }
 	public String getId() { return mId; }
 	public String getUrl() { return mUrl; }
+	public String getJob() {return mJob;}
 	public String getRawDate() { return mDate; }
 	public boolean isInLibrary() { return mInLibrary; }
 

@@ -36,7 +36,8 @@ public class TMDbTvShowService extends TvShowApiService {
     private TMDbTvShowService(Context context) {
         mContext = context;
         mTmdbApiKey = NMJLib.getTmdbApiKey(mContext);
-    }
+		System.out.println("Entering TVDBShowService");
+	}
 
     public static TMDbTvShowService getInstance(Context context) {
 		if (mService == null)

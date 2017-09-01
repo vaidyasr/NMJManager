@@ -264,7 +264,7 @@ public class MovieDiscoveryFragment extends Fragment implements OnSharedPreferen
 							jArray.getJSONObject(i).getString("original_title"),
 							jArray.getJSONObject(i).getString("id"),
 							mBaseUrl + NMJLib.getImageUrlSize(getActivity()) + jArray.getJSONObject(i).getString("poster_path"),
-							NMJLib.getPrettyDate(getActivity(), jArray.getJSONObject(i).getString("release_date"))));
+							NMJLib.getPrettyDate(getActivity(), jArray.getJSONObject(i).getString("release_date")), ""));
 				}
 			}
 

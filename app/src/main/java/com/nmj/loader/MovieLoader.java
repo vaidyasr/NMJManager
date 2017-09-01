@@ -436,8 +436,8 @@ public class MovieLoader {
 
         @Override
         protected Void doInBackground(Void... params) {
-            if (NMJManagerApplication.getNMJAdapter().getLibrary() == null)
-                NMJLib.setLibrary(mContext, mDatabase);
+            //if (NMJManagerApplication.getNMJAdapter().getLibrary() == null)
+                //NMJLib.setLibrary(mContext, mDatabase);
             switch (mLibraryType) {
                 case ALL_MOVIES:
                     mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "all", ""));
@@ -570,7 +570,7 @@ public class MovieLoader {
                         if (isCancelled())
                             return null;
 
-                        if (db.hasMultipleFilepaths(mMovieList.get(i).getTmdbId()))
+                        if (db.hasMultipleFilepaths(mMovieList.get(i).getId()))
                             tempCollection.add(mMovieList.get(i));
                     }
                 } else {

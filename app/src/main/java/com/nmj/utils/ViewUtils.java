@@ -112,6 +112,7 @@ public class ViewUtils {
      */
     @SuppressLint("InflateParams")
     public static View setupMovieCard(final Activity context, Picasso picasso, final WebMovie movie, final int toolbarColor) {
+
         final View v = LayoutInflater.from(context).inflate(R.layout.horizontal_grid_item_small, null);
 
         // Load image
@@ -123,13 +124,16 @@ public class ViewUtils {
         ((TextView) v.findViewById(R.id.text)).setTypeface(TypefaceUtils.getRobotoMedium(context));
 
         // Set subtitle
-        ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setText(movie.getSubtitle());
+        if (movie.getJob().equals(""))
+            ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setText(movie.getSubtitle());
+        else
+            ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setText(movie.getJob());
         ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setSingleLine(true);
 
         v.findViewById(R.id.inLibrary).setVisibility(View.GONE);
         v.findViewById(R.id.hasWatched).setVisibility(View.GONE);
 
-        if(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(movie.getId()))
+        if(NMJManagerApplication.getNMJAdapter().movieExistsbyId("tmdb" + movie.getId()))
             v.findViewById(R.id.inLibrary).setVisibility(View.VISIBLE);
 
         if(NMJManagerApplication.getNMJAdapter().hasWatched(movie.getId()))
@@ -158,7 +162,6 @@ public class ViewUtils {
     public static View setupTvShowCard(final Context context, Picasso picasso, final WebMovie show, final int toolbarColor) {
         View v = LayoutInflater.from(context).inflate(R.layout.horizontal_grid_item_small, null);
 
-        System.out.println("Image: " + show.getUrl());
         // Load image
         picasso.load(show.getUrl()).placeholder(R.color.card_background_dark).error(R.drawable.loading_image).config(NMJManagerApplication.getBitmapConfig()).into(((ImageView) v.findViewById(R.id.cover)));
 
@@ -167,13 +170,17 @@ public class ViewUtils {
         ((TextView) v.findViewById(R.id.text)).setTypeface(TypefaceUtils.getRobotoMedium(context));
 
         // Set subtitle
-        ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setText(show.getSubtitle());
+        if (show.getJob().equals(""))
+            ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setText(show.getSubtitle());
+        else
+            ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setText(show.getJob());
+
         ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setSingleLine(true);
 
         v.findViewById(R.id.inLibrary).setVisibility(View.GONE);
         v.findViewById(R.id.hasWatched).setVisibility(View.GONE);
 
-        if(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(show.getId()))
+        if(NMJManagerApplication.getNMJAdapter().movieExistsbyId("tmdb" + show.getId()))
             v.findViewById(R.id.inLibrary).setVisibility(View.VISIBLE);
 
         if(NMJManagerApplication.getNMJAdapter().hasWatched(show.getId()))
@@ -183,9 +190,10 @@ public class ViewUtils {
         v.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                context.startActivity(IntentUtils.getTmdbTvShowLink(context, show));
+                context.startActivity(IntentUtils.getTmdbShowDetails(context, show, toolbarColor));
             }
         });
+
 
         return v;
     }

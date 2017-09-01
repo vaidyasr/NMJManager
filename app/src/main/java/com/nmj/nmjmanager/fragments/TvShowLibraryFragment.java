@@ -593,11 +593,11 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
 
             holder.inLibrary.setVisibility(View.GONE);
 
-            if (show.getTitleType() == "tmdb" && NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(getItem(position).getTmdbId())) {
+/*            if (show.getTitleType() == "tmdb" && NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(getItem(position).getTmdbId())) {
                 holder.inLibrary.setVisibility(View.VISIBLE);
                 if (NMJManagerApplication.getNMJAdapter().hasWatched(getItem(position).getTmdbId()))
                     holder.hasWatched.setVisibility(View.VISIBLE);
-            }
+            }*/
             return convertView;
         }
 

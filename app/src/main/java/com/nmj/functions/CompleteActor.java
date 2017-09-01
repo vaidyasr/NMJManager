@@ -26,7 +26,7 @@ import java.util.Random;
 public class CompleteActor {
 
 	private final String mId;
-	private String mName, mBirthday, mDayOfDeath, mPlaceOfBirth, mProfilePhoto, mProfilePhotoThumb, mBiography;
+	private String mName, mBirthday, mDayOfDeath, mPlaceOfBirth, mProfilePhoto, mProfilePhotoThumb, mBiography, mPersonType;
 	private int mKnownCreditCount;
 	private List<WebMovie> mMovies = new ArrayList<WebMovie>(), mTvShows = new ArrayList<WebMovie>();
 	private List<String> mPhotos = new ArrayList<String>(), mTaggedPhotos = new ArrayList<String>();
@@ -42,7 +42,7 @@ public class CompleteActor {
 	public void setName(String name) {
 		mName = name;
 	}
-	
+
 	public String getName() {
 		return mName;
 	}
@@ -77,6 +77,14 @@ public class CompleteActor {
 	
 	public void setPlaceOfBirth(String place) {
 		mPlaceOfBirth = place;
+	}
+
+	public void setPersonType(String personType){
+		mPersonType = personType;
+	}
+
+	public String getPersonType(){
+		return mPersonType;
 	}
 	
 	public String getPlaceOfBirth() {
@@ -113,7 +121,6 @@ public class CompleteActor {
 	
 	public void setMovies(List<WebMovie> movies) {
 		mMovies = movies;
-		
 		Collections.sort(mMovies, NMJLib.getWebMovieDateComparator());
 	}
 	
@@ -123,7 +130,6 @@ public class CompleteActor {
 	
 	public void setTvShows(List<WebMovie> shows) {
 		mTvShows = shows;
-		
 		Collections.sort(mTvShows, NMJLib.getWebMovieDateComparator());
 	}
 	

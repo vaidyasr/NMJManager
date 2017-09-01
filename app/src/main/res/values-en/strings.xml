@@ -61,6 +61,8 @@
     <string name="automaticallyRemoveMoviesFromWatchlistDescription">Remove movies on the watchlist when marking as watched.</string>
     <string name="automaticallyShareSocialUpdates">Automatically share social updates when you watch a film or TV shows.</string>
     <string name="relatedMovies">Similar movies</string>
+    <string name="relatedShows">Similar shows</string>
+    <string name="recommended">Recommended</string>
     <string name="ignoreFilenameTagsDescription">Set up personalised filename tags to ignore when identifying movies and TV Shows.</string>
     <string name="forceEnglishApplicationLanguage">Force American English application language</string>
     <string name="useEnglishLanguage">Use American English language instead of the system language. Requires application restart.</string>

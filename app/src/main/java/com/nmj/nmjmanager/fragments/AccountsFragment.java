@@ -259,7 +259,7 @@ public class AccountsFragment extends Fragment {
 		Toast.makeText(getActivity(), getString(R.string.removedAccount), Toast.LENGTH_LONG).show();
 	}
 
-	private class TraktLogin extends AsyncTask<Void, Void, Boolean> {
+/*	private class TraktLogin extends AsyncTask<Void, Void, Boolean> {
 
 		private String username, password;
 
@@ -349,7 +349,7 @@ public class AccountsFragment extends Fragment {
 			}
 		}
 
-	}
+	}*/
 
 	private void startServices() {
 		if (isAdded() && syncTrakt.isChecked()) {

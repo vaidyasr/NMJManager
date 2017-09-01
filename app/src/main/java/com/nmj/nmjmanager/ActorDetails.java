@@ -43,12 +43,14 @@ public class ActorDetails extends NMJActivity {
         setTitle(null);
 		
 		String actorId = getIntent().getExtras().getString("actorID");
+		String personType = getIntent().getExtras().getString("personType");
+
 		mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
 
 		Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
 		if (frag == null && savedInstanceState == null) {
 			final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-			ft.replace(android.R.id.content, ActorDetailsFragment.newInstance(actorId), TAG);
+			ft.replace(android.R.id.content, ActorDetailsFragment.newInstance(actorId, personType), TAG);
 			ft.commit();
 		}
 	}

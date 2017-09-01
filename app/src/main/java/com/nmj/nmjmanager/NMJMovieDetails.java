@@ -54,6 +54,8 @@ public class NMJMovieDetails extends NMJActivity {
             mShowId = getIntent().getExtras().getString("showId");
         }
 
+        System.out.println("Entering NMJ Details");
+
         Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
         if (frag == null) {
             final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();

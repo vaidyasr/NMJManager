@@ -62,7 +62,7 @@ public abstract class BaseMovie implements Comparable<BaseMovie> {
         if (paths != null)
             setFilepaths(paths);
         else
-            setFilepaths(NMJManagerApplication.getMovieMappingAdapter().getMovieFilepaths(getTmdbId()));
+            setFilepaths(NMJManagerApplication.getMovieMappingAdapter().getMovieFilepaths(getId()));
 	}
 
 	public String getTitle() {
@@ -90,11 +90,11 @@ public abstract class BaseMovie implements Comparable<BaseMovie> {
 	}
 
     public String getId() {
-        return mTmdbId;
+		return mTmdbId.replace("tmdb", "");
 	}
 
     public String getTmdbId() {
-        return mTmdbId.replace("tmdb", "");
+        return mTmdbId;
     }
 
 

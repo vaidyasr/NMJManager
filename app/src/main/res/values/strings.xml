@@ -274,6 +274,8 @@
     <string name="confirmBackPressDescription">Require two presses of the Back-button to exit.</string>
     <string name="pressBackToExit">Press Back-button again to exit</string>
     <string name="relatedMovies">Similar movies</string>
+    <string name="relatedShows">Similar shows</string>
+    <string name="recommended">Recommended</string>
     <string name="stringLocal">Local content</string>
     <string name="stringDiscover">Discover</string>
     <string name="stringAdd">Add</string>

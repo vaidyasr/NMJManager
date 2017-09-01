@@ -39,6 +39,7 @@ public class Movie {
     private List<Actor> mCast = new ArrayList<Actor>();
     private List<Actor> mCrew = new ArrayList<Actor>();
     private List<WebMovie> mSimilarMovies = new ArrayList<WebMovie>();
+    private List<WebMovie> mRecommendedMovies = new ArrayList<WebMovie>();
     private String mFilepaths = filepath;
 
     public Movie() {
@@ -47,17 +48,20 @@ public class Movie {
     }
 
     public String getTmdbId() {
-        if (TextUtils.isEmpty(tmdbId))
-            return title;
-        return tmdbId.replace("tmdb", "");
+        return tmdbId;
     }
 
     public void setTmdbId(String id) {
-        this.tmdbId = id;
+        if (!id.startsWith("tmdb"))
+            this.tmdbId = "tmdb" + id;
+        else
+            this.tmdbId = id;
     }
 
     public String getId() {
-        return tmdbId;
+        if (TextUtils.isEmpty(tmdbId))
+            return title;
+        return tmdbId.replace("tmdb", "");
     }
 
     public String getShowId() {
@@ -248,6 +252,10 @@ public class Movie {
 
     public List<WebMovie> getSimilarMovies() {
         return mSimilarMovies;
+    }
+
+    public List<WebMovie> getRecommendedMovies() {
+        return mRecommendedMovies;
     }
 
     public void setSimilarMovies(List<WebMovie> movies) {

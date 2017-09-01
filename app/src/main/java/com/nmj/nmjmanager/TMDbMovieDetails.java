@@ -41,6 +41,7 @@ public class TMDbMovieDetails extends NMJActivity {
         setTitle(null);
 
         mMovieId = getIntent().getExtras().getString("tmdbId");
+        System.out.println("Entering TMDb Details");
 
         Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
         if (frag == null) {

@@ -38,6 +38,7 @@ public class ActorBrowser extends NMJActivity {
         String movieId = getIntent().getExtras().getString("movieId");
         String title = getIntent().getExtras().getString("title");
         String loadType = getIntent().getExtras().getString("loadType");
+        String videoType = getIntent().getExtras().getString("videoType");
         mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
 
         getSupportActionBar().setSubtitle(title);
@@ -49,7 +50,7 @@ public class ActorBrowser extends NMJActivity {
         Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
         if (frag == null && savedInstanceState == null) {
             final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.content, ActorBrowserFragment.newInstance(movieId, loadType), TAG);
+            ft.replace(R.id.content, ActorBrowserFragment.newInstance(movieId, loadType, videoType), TAG);
             ft.commit();
         }
     }

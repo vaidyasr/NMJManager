@@ -63,6 +63,17 @@ public class TvShow {
         return tmdbId.replace("tmdb", "").replace("tvdb", "");
     }
 
+    public String getTmdbId(){
+            return this.tmdbId;
+    }
+
+    public void setTmdbId(String id) {
+        if (!id.startsWith("tmdb"))
+            this.tmdbId = "tmdb" + id;
+        else
+            this.tmdbId = id;
+    }
+
     public void setId(String id) {
         this.tmdbId = id;
     }

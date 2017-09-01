@@ -71,6 +71,7 @@ import com.nmj.functions.NMJLib;
 import com.nmj.functions.PaletteLoader;
 import com.nmj.functions.PreferenceKeys;
 import com.nmj.functions.SimpleAnimatorListener;
+import com.nmj.functions.WebMovie;
 import com.nmj.loader.TvShowLoader;
 import com.nmj.nmjmanager.EditTvShow;
 import com.nmj.nmjmanager.IdentifyTvShow;
@@ -88,7 +89,6 @@ import com.nmj.utils.ViewUtils;
 import com.nmj.views.HorizontalCardLayout;
 import com.nmj.views.ObservableScrollView;
 import com.nmj.views.ObservableScrollView.OnScrollChangedListener;
-import com.omertron.thetvdbapi.model.Series;
 import com.squareup.otto.Bus;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -114,7 +114,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
     private Picasso mPicasso;
     private Typeface mMediumItalic, mMedium, mBold, mCondensedRegular;
     private Bus mBus;
-    private HorizontalCardLayout mSeasonsLayout, mCastLayout, mCrewLayout;
+    private HorizontalCardLayout mSeasonsLayout, mCastLayout, mCrewLayout, mSimilarShowsLayout, mRecommendedShowsLayout;;
     private int mImageThumbSize, mImageThumbSpacing, mToolbarColor = 0;
     private Toolbar mToolbar;
     private FloatingActionButton mFab;
@@ -168,8 +168,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
         System.out.println("Movie Id: " + getArguments().getString("movieId"));
         System.out.println("Show Id: " + getArguments().getString("showId"));
         mShow.setShowId(getArguments().getString("showId"));
-        mShow.setId(getArguments().getString("movieId"));
-
+        mShow.setTmdbId(getArguments().getString("movieId"));
         mPicasso = NMJManagerApplication.getPicassoDetailsView(getActivity());
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.CLEAR_IMAGE_CACHE));
@@ -222,6 +221,9 @@ public class NMJTvShowDetailsFragment extends Fragment {
         mCastLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra);
         mCastLayout.setVisibility(View.VISIBLE);
         mCrewLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra_1);
+        mSimilarShowsLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra_2);
+        mRecommendedShowsLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra_3);
+
         mCrewLayout.setVisibility(View.VISIBLE);
         mScrollView = (ObservableScrollView) v.findViewById(R.id.observableScrollView);
         mFab = (FloatingActionButton) v.findViewById(R.id.fab);
@@ -385,7 +387,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
         });
 
 
-        mCastLayout.setTitle(R.string.detailsActors);
+        mCastLayout.setTitle(R.string.detailsCast);
         mCastLayout.setSeeMoreVisibility(true);
         mCastLayout.getViewTreeObserver().addOnGlobalLayoutListener(
                 new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -403,11 +405,11 @@ public class NMJTvShowDetailsFragment extends Fragment {
         mCastLayout.setSeeMoreOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(IntentUtils.getActorBrowserTvShows(mContext, mShow.getTitle(), mShow.getId(), mToolbarColor, "cast"));
+                startActivity(IntentUtils.getActorBrowserTvShows(mContext, mShow.getTitle(), mShow.getTmdbId(), mToolbarColor, "cast"));
             }
         });
 
-        mCrewLayout.setTitle(R.string.detailsActors);
+        mCrewLayout.setTitle(R.string.detailsCrew);
         mCrewLayout.setSeeMoreVisibility(true);
         mCrewLayout.getViewTreeObserver().addOnGlobalLayoutListener(
                 new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -425,13 +427,59 @@ public class NMJTvShowDetailsFragment extends Fragment {
         mCrewLayout.setSeeMoreOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(IntentUtils.getActorBrowserTvShows(mContext, mShow.getTitle(), mShow.getId(), mToolbarColor, "cast"));
+                startActivity(IntentUtils.getActorBrowserTvShows(mContext, mShow.getTitle(), mShow.getTmdbId(), mToolbarColor, "crew"));
+            }
+        });
+
+        mSimilarShowsLayout.setVisibility(View.VISIBLE);
+        mSimilarShowsLayout.setTitle(R.string.relatedShows);
+        mSimilarShowsLayout.setSeeMoreVisibility(true);
+        mSimilarShowsLayout.getViewTreeObserver().addOnGlobalLayoutListener(
+                new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        if (mSimilarShowsLayout.getWidth() > 0) {
+                            final int numColumns = (int) Math.floor(mSimilarShowsLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
+                            mImageThumbSize = (mSimilarShowsLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
+
+                            loadSimilarShows(numColumns);
+                            NMJLib.removeViewTreeObserver(mSimilarShowsLayout.getViewTreeObserver(), this);
+                        }
+                    }
+                });
+        mSimilarShowsLayout.setSeeMoreOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(IntentUtils.getSimilarShows(mContext, mShow.getTitle(), mShow.getTmdbId(), mToolbarColor));
+            }
+        });
+
+        mRecommendedShowsLayout.setVisibility(View.VISIBLE);
+        mRecommendedShowsLayout.setTitle(R.string.recommended);
+        mRecommendedShowsLayout.setSeeMoreVisibility(true);
+        mRecommendedShowsLayout.getViewTreeObserver().addOnGlobalLayoutListener(
+                new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        if (mRecommendedShowsLayout.getWidth() > 0) {
+                            final int numColumns = (int) Math.floor(mRecommendedShowsLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
+                            mImageThumbSize = (mRecommendedShowsLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
+
+                            loadRecommendedShows(numColumns);
+                            NMJLib.removeViewTreeObserver(mRecommendedShowsLayout.getViewTreeObserver(), this);
+                        }
+                    }
+                });
+        mRecommendedShowsLayout.setSeeMoreOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(IntentUtils.getRecommendedShows(mContext, mShow.getTitle(), mShow.getTmdbId(), mToolbarColor));
             }
         });
 
         ViewUtils.updateToolbarBackground(getActivity(), mToolbar, 0, mShow.getTitle(), mToolbarColor);
 
-        //loadImages();
+        loadImages();
     }
 
     private void loadImages() {
@@ -439,7 +487,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
             @Override
             public void onSuccess() {
                 if (mPaletteLoader == null) {
-                    mPaletteLoader = new PaletteLoader(mPicasso, Uri.parse(mShow.getPoster().toString()), new PaletteLoader.OnPaletteLoadedCallback() {
+                    mPaletteLoader = new PaletteLoader(mPicasso, Uri.parse(mShow.getPoster()), new PaletteLoader.OnPaletteLoadedCallback() {
                         @Override
                         public void onPaletteLoaded(int swatchColor) {
                             mToolbarColor = swatchColor;
@@ -451,6 +499,8 @@ public class NMJTvShowDetailsFragment extends Fragment {
                     mPaletteLoader.addView(mCastLayout.getSeeMoreView());
                     mPaletteLoader.addView(mCrewLayout.getSeeMoreView());
                     mPaletteLoader.addView(mSeasonsLayout.getSeeMoreView());
+                    mPaletteLoader.addView(mSimilarShowsLayout.getSeeMoreView());
+                    mPaletteLoader.addView(mRecommendedShowsLayout.getSeeMoreView());
                     mPaletteLoader.setFab(mFab);
 
                     mPaletteLoader.execute();
@@ -463,6 +513,8 @@ public class NMJTvShowDetailsFragment extends Fragment {
                     mPaletteLoader.addView(mCastLayout.getSeeMoreView());
                     mPaletteLoader.addView(mCrewLayout.getSeeMoreView());
                     mPaletteLoader.addView(mSeasonsLayout.getSeeMoreView());
+                    mPaletteLoader.addView(mSimilarShowsLayout.getSeeMoreView());
+                    mPaletteLoader.addView(mRecommendedShowsLayout.getSeeMoreView());
                     mPaletteLoader.setFab(mFab);
 
                     // Re-color the views
@@ -477,13 +529,13 @@ public class NMJTvShowDetailsFragment extends Fragment {
 
         if (!NMJLib.isPortrait(getActivity())) {
             if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(PreferenceKeys.BLUR_BACKDROPS, false)) {
-                mPicasso.load(mShow.getBackdrop()).skipMemoryCache().error(R.drawable.bg).placeholder(R.drawable.bg).transform(new BlurTransformation(mContext, mShow.getBackdrop(), 8)).into(background);
+                mPicasso.load(mShow.getPoster()).skipMemoryCache().error(R.drawable.bg).placeholder(R.drawable.bg).transform(new BlurTransformation(mContext, mShow.getBackdrop(), 8)).into(background);
             } else {
-                mPicasso.load(mShow.getBackdrop()).skipMemoryCache().error(R.drawable.bg).placeholder(R.drawable.bg).into(background);
+                mPicasso.load(mShow.getPoster()).skipMemoryCache().error(R.drawable.bg).placeholder(R.drawable.bg).into(background);
             }
         } else {
             if (!mShow.getBackdrop().isEmpty())
-                mPicasso.load(mShow.getBackdrop()).skipMemoryCache().placeholder(R.drawable.bg).into(background, new Callback() {
+                mPicasso.load(mShow.getPoster()).skipMemoryCache().placeholder(R.drawable.bg).into(background, new Callback() {
                     @Override
                     public void onError() {
                         if (!isAdded())
@@ -505,9 +557,8 @@ public class NMJTvShowDetailsFragment extends Fragment {
 
             @Override
             protected Void doInBackground(Void... params) {
-                String Id = mShow.getId();
-                NMJManagerApplication.getNMJTvShowService(mContext);
-                List<Actor> actors = NMJLib.getTMDbCast(mContext, "tv", Id, "en");
+                System.out.println("Input Id: " + mShow.getTmdbId());
+                List<Actor> actors = NMJLib.getTMDbCast(mContext, "tv", mShow.getTmdbId(), "en");
                 for (Integer i = 0; i < actors.size(); i++) {
                     mActors.add(new Actor(
                             actors.get(i).getName(),
@@ -533,7 +584,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
 
             @Override
             protected Void doInBackground(Void... params) {
-                String Id = mShow.getId();
+                String Id = mShow.getTmdbId();
                 NMJManagerApplication.getNMJTvShowService(mContext);
                 List<Actor> actors = NMJLib.getTMDbCrew(mContext, "tv", Id, "en");
                 for (Integer i = 0; i < actors.size(); i++) {
@@ -550,6 +601,66 @@ public class NMJTvShowDetailsFragment extends Fragment {
             @Override
             protected void onPostExecute(Void result) {
                 mCrewLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
+            }
+        }.execute();
+    }
+
+    private void loadSimilarShows(final int capacity) {
+        // Show ProgressBar
+        new AsyncTask<Void, Void, Void>() {
+            private List<WebMovie> mSimilarMovies = new ArrayList<WebMovie>();
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                List<WebMovie> similar = NMJLib.getTMDbMovies(mContext, "tv", "similar", mShow.getTmdbId(), "en");
+                for (Integer i = 0; i < similar.size(); i++) {
+                    mSimilarMovies.add(new WebMovie(mContext,
+                            similar.get(i).getTitle(),
+                            similar.get(i).getId(),
+                            similar.get(i).getUrl(),
+                            similar.get(i).getDate(), ""));
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void result) {
+                NMJAdapter adapter = NMJManagerApplication.getNMJAdapter();
+                for (int i = 0; i < mSimilarMovies.size(); i++) {
+                    String id = "tmdb" + mSimilarMovies.get(i).getId();
+                    mSimilarMovies.get(i).setInLibrary(adapter.movieExistsbyId(id));
+                }
+                mSimilarShowsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mSimilarMovies, HorizontalCardLayout.RELATED_SHOWS, mToolbarColor);
+            }
+        }.execute();
+    }
+
+    private void loadRecommendedShows(final int capacity) {
+        // Show ProgressBar
+        new AsyncTask<Void, Void, Void>() {
+            private List<WebMovie> mSimilarMovies = new ArrayList<WebMovie>();
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                List<WebMovie> similar = NMJLib.getTMDbMovies(mContext, "tv", "recommendations", mShow.getTmdbId(), "en");
+                for (Integer i = 0; i < similar.size(); i++) {
+                    mSimilarMovies.add(new WebMovie(mContext,
+                            similar.get(i).getTitle(),
+                            similar.get(i).getId(),
+                            similar.get(i).getUrl(),
+                            similar.get(i).getDate(), ""));
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void result) {
+                NMJAdapter adapter = NMJManagerApplication.getNMJAdapter();
+                for (int i = 0; i < mSimilarMovies.size(); i++) {
+                    String id = "tmdb" + mSimilarMovies.get(i).getId();
+                    mSimilarMovies.get(i).setInLibrary(adapter.movieExistsbyId(id));
+                }
+                mRecommendedShowsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mSimilarMovies, HorizontalCardLayout.RELATED_SHOWS, mToolbarColor);
             }
         }.execute();
     }
@@ -571,9 +682,9 @@ public class NMJTvShowDetailsFragment extends Fragment {
                     if (mShow.getIdType() == 1) {
 
                     } else {
-                        Series seasons = NMJManagerApplication.getNMJAdapter().getTVDBSeasons(mContext, mShow.getId(), "en");
+                        /* Series seasons = NMJManagerApplication.getNMJAdapter().getTVDBSeasons(mContext, mShow.getId(), "en");
                         System.out.println("Season: " + seasons.getSeriesName());
-                        /*                        for (Integer i = 0; i < seasons.; i++) {
+                                               for (Integer i = 0; i < seasons.; i++) {
                             mSeasons.add(new GridSeason(mContext, mShow.getId(), mShow.getSeasons().get(i).getSeason(), mShow.getSeasons().get(i).getEpisodeCount(), 0,
                                     NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/" + mShow.getSeasons().get(i).getCoverPath()));
 
@@ -861,14 +972,10 @@ public class NMJTvShowDetailsFragment extends Fragment {
     private class TvShowLoader extends AsyncTask<String, Object, Object> {
         @Override
         protected Object doInBackground(String... params) {
-            if (mShow.getShowId().equals("0")) {
-                if (mShow.getIdType() == 1) {
-                    mShow = mShowApiService.getCompleteTMDbTvShow(mShow.getId(), "en");
-                } else {
-                    mShow = mShowApiService.getCompleteTVDbTvShow(mShow.getId(), "en");
-                }
-            } else
-                mShow = mShowApiService.getCompleteNMJTvShow(mShow.getShowId());
+            if (mShow.getShowId().equals("0"))
+                mShow = mShowApiService.getCompleteTMDbTvShow(mShow.getTmdbId(), "en");
+            else
+                mShow = mShowApiService.getCompleteNMJTvShow(mShow.getShowId(), "en");
             for (int i = 0; i < mShow.getSimilarShows().size(); i++) {
                 String id = mShow.getSimilarShows().get(i).getId();
                 mShow.getSimilarShows().get(i).setInLibrary(NMJManagerApplication.getMovieAdapter().movieExists(id));

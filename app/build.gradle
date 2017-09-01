@@ -2,8 +2,8 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "23.0.3"
-    useLibrary 'org.apache.http.legacy'
+    buildToolsVersion '25.0.0'
+//    useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         applicationId "com.nmj.nmjmanager"

@@ -690,9 +690,10 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
 
             holder.inLibrary.setVisibility(View.GONE);
 
-            if (movie.getTitleType() == "tmdb" && NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(getItem(position).getTmdbId())) {
+            if (movie.getTitleType() == "tmdb" && NMJManagerApplication.getNMJAdapter().movieExistsbyId("tmdb" + movie.getTmdbId())) {
+                System.out.println("Movie Exists:");
                 holder.inLibrary.setVisibility(View.VISIBLE);
-                if (NMJManagerApplication.getNMJAdapter().hasWatched(getItem(position).getTmdbId()))
+                if (NMJManagerApplication.getNMJAdapter().hasWatched(movie.getTmdbId()))
                     holder.hasWatched.setVisibility(View.VISIBLE);
             }
             return convertView;

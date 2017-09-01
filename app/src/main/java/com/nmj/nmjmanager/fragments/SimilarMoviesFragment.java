@@ -64,7 +64,7 @@ public class SimilarMoviesFragment extends Fragment {
 	private Picasso mPicasso;
 	private Config mConfig;
 	private ProgressBar mProgressBar;
-	private String mTmdbId;
+	private String mTmdbId, mLoadType, mVideoType;
 	private List<WebMovie> mSimilarMovies = new ArrayList<WebMovie>();
 	private boolean mChecked = false;
 
@@ -73,10 +73,13 @@ public class SimilarMoviesFragment extends Fragment {
 	 */
 	public SimilarMoviesFragment() {}
 
-	public static SimilarMoviesFragment newInstance(String tmdbId) {
+	public static SimilarMoviesFragment newInstance(String tmdbId, String loadType, String videoType) {
 		SimilarMoviesFragment pageFragment = new SimilarMoviesFragment();
 		Bundle bundle = new Bundle();
 		bundle.putString("tmdbId", tmdbId);
+		bundle.putString("loadType", loadType);
+		bundle.putString("videoType", videoType);
+
 		pageFragment.setArguments(bundle);
 		return pageFragment;
 	}
@@ -97,6 +100,8 @@ public class SimilarMoviesFragment extends Fragment {
 		mConfig = NMJManagerApplication.getBitmapConfig();
 
 		mTmdbId = getArguments().getString("tmdbId");
+		mLoadType = getArguments().getString("loadType");
+		mVideoType = getArguments().getString("videoType");
 		mToolbarColor = getArguments().getInt(IntentKeys.TOOLBAR_COLOR);
 	}
 
@@ -150,7 +155,11 @@ public class SimilarMoviesFragment extends Fragment {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 				ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), arg1.findViewById(R.id.cover), "cover");
-				ActivityCompat.startActivity(getActivity(), IntentUtils.getTmdbMovieDetails(mContext, mAdapter.getItem(arg2), mToolbarColor), options.toBundle());
+				if (mVideoType.equals("movie"))
+					ActivityCompat.startActivity(getActivity(), IntentUtils.getTmdbMovieDetails(mContext, mAdapter.getItem(arg2), mToolbarColor), options.toBundle());
+				else
+					ActivityCompat.startActivity(getActivity(), IntentUtils.getTmdbShowDetails(mContext, mAdapter.getItem(arg2), mToolbarColor), options.toBundle());
+
 			}
 		});
 
@@ -224,7 +233,7 @@ public class SimilarMoviesFragment extends Fragment {
 			holder.text.setText(movie.getTitle());
 			holder.subtext.setText(movie.getSubtitle());
 
-			if(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(movie.getId()))
+			if(NMJManagerApplication.getNMJAdapter().movieExistsbyId("tmdb" + movie.getId()))
 				holder.inLibrary.setVisibility(View.VISIBLE);
 
 			if(NMJManagerApplication.getNMJAdapter().hasWatched(movie.getId()))
@@ -272,11 +281,11 @@ public class SimilarMoviesFragment extends Fragment {
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			mSimilarMovies = NMJLib.getTMDbSimilarMovies(mContext, mTmdbId);
+			mSimilarMovies = NMJLib.getTMDbMovies(mContext, mVideoType, mLoadType, mTmdbId, "en");
 
 			for (int i = 0; i < mSimilarMovies.size(); i++) {
-				String id = mSimilarMovies.get(i).getId();
-				mSimilarMovies.get(i).setInLibrary(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(id));
+				String id = "tmdb" + mSimilarMovies.get(i).getId();
+				mSimilarMovies.get(i).setInLibrary(NMJManagerApplication.getNMJAdapter().movieExistsbyId(id));
 			}
 
 			return null;

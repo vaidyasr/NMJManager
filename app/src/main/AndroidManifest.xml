@@ -409,24 +409,13 @@
 
         <!-- Actor movies activity -->
         <activity
-            android:name="com.nmj.nmjmanager.ActorMovies"
+            android:name="com.nmj.nmjmanager.ActorVideos"
             android:exported="false"
             android:label="@string/chooserMovies" >
             <intent-filter>
                 <action android:name="android.intent.action.DEFAULT" />
             </intent-filter>
         </activity>
-
-        <!-- Actor TV shows activity -->
-        <activity
-            android:name="com.nmj.nmjmanager.ActorTvShows"
-            android:exported="false"
-            android:label="@string/chooserTVShows" >
-            <intent-filter>
-                <action android:name="android.intent.action.DEFAULT" />
-            </intent-filter>
-        </activity>
-
         <!-- Actor photos activity -->
         <activity
             android:name="com.nmj.nmjmanager.ActorPhotos"
@@ -476,6 +465,7 @@
                 <action android:name="android.intent.action.DEFAULT" />
             </intent-filter>
         </activity>
+
         <activity
             android:name="com.nmj.nmjmanager.CancelOfflineDownload"
             android:excludeFromRecents="true"

@@ -54,7 +54,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class ActorMoviesFragment extends Fragment {
+public class ActorVideosFragment extends Fragment {
 
 	private Context mContext;
 	private int mImageThumbSize, mImageThumbSpacing, mToolbarColor;
@@ -63,19 +63,22 @@ public class ActorMoviesFragment extends Fragment {
 	private Picasso mPicasso;
 	private Config mConfig;
 	private ProgressBar mProgressBar;
-	private String mActorId;
+	private String mActorId, mPersonType, mVideoType;
 	private CompleteActor mActor;
     private boolean mChecked = false;
 
 	/**
 	 * Empty constructor as per the Fragment documentation
 	 */
-	public ActorMoviesFragment() {}
+	public ActorVideosFragment() {}
 
-	public static ActorMoviesFragment newInstance(String actorId) {
-		ActorMoviesFragment pageFragment = new ActorMoviesFragment();
+	public static ActorVideosFragment newInstance(String actorId, String videoType, String personType) {
+		ActorVideosFragment pageFragment = new ActorVideosFragment();
 		Bundle bundle = new Bundle();
 		bundle.putString("actorId", actorId);
+		bundle.putString("videoType", videoType);
+		bundle.putString("personType", personType);
+
 		pageFragment.setArguments(bundle);
 		return pageFragment;
 	}
@@ -96,8 +99,10 @@ public class ActorMoviesFragment extends Fragment {
 		mConfig = NMJManagerApplication.getBitmapConfig();
 
 		mActorId = getArguments().getString("actorId");
+		mPersonType = getArguments().getString("personType");
+		mVideoType = getArguments().getString("videoType");
+System.out.println("Video Type:" + mVideoType);
 		mToolbarColor = getArguments().getInt(IntentKeys.TOOLBAR_COLOR);
-		System.out.println("Debug: Actor Movies Toolbar Color: " + mToolbarColor);
 
 	}
 
@@ -151,11 +156,14 @@ public class ActorMoviesFragment extends Fragment {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), arg1.findViewById(R.id.cover), "cover");
-                ActivityCompat.startActivity(getActivity(), IntentUtils.getTmdbMovieDetails(mContext, mAdapter.getItem(arg2), mToolbarColor), options.toBundle());
+                if (mVideoType.equals("movie"))
+					ActivityCompat.startActivity(getActivity(), IntentUtils.getTmdbMovieDetails(mContext, mAdapter.getItem(arg2), mToolbarColor), options.toBundle());
+				else
+					ActivityCompat.startActivity(getActivity(), IntentUtils.getTmdbShowDetails(mContext, mAdapter.getItem(arg2), mToolbarColor), options.toBundle());
 			}
 		});
 
-		new MovieLoader(mContext, mActorId).execute();
+		new VideoLoader(mContext, mActorId).execute();
 	}
 
 	@Override
@@ -223,9 +231,12 @@ public class ActorMoviesFragment extends Fragment {
 			holder.cover.setImageResource(R.color.card_background_dark);
 
 			holder.text.setText(movie.getTitle());
-			holder.subtext.setText(movie.getSubtitle());
+			if(movie.getJob().equals(""))
+				holder.subtext.setText(movie.getSubtitle());
+			else
+				holder.subtext.setText(movie.getJob());
 
-			if(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(movie.getId()))
+			if(NMJManagerApplication.getNMJAdapter().movieExistsbyId("tmdb" + movie.getId()))
 				holder.inLibrary.setVisibility(View.VISIBLE);
 
 			if(NMJManagerApplication.getNMJAdapter().hasWatched(movie.getId()))
@@ -257,12 +268,12 @@ public class ActorMoviesFragment extends Fragment {
         }
 	}
 
-	private class MovieLoader extends AsyncTask<Void, Void, Void> {
+	private class VideoLoader extends AsyncTask<Void, Void, Void> {
 
 		private final Context mContext;
 		private final String mActorId;
 
-		public MovieLoader(Context context, String actorId) {
+		public VideoLoader(Context context, String actorId) {
 			mContext = context;
 			mActorId = actorId;
 		}
@@ -274,11 +285,11 @@ public class ActorMoviesFragment extends Fragment {
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			mActor = TMDbMovieService.getInstance(mContext).getCompleteActorDetails(mActorId);
+			mActor = TMDbMovieService.getInstance(mContext).getCompleteActorDetails(mActorId, mPersonType);
 
 			for (int i = 0; i < mActor.getMovies().size(); i++) {
-				String id = mActor.getMovies().get(i).getId();
-				mActor.getMovies().get(i).setInLibrary(NMJManagerApplication.getNMJAdapter().movieExistsbyTmdbId(id));
+				String id = "tmdb" + mActor.getMovies().get(i).getId();
+				mActor.getMovies().get(i).setInLibrary(NMJManagerApplication.getNMJAdapter().movieExistsbyId(id));
 			}
 
 			return null;

@@ -23,12 +23,12 @@ import android.view.MenuItem;
 
 import com.nmj.base.NMJActivity;
 import com.nmj.functions.IntentKeys;
-import com.nmj.nmjmanager.fragments.ActorMoviesFragment;
+import com.nmj.nmjmanager.fragments.ActorVideosFragment;
 import com.nmj.utils.ViewUtils;
 
-public class ActorMovies extends NMJActivity {
+public class ActorVideos extends NMJActivity {
 
-	private static String TAG = "ActorMoviesFragment";
+	private static String TAG = "ActorVideosFragment";
     private int mToolbarColor;
 
 	@Override
@@ -37,14 +37,17 @@ public class ActorMovies extends NMJActivity {
 		
 		String actorId = getIntent().getExtras().getString("actorId");
 		String actorName = getIntent().getExtras().getString("actorName");
-        mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
+		String personType = getIntent().getExtras().getString("personType");
+		String videoType = getIntent().getExtras().getString("videoType");
+
+		mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
 
         getSupportActionBar().setSubtitle(actorName);
 
 		Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
 		if (frag == null && savedInstanceState == null) {
 			final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-			ft.replace(R.id.content, ActorMoviesFragment.newInstance(actorId), TAG);
+			ft.replace(R.id.content, ActorVideosFragment.newInstance(actorId, videoType, personType), TAG);
 			ft.commit();
 		}
 	}
