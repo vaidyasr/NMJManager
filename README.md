@@ -21,5 +21,5 @@ NMJManager is a user friendly media center application for Android tablets and s
 - Synchronizes indexed content with your Trakt.tv account
 
 
-  [1]: http://i.imgur.com/0SyCwrG.jpg
+  [1]: https://i.imgur.com/bUyZFXV.jpg
   [2]: https://github.com/vaidyasr/NMJManager/blob/master/CONTRIBUTING.md
