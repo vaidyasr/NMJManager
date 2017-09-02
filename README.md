@@ -1,4 +1,4 @@
-NMJManager - Media Manager and Player for Networked Media Devices.
+NMJManager - Media Manager and Player for Networked Media Devices. It has been deeply modified from https://github.com/MizzleDK/Mizuu
 =====
 
 This GitHub repository houses the source code of the NMJManager application for Android.
