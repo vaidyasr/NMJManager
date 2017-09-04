@@ -691,14 +691,14 @@ public class NMJTvShowService extends TvShowApiService {
             // Seasons
             try {
                 JSONArray seasons = jObject.getJSONArray("seasons");
-
                 for (int i = 0; i < seasons.length(); i++) {
-                    Season s = new Season();
-
-                    s.setSeason(seasons.getJSONObject(i).getInt("season_number"));
-                    s.setCoverPath(baseUrl + NMJLib.getImageUrlSize(mContext) + NMJLib.getStringFromJSONObject(seasons.getJSONObject(i), "poster_path", ""));
-
-                    show.addSeason(s);
+                    Season seasonDetails = new Season();
+                    seasonDetails.setSeason(seasons.getJSONObject(i).getInt("season_number"));
+                    seasonDetails.setCoverPath(baseUrl + NMJLib.getImageUrlSize(mContext) + NMJLib.getStringFromJSONObject(seasons.getJSONObject(i), "poster_path", ""));
+                    seasonDetails.setEpisodeCount(Integer.parseInt(seasons.getJSONObject(i).getString("episode_count")));
+                    seasonDetails.setSeasonId(seasons.getJSONObject(i).getString("id"));
+                    //seasonDetails.setSeasonTitle(seasons.getJSONObject(i).getString("TITLE"));
+                    show.addSeason(seasonDetails);
                 }
             } catch (JSONException e) {
             }

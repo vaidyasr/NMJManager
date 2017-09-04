@@ -91,7 +91,8 @@ public class TvShowEpisodes extends NMJActivity {
 		
 		setTitle(mTitle);
 		getSupportActionBar().setSubtitle(getString(R.string.showSeason) + " " + mSeason + " (" + mEpisodeCount + " " + getResources().getQuantityString(R.plurals.episodes, mEpisodeCount, mEpisodeCount) + ")");
-		
+		System.out.println("Season will be loaded");
+		System.out.println("ID: " + mShowId);
 		loadSeasons();
 	}
 	

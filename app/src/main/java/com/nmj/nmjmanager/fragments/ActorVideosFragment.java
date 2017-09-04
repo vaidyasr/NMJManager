@@ -101,7 +101,6 @@ public class ActorVideosFragment extends Fragment {
 		mActorId = getArguments().getString("actorId");
 		mPersonType = getArguments().getString("personType");
 		mVideoType = getArguments().getString("videoType");
-System.out.println("Video Type:" + mVideoType);
 		mToolbarColor = getArguments().getInt(IntentKeys.TOOLBAR_COLOR);
 
 	}
@@ -256,13 +255,23 @@ System.out.println("Video Type:" + mVideoType);
             // Initialize
             mMovies = new ArrayList<WebMovie>();
 
-            // Go through all movies
-            for (WebMovie movie : mActor.getMovies()) {
-                if (mChecked && !movie.isInLibrary())
-                    continue;
+			if(mVideoType.equals("movie")) {
+				// Go through all movies
+				for (WebMovie movie : mActor.getMovies()) {
+					if (mChecked && !movie.isInLibrary())
+						continue;
 
-                mMovies.add(movie);
-            }
+					mMovies.add(movie);
+				}
+			}else {
+				// Go through all movies
+				for (WebMovie movie : mActor.getTvShows()) {
+					if (mChecked && !movie.isInLibrary())
+						continue;
+
+					mMovies.add(movie);
+				}
+			}
 
             super.notifyDataSetChanged();
         }

@@ -197,20 +197,6 @@ public class IntentUtils {
 		return movieDetailsIntent;
 	}
 	
-	public static Intent getTmdbTvShowLink(Context context, WebMovie show) {
-		Intent showIntent;
-
-        if (show.isInLibrary() && !TextUtils.isEmpty(NMJManagerApplication.getTvDbAdapter().getShowId(show.getTitle()))) {
-            showIntent = new Intent(context, TvShowDetails.class);
-            showIntent.putExtra("showId", NMJManagerApplication.getTvDbAdapter().getShowId(show.getTitle()));
-        } else {
-            showIntent = new Intent(Intent.ACTION_VIEW);
-            showIntent.setData(Uri.parse("http://www.themoviedb.org/tv/" + show.getId()));
-        }
-
-		return showIntent;
-	}
-
 	public static Intent getActorPhotoIntent(Context context, List<String> photos, int selectedIndex, int toolbarColor) {
 		String[] array = new String[photos.size()];
 		for (int i = 0; i < photos.size(); i++)

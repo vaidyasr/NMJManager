@@ -17,8 +17,11 @@
 package com.nmj.nmjmanager;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -64,6 +67,7 @@ import com.nmj.functions.BlurTransformation;
 import com.nmj.functions.MenuItem;
 import com.nmj.functions.NMJAdapter;
 import com.nmj.functions.NMJLib;
+import com.nmj.loader.MovieFilter;
 import com.nmj.nmjmanager.fragments.AccountsFragment;
 import com.nmj.nmjmanager.fragments.ContactDeveloperFragment;
 import com.nmj.nmjmanager.fragments.MovieDiscoveryViewPagerFragment;
@@ -92,7 +96,7 @@ import static com.nmj.functions.PreferenceKeys.TRAKT_USERNAME;
 @SuppressLint("NewApi")
 public class Main extends NMJActivity {
 
-    public static final int MOVIES = 1, SHOWS = 2, MUSIC = 3;
+    public static final int MOVIES = 1, SHOWS = 2, MUSIC = 3, SELECT = 4;
     protected ListView mDrawerList;
     private int mNumMovies, mNumShows, selectedIndex, mStartup, mNumMusic;
     private Typeface mTfMedium, mTfRegular;
@@ -209,9 +213,6 @@ public class Main extends NMJActivity {
     }
 
     private void loadFragment(int type) {
-        if (type == 0)
-            type = 1;
-
         Fragment frag = getSupportFragmentManager().findFragmentByTag("frag" + type);
         if (frag == null) {
             final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -225,6 +226,9 @@ public class Main extends NMJActivity {
                     break;
                 case MUSIC:
                     ft.replace(R.id.content_frame, MovieDiscoveryViewPagerFragment.newInstance(), "frag" + type);
+                    break;
+                case SELECT:
+                    //createAndShowAlertDialog(activity, setupItemArray(map, false), R.string.selectGenre, TvShowFilter.GENRE);;
                     break;
             }
             ft.commit();
@@ -246,6 +250,28 @@ public class Main extends NMJActivity {
 
         if (mDrawerLayout != null)
             mDrawerLayout.closeDrawers();
+    }
+
+    private void createAndShowAlertDialog(Activity activity, final CharSequence[] temp, int title, final int type) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle(title)
+                .setItems(temp, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Let's get what the user selected and remove the parenthesis at the end
+                        String selected = temp[which].toString();
+                        selected = selected.substring(0, selected.lastIndexOf("(")).trim();
+
+                        // Add filter
+                        MovieFilter filter = new MovieFilter(type);
+                        filter.setFilter(selected);
+
+                        // Re-load the library with the new filter
+
+                        // Dismiss the dialog
+                        dialog.dismiss();
+                    }
+                });
+        builder.show();
     }
 
     @Override
@@ -280,12 +306,13 @@ public class Main extends NMJActivity {
         mMenuItems.add(new MenuItem(getString(R.string.drawerMyMovies), mNumMovies, MenuItem.SECTION, null, MOVIES, R.drawable.ic_movie_grey600_24dp));
         mMenuItems.add(new MenuItem(getString(R.string.drawerMyTvShows), mNumShows, MenuItem.SECTION, null, SHOWS, R.drawable.ic_tv_grey600_24dp));
         mMenuItems.add(new MenuItem(getString(R.string.drawerMyMusic), mNumMusic, MenuItem.SECTION, null, MUSIC, R.drawable.ic_music_grey600_24dp));
+
         //mMenuItems.add(new MenuItem(getString(R.string.drawerWebVideos), -1, MenuItem.SECTION, null, WEB_VIDEOS, R.drawable.ic_cloud_grey600_24dp));
 
         // Third party applications
         final PackageManager pm = getPackageManager();
 
-        if (refreshThirdPartyApps) {
+/*        if (refreshThirdPartyApps) {
             mApplicationList = pm.getInstalledApplications(PackageManager.GET_META_DATA);
         }
 
@@ -297,12 +324,14 @@ public class Main extends NMJActivity {
         }
 
         if (temp.size() > 0) {
-            // Menu section header
-            mMenuItems.add(new MenuItem(MenuItem.SEPARATOR));
-            mMenuItems.add(new MenuItem(getString(R.string.installed_media_apps), -1, MenuItem.SUB_HEADER, null));
-        }
+            // Menu section header*/
+            mMenuItems.add(new MenuItem(MenuItem.SEPARATOR_EXTRA_PADDING));
+            //mMenuItems.add(new MenuItem(getString(R.string.installed_media_apps), -1, MenuItem.SUB_HEADER, null));
+        mMenuItems.add(new MenuItem(getString(R.string.drawerSelectDB), -1, MenuItem.SECTION, null, SELECT, R.drawable.ic_add_grey600_24dp));
 
-        Collections.sort(temp, new Comparator<MenuItem>() {
+/*        }*/
+
+/*        Collections.sort(temp, new Comparator<MenuItem>() {
             @Override
             public int compare(MenuItem lhs, MenuItem rhs) {
                 return lhs.getTitle().compareToIgnoreCase(rhs.getTitle());
@@ -313,7 +342,7 @@ public class Main extends NMJActivity {
             mMenuItems.add(temp.get(i));
         }
 
-        temp.clear();
+        temp.clear();*/
 
         mMenuItems.add(new MenuItem(MenuItem.SEPARATOR_EXTRA_PADDING));
 

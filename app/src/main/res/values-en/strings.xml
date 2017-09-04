@@ -82,6 +82,7 @@
     <string name="tvShowsWithUnwatchedEpisodes">Unwatched TV shows</string>
     <string name="drawerMyMovies">My Movies</string>
     <string name="drawerMyTvShows">My TV Shows</string>
+    <string name="drawerSelectDB">Select NMJ database...</string>
     <string name="drawerOnlineMovies">Online Movies</string>
     <string name="overviewGridItemSizeDescription">Change the size of film and TV shows covers in the overviews.</string>
     <string name="finishedMovieLibraryUpdate">Finished updating movies</string>

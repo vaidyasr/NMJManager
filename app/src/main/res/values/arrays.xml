@@ -54,9 +54,9 @@
         <item>1</item>
     </string-array>
     <string-array name="startup_screen_codes">
-        <item>0</item>
         <item>1</item>
         <item>2</item>
+        <item>3</item>
     </string-array>
     <string-array name="subjects">
         <item>@string/problem</item>

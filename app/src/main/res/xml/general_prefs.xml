@@ -36,7 +36,7 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/chooserTVShows">
         <MultiSelectListPreference
-            android:defaultValue="@array/movie_tabs_values"
+            android:defaultValue="@array/show_tabs_values"
             android:dialogTitle="@string/stringEnableDisableTabs"
             android:entries="@array/show_tabs"
             android:entryValues="@array/show_tabs_values"

@@ -649,7 +649,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 holder.text = (TextView) convertView.findViewById(R.id.text);
                 holder.text.setTypeface(mTypeface);
 
-
                 convertView.setTag(holder);
             } else {
                 holder = (CoverItem) convertView.getTag();

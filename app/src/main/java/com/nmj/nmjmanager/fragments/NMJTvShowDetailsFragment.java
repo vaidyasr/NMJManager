@@ -114,7 +114,8 @@ public class NMJTvShowDetailsFragment extends Fragment {
     private Picasso mPicasso;
     private Typeface mMediumItalic, mMedium, mBold, mCondensedRegular;
     private Bus mBus;
-    private HorizontalCardLayout mSeasonsLayout, mCastLayout, mCrewLayout, mSimilarShowsLayout, mRecommendedShowsLayout;;
+    private HorizontalCardLayout mSeasonsLayout, mCastLayout, mCrewLayout, mSimilarShowsLayout, mRecommendedShowsLayout;
+    ;
     private int mImageThumbSize, mImageThumbSpacing, mToolbarColor = 0;
     private Toolbar mToolbar;
     private FloatingActionButton mFab;
@@ -422,7 +423,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
                             loadCrew(numColumns);
                             NMJLib.removeViewTreeObserver(mCrewLayout.getViewTreeObserver(), this);
                         }
-                        }
+                    }
                 });
         mCrewLayout.setSeeMoreOnClickListener(new OnClickListener() {
             @Override
@@ -672,24 +673,17 @@ public class NMJTvShowDetailsFragment extends Fragment {
 
             @Override
             protected Void doInBackground(Void... params) {
-                if (!mShow.getShowId().equals("0")) {
-                    for (Integer i = 0; i < mShow.getSeasonsCount(); i++) {
-                        mSeasons.add(new GridSeason(mContext, mShow.getId(), mShow.getSeasons().get(i).getSeason(), mShow.getSeasons().get(i).getEpisodeCount(), 0,
-                                NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/" + mShow.getSeasons().get(i).getCoverPath()));
-                    }
-                } else {
-                    System.out.println("ID Type: " + mShow.getIdType());
-                    if (mShow.getIdType() == 1) {
+                String imgurl;
+                if (!mShow.getShowId().equals("0"))
+                    imgurl = NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/";
+                else
+                    imgurl = "";
 
-                    } else {
-                        /* Series seasons = NMJManagerApplication.getNMJAdapter().getTVDBSeasons(mContext, mShow.getId(), "en");
-                        System.out.println("Season: " + seasons.getSeriesName());
-                                               for (Integer i = 0; i < seasons.; i++) {
-                            mSeasons.add(new GridSeason(mContext, mShow.getId(), mShow.getSeasons().get(i).getSeason(), mShow.getSeasons().get(i).getEpisodeCount(), 0,
-                                    NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/" + mShow.getSeasons().get(i).getCoverPath()));
+                for (Integer i = 0; i < mShow.getSeasonsCount(); i++) {
+                    System.out.println(imgurl+mShow.getSeasons().get(i).getCoverPath());
 
-                        }*/
-                    }
+                    mSeasons.add(new GridSeason(mContext, mShow.getId(), mShow.getSeasons().get(i).getSeason(), mShow.getSeasons().get(i).getEpisodeCount(), 0,
+                            imgurl + mShow.getSeasons().get(i).getCoverPath()));
                 }
                 Collections.sort(mSeasons);
 
@@ -987,7 +981,6 @@ public class NMJTvShowDetailsFragment extends Fragment {
         @Override
         protected void onPostExecute(Object result) {
             getActivity().invalidateOptionsMenu();
-            System.out.println("Post execute");
 
             setupFields();
         }

@@ -44,6 +44,11 @@ public class ActorVideos extends NMJActivity {
 
         getSupportActionBar().setSubtitle(actorName);
 
+		if (videoType.equals("movie"))
+			getSupportActionBar().setTitle(R.string.chooserMovies);
+		else
+			getSupportActionBar().setTitle(R.string.chooserTVShows);
+
 		Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
 		if (frag == null && savedInstanceState == null) {
 			final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();

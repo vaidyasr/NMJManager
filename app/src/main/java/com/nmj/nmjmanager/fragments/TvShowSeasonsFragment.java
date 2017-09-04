@@ -46,6 +46,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nmj.apis.nmj.TvShow;
 import com.nmj.apis.trakt.Trakt;
 import com.nmj.db.DbAdapterTvShowEpisodes;
 import com.nmj.functions.CoverItem;
@@ -414,19 +415,24 @@ public class TvShowSeasonsFragment extends Fragment {
 
         @Override
         protected Void doInBackground(Void... params) {
-            HashMap<String, EpisodeCounter> seasons = NMJManagerApplication.getTvEpisodeDbAdapter().getSeasons(mShowId);
+            TvShow mShow = new TvShow();
+            mShow.setTmdbId(mShowId);
+            System.out.println("Movie Id: " + mShow.getTmdbId());
+
+/*            HashMap<String, EpisodeCounter> seasons = NMJManagerApplication.getNMJAdapter().getSeasons(mShowId);
 
             File temp;
             for (String key : seasons.keySet()) {
                 temp = FileUtils.getTvShowSeason(mContext, mShowId, key);
-/*                mItems.add(new GridSeason(mContext, mShowId, Integer.valueOf(key), seasons.get(key).getEpisodeCount(), seasons.get(key).getWatchedCount(),
+                mItems.add(new GridSeason(mContext, mShowId, Integer.valueOf(key), seasons.get(key).getEpisodeCount(), seasons.get(key).getWatchedCount(),
                         temp.exists() ? temp :
-                                FileUtils.getTvShowThumb(mContext, mShowId)));*/
-            }
+                                FileUtils.getTvShowThumb(mContext, mShowId)));
 
-            seasons.clear();
+            }*/
 
-            Collections.sort(mItems);
+/*            seasons.clear();
+
+            Collections.sort(mItems);*/
 
             return null;
         }
