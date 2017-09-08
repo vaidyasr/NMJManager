@@ -39,6 +39,7 @@
     <string name="prefsShowGridTitles">Enable film and shows titles in library overview.</string>
     <string name="updatedMovie">Successfully updated film!</string>
     <string name="updatedTvShow">Successfully updated TV shows!</string>
+    <string name="updatedSettings">Successfully updated settings</string>
     <string name="updatingMovies">Updating Movies</string>
     <string name="updatingTvShows">Updating TV Shows</string>
     <string name="analyzing_files">Analysing files…</string>

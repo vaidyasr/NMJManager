@@ -16,7 +16,9 @@ package com.nmj.nmjmanager.fragments;/*
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.MultiSelectListPreference;
 import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -32,20 +34,12 @@ import com.nmj.loader.MovieLoader;
 import com.nmj.nmjmanager.R;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
-import static com.nmj.functions.PreferenceKeys.SHOW_MOVIE_COLLECTIONS;
-import static com.nmj.functions.PreferenceKeys.SHOW_MOVIE_FAVOURITES;
-import static com.nmj.functions.PreferenceKeys.SHOW_MOVIE_LIST;
-import static com.nmj.functions.PreferenceKeys.SHOW_MOVIE_NEW_RELEASES;
-import static com.nmj.functions.PreferenceKeys.SHOW_MOVIE_NOW_RUNNING;
-import static com.nmj.functions.PreferenceKeys.SHOW_MOVIE_POPULAR;
-import static com.nmj.functions.PreferenceKeys.SHOW_MOVIE_TOP_RATED;
-import static com.nmj.functions.PreferenceKeys.SHOW_MOVIE_UNWATCHED;
-import static com.nmj.functions.PreferenceKeys.SHOW_MOVIE_UPCOMING;
-import static com.nmj.functions.PreferenceKeys.SHOW_MOVIE_WATCHED;
-import static com.nmj.functions.PreferenceKeys.SHOW_MOVIE_WATCHLIST;
+import static com.nmj.functions.PreferenceKeys.MOVIES_TABS_SELECTED;
 
 public class MovieLibraryOverviewFragment extends Fragment {
 
@@ -53,7 +47,8 @@ public class MovieLibraryOverviewFragment extends Fragment {
     private PagerSlidingTabStrip mTabs;
     List<String> TITLES = new ArrayList<>();
 
-    public MovieLibraryOverviewFragment() {} // Empty constructor
+    public MovieLibraryOverviewFragment() {
+    } // Empty constructor
 
     public static MovieLibraryOverviewFragment newInstance() {
         return new MovieLibraryOverviewFragment();
@@ -63,17 +58,12 @@ public class MovieLibraryOverviewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.viewpager_with_tabs, container, false);
         PagerAdapter mAdapter;
-        SharedPreferences mSharedPreferences;
         final String[] TITLES1 = {getString(R.string.choiceAllMovies), getString(R.string.choiceFavorites), getString(R.string.choiceNewReleases),
                 getString(R.string.chooserWatchList), getString(R.string.choiceWatchedMovies), getString(R.string.choiceUnwatchedMovies), getString(R.string.choiceCollections),
                 getString(R.string.choiceLists), getString(R.string.choiceUpcoming), getString(R.string.choicePopular), getString(R.string.choiceNowPlaying),
                 getString(R.string.choiceTopRated)};
-        for(int i=0;i<TITLES1.length;i++)
-        TITLES.add(i, TITLES1[i]);
-
-        boolean mShowFavourites, mShowNewReleases, mShowWatchlist, mShowWatched, mShowUnwatched,
-                mShowCollections, mShowList, mShowUpcoming, mShowPopular, mShowNowRunning, mShowTopRated;
-
+        for (int i = 0; i < TITLES1.length; i++)
+            TITLES.add(i, TITLES1[i]);
 
         if (NMJLib.hasLollipop())
             ((ActionBarActivity) getActivity()).getSupportActionBar().setElevation(0);
@@ -88,49 +78,26 @@ public class MovieLibraryOverviewFragment extends Fragment {
 
         mTabs.setViewPager(mViewPager);
         mTabs.setVisibility(View.VISIBLE);
-        System.out.println("Debug: No Tabs: " + mViewPager.getAdapter().getCount());
 
         // Work-around a bug that sometimes happens with the tabs
         mViewPager.setCurrentItem(0);
         mAdapter.addTab(TITLES.get(0));
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-        mShowFavourites = mSharedPreferences.getBoolean(SHOW_MOVIE_FAVOURITES, true);
-        mShowNewReleases = mSharedPreferences.getBoolean(SHOW_MOVIE_NEW_RELEASES, true);
-        mShowWatchlist =  mSharedPreferences.getBoolean(SHOW_MOVIE_WATCHLIST, true);
-        mShowWatched = mSharedPreferences.getBoolean(SHOW_MOVIE_WATCHED, true);
-        mShowUnwatched = mSharedPreferences.getBoolean(SHOW_MOVIE_UNWATCHED, true);
-        mShowCollections = mSharedPreferences.getBoolean(SHOW_MOVIE_COLLECTIONS, true);
-        mShowList = mSharedPreferences.getBoolean(SHOW_MOVIE_LIST, true);
-        mShowUpcoming =  mSharedPreferences.getBoolean(SHOW_MOVIE_UPCOMING, true);
-        mShowPopular = mSharedPreferences.getBoolean(SHOW_MOVIE_POPULAR, true);
-        mShowNowRunning = mSharedPreferences.getBoolean(SHOW_MOVIE_NOW_RUNNING, true);
-        mShowTopRated = mSharedPreferences.getBoolean(SHOW_MOVIE_TOP_RATED, true);
-        System.out.println("Favourites enabled: " + mSharedPreferences.getBoolean(SHOW_MOVIE_FAVOURITES, false));
-
-        if(mShowFavourites)
-            mAdapter.addTab(TITLES.get(1));
-        if(mShowNewReleases)
-            mAdapter.addTab(TITLES.get(2));
-        if(mShowWatchlist)
-            mAdapter.addTab(TITLES.get(3));
-        if(mShowWatched)
-            mAdapter.addTab(TITLES.get(4));
-        if(mShowUnwatched)
-            mAdapter.addTab(TITLES.get(5));
-        if(mShowCollections)
-            mAdapter.addTab(TITLES.get(6));
-        if(mShowList)
-            mAdapter.addTab(TITLES.get(7));
-        if(mShowUpcoming)
-            mAdapter.addTab(TITLES.get(8));
-        if(mShowPopular)
-            mAdapter.addTab(TITLES.get(9));
-        if(mShowNowRunning)
-            mAdapter.addTab(TITLES.get(10));
-        if(mShowTopRated)
-            mAdapter.addTab(TITLES.get(11));
-
+        Set<String> values = PreferenceManager.getDefaultSharedPreferences(getActivity()).getStringSet(MOVIES_TABS_SELECTED, null);
+        List<String> list = new ArrayList<String>(values);
+        Collections.sort(list, new Comparator<String>()
+        {
+            @Override
+            public int compare(String s1, String s2)
+            {
+                Integer val1 = Integer.parseInt(s1);
+                Integer val2 = Integer.parseInt(s2);
+                return val1.compareTo(val2);
+            }
+        });
+        for (int i=0; i<list.size();i++){
+            mAdapter.addTab(TITLES.get(Integer.parseInt(list.get(i))));
+        }
         if (NMJLib.hasLollipop())
             mTabs.setElevation(1f);
 

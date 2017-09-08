@@ -30,6 +30,7 @@ public class LocalBroadcastUtils {
     public static final String UPDATE_TV_SHOW_SEASONS_OVERVIEW = "NMJManager-tvshows-seasons-update";
     public static final String UPDATE_TV_SHOW_EPISODES_OVERVIEW = "NMJManager-tvshows-episodes-update";
     public static final String UPDATE_TV_SHOW_EPISODE_DETAILS_OVERVIEW = "NMJManager-tvshows-episode-details-update";
+	public static final String UPDATE_MOVIE_TABS = "NMJManager-movie-tabs";
 	
 	private LocalBroadcastUtils() {} // No instantiation
 	

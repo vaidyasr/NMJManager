@@ -17,8 +17,11 @@
 package com.nmj.nmjmanager.fragments;
 
 import android.app.AlertDialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -27,14 +30,11 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.provider.Settings;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.preference.MultiSelectListPreference;
-import android.util.Log;
 import android.widget.Toast;
-
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import com.nmj.functions.PreferenceKeys;
@@ -43,67 +43,63 @@ import com.nmj.nmjmanager.R;
 import com.nmj.utils.FileUtils;
 import com.nmj.utils.LocalBroadcastUtils;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Locale;
 
-import static com.nmj.functions.MenuItem.SEPARATOR;
 import static com.nmj.functions.PreferenceKeys.IGNORED_FILES_ENABLED;
 import static com.nmj.functions.PreferenceKeys.LANGUAGE_PREFERENCE;
 import static com.nmj.functions.PreferenceKeys.MOVIES_TABS_SELECTED;
 import static com.nmj.functions.PreferenceKeys.SHOWS_TAB_SELECTED;
+import static com.nmj.utils.LocalBroadcastUtils.UPDATE_MOVIE_LIBRARY;
+import static com.nmj.utils.LocalBroadcastUtils.UPDATE_MOVIE_TABS;
 
 public class Prefs extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
-	private Preference mPref, mLanguagePref, mCopyDatabase, mIgnoreNfoFiles;
-	private Locale[] mSystemLocales;
-	MultiSelectListPreference mShowsSelectedTabs, mMoviesSelectedTabs;
+    private Preference mPref, mLanguagePref, mCopyDatabase, mIgnoreNfoFiles;
+    private Locale[] mSystemLocales;
+    MultiSelectListPreference mShowsSelectedTabs, mMoviesSelectedTabs;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		int res=getActivity().getResources().getIdentifier(getArguments().getString("resource"), "xml", getActivity().getPackageName());
-		addPreferencesFromResource(res);
-		PreferenceScreen prefSet = getPreferenceScreen();
+        int res = getActivity().getResources().getIdentifier(getArguments().getString("resource"), "xml", getActivity().getPackageName());
+        addPreferencesFromResource(res);
+        PreferenceScreen prefSet = getPreferenceScreen();
 
-		PreferenceManager.getDefaultSharedPreferences(getActivity()).registerOnSharedPreferenceChangeListener(this);
-		Map<String,?> keys = PreferenceManager.getDefaultSharedPreferences(getActivity()).getAll();
+        mMoviesSelectedTabs = (MultiSelectListPreference) prefSet
+                .findPreference("prefsMoviesTabEnableDisable");
 
-		mMoviesSelectedTabs = (MultiSelectListPreference) prefSet
-				.findPreference(MOVIES_TABS_SELECTED);
-System.out.println("Values : " + mMoviesSelectedTabs.getEntries().toString());
-		mShowsSelectedTabs = (MultiSelectListPreference) prefSet
-				.findPreference(SHOWS_TAB_SELECTED);
         //mShowsSelectedTabs.get
-		if (mMoviesSelectedTabs != null)
-			mMoviesSelectedTabs.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-				@Override
-				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					Toast.makeText(getActivity(), "Saved settings", Toast.LENGTH_SHORT).show();
-					if (newValue instanceof MultiSelectListPreference) {
-						ArrayList<String> arrValue = new ArrayList<String>(
-								(Set<String>) newValue);
-						Collections.sort(arrValue,
-								new MultiSelectListPreferenceComparator(
-										mMoviesSelectedTabs));
-						CharSequence value = getSummary((MultiSelectListPreference) newValue,
-								((MultiSelectListPreference) newValue).getValues());
-System.out.println("Values: " + TextUtils.join(", ", arrValue));
-/*					System.out.println("onPreferenceChange: preference = " + preference
-							+ ", newValue = " + newValue.toString());*/
-						//System.out.println("Output: " + value);
-					}
-					return true;
-				}
-			});
-
-		mPref = getPreferenceScreen().findPreference("prefsIgnoredFiles");
-		if (mPref != null)
-			mPref.setEnabled(PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(IGNORED_FILES_ENABLED, false));
+        if (mMoviesSelectedTabs != null) {
+            mMoviesSelectedTabs.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    MultiSelectListPreference mpreference = (MultiSelectListPreference) preference;
+                    mpreference.setValues((Set<String>) newValue);
+                    Toast.makeText(getActivity(), R.string.updatedSettings, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+            });
+        }
+        mShowsSelectedTabs = (MultiSelectListPreference) prefSet
+                .findPreference("prefsShowsTabEnableDisable");
+        if (mShowsSelectedTabs != null) {
+            mShowsSelectedTabs.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    MultiSelectListPreference mpreference = (MultiSelectListPreference) preference;
+                    mpreference.setValues((Set<String>) newValue);
+                    Toast.makeText(getActivity(), R.string.updatedSettings, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+            });
+        }
+        mPref = getPreferenceScreen().findPreference("prefsIgnoredFiles");
+        if (mPref != null)
+            mPref.setEnabled(PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(IGNORED_FILES_ENABLED, false));
 
         mCopyDatabase = getPreferenceScreen().findPreference("prefsCopyDatabase");
         if (mCopyDatabase != null)
@@ -137,127 +133,114 @@ System.out.println("Values: " + TextUtils.join(", ", arrValue));
                 }
             });
 
-		mLanguagePref = getPreferenceScreen().findPreference(LANGUAGE_PREFERENCE);
-		if (mLanguagePref != null)
-			mLanguagePref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+        mLanguagePref = getPreferenceScreen().findPreference(LANGUAGE_PREFERENCE);
+        if (mLanguagePref != null)
+            mLanguagePref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
 
-					mSystemLocales = Locale.getAvailableLocales();
-					String[] languageCodes = Locale.getISOLanguages();
+                    mSystemLocales = Locale.getAvailableLocales();
+                    String[] languageCodes = Locale.getISOLanguages();
 
-					final ArrayList<Locale> mTemp = new ArrayList<Locale>();
-					for (String code : languageCodes) {
-						if (code.length() == 2) { // We're only interested in two character codes
-							Locale l = new Locale(code);
-							if (hasLocale(l))
-								mTemp.add(l);
-						}
-					}
+                    final ArrayList<Locale> mTemp = new ArrayList<Locale>();
+                    for (String code : languageCodes) {
+                        if (code.length() == 2) { // We're only interested in two character codes
+                            Locale l = new Locale(code);
+                            if (hasLocale(l))
+                                mTemp.add(l);
+                        }
+                    }
 
-					Collections.sort(mTemp, new Comparator<Locale>() {
-						@Override
-						public int compare(Locale lhs, Locale rhs) {
-							return lhs.getDisplayLanguage(Locale.getDefault()).compareToIgnoreCase(rhs.getDisplayLanguage(Locale.getDefault()));
-						}
-					});
+                    Collections.sort(mTemp, new Comparator<Locale>() {
+                        @Override
+                        public int compare(Locale lhs, Locale rhs) {
+                            return lhs.getDisplayLanguage(Locale.getDefault()).compareToIgnoreCase(rhs.getDisplayLanguage(Locale.getDefault()));
+                        }
+                    });
 
-					String[] items = new String[mTemp.size()];
-					for (int i = 0; i < mTemp.size(); i++)
-						items[i] = mTemp.get(i).getDisplayLanguage(Locale.getDefault());
-					
-					final String[] codes = new String[mTemp.size()];
-					for (int i = 0; i < mTemp.size(); i++)
-						codes[i] = mTemp.get(i).getLanguage();
-					
-					mTemp.clear();
-					
-					int checkedItem = getIndexForLocale(codes, PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(LANGUAGE_PREFERENCE, "en"));
-					if (checkedItem == -1)
-						checkedItem = getIndexForLocale(codes, "en"); // "en" by default
-					
-					AlertDialog.Builder bldr = new AlertDialog.Builder(getActivity());
-					bldr.setTitle(R.string.set_pref_language_title);
-					bldr.setSingleChoiceItems(items, checkedItem, new OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							savePreference(LANGUAGE_PREFERENCE, codes[which]);
-							dialog.dismiss();
-						}
-					});
-					bldr.show();
+                    String[] items = new String[mTemp.size()];
+                    for (int i = 0; i < mTemp.size(); i++)
+                        items[i] = mTemp.get(i).getDisplayLanguage(Locale.getDefault());
 
-					return true;
-				}
-			});
-	}
+                    final String[] codes = new String[mTemp.size()];
+                    for (int i = 0; i < mTemp.size(); i++)
+                        codes[i] = mTemp.get(i).getLanguage();
 
-	private String getSummary(MultiSelectListPreference preference,
-							  Set<String> values) {
-		List<CharSequence> result = new ArrayList<>();
-		CharSequence[] entries = preference.getEntries();
-		for (String value : values) {
-			System.out.println("Value: "+ value);
-			int index = preference.findIndexOfValue(value);
-			result.add(entries[index]);
-		}
-		return TextUtils.join(", ", result);
-	}
+                    mTemp.clear();
 
+                    int checkedItem = getIndexForLocale(codes, PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(LANGUAGE_PREFERENCE, "en"));
+                    if (checkedItem == -1)
+                        checkedItem = getIndexForLocale(codes, "en"); // "en" by default
 
-	private void savePreference(String key, String value) {
-		PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().putString(key, value).apply();
-	}
-	
-	private boolean hasLocale(Locale l) {
-		for (Locale locale : mSystemLocales)
-			if (locale.equals(l))
-				return true;
-		return false;
-	}
-	
-	public int getIndexForLocale(String[] languages, String locale) {
-		for (int i = 0; i < languages.length; i++)
-			if (languages[i].equalsIgnoreCase(locale))
-				return i;
-		return -1;
-	}
+                    AlertDialog.Builder bldr = new AlertDialog.Builder(getActivity());
+                    bldr.setTitle(R.string.set_pref_language_title);
+                    bldr.setSingleChoiceItems(items, checkedItem, new OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            savePreference(LANGUAGE_PREFERENCE, codes[which]);
+                            dialog.dismiss();
+                        }
+                    });
+                    bldr.show();
 
-	private class MultiSelectListPreferenceComparator implements
-			Comparator<String> {
-		private MultiSelectListPreference pref;
+                    return true;
+                }
+            });
+    }
 
-		MultiSelectListPreferenceComparator(MultiSelectListPreference p) {
-			pref = p;
-		}
+    private void savePreference(String key, String value) {
+        PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().putString(key, value).apply();
+    }
 
-		@Override
-		public int compare(String lhs, String rhs) {
-			return Integer.compare(pref.findIndexOfValue(lhs),
-					pref.findIndexOfValue(rhs));
-		}
-	}
+    private boolean hasLocale(Locale l) {
+        for (Locale locale : mSystemLocales)
+            if (locale.equals(l))
+                return true;
+        return false;
+    }
 
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		System.out.println("onSharedPreferenceChanged: key = " + key);
-		Preference pref = getPreferenceManager().findPreference(key);
-		if (pref instanceof MultiSelectListPreference) {
-			CharSequence value = getSummary((MultiSelectListPreference) pref,
-					((MultiSelectListPreference) pref).getValues());
-			System.out.println("Output: " + value.toString());
+    public int getIndexForLocale(String[] languages, String locale) {
+        for (int i = 0; i < languages.length; i++)
+            if (languages[i].equalsIgnoreCase(locale))
+                return i;
+        return -1;
+    }
 
-		}
-		if (key.equals(IGNORED_FILES_ENABLED)) {
-			if (mPref != null)
-				mPref.setEnabled(sharedPreferences.getBoolean(IGNORED_FILES_ENABLED, false));
-		}
-	}
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Set up a listener whenever a key changes
+        getPreferenceScreen().getSharedPreferences()
+                .registerOnSharedPreferenceChangeListener(this);
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		PreferenceManager.getDefaultSharedPreferences(getActivity()).unregisterOnSharedPreferenceChangeListener(this);
-	}
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Unregister the listener whenever a key changes
+        getPreferenceScreen().getSharedPreferences()
+                .unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(MOVIES_TABS_SELECTED)) {
+            LocalBroadcastManager.getInstance(NMJManagerApplication.getContext()).sendBroadcast(new Intent(UPDATE_MOVIE_TABS));
+        }
+        if (key.equals(SHOWS_TAB_SELECTED)) {
+
+        }
+        if (key.equals(IGNORED_FILES_ENABLED)) {
+            if (mPref != null)
+                mPref.setEnabled(sharedPreferences.getBoolean(IGNORED_FILES_ENABLED, false));
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(getActivity()).unregisterOnSharedPreferenceChangeListener(this);
+    }
 }

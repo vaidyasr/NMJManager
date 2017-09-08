@@ -144,6 +144,7 @@
     <string name="errorSomethingWentWrong">Something went wrong - please try again!</string>
     <string name="updatedMovie">Successfully updated movie!</string>
     <string name="updatedTvShow">Successfully updated TV show!</string>
+    <string name="updatedSettings">Successfully updated settings</string>
     <string name="updatingMovies">Updating Movies</string>
     <string name="updatingTvShows">Updating TV Shows</string>
     <string name="analyzing_files">Analyzing files…</string>

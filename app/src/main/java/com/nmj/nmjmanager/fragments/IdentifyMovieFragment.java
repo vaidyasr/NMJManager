@@ -239,7 +239,7 @@ public class IdentifyMovieFragment extends Fragment {
 
             // Go back to the library overview and clear the back stack
             Intent libraryOverview = new Intent(getActivity().getApplicationContext(), Main.class);
-            libraryOverview.putExtra(STARTUP_SELECTION, "0"); // Movies
+            libraryOverview.putExtra(STARTUP_SELECTION, "1"); // Movies
             libraryOverview.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(libraryOverview);
         } else

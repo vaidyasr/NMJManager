@@ -64,26 +64,32 @@ public class NMJAdapter {
     }
 
     public boolean movieExistsbyId(String movieId) {
-        for (int i = 0; i < mLibrary.size(); i++) {
-            if (mLibrary.get(i).getId().equals(movieId))
-                return true;
+        if (mLibrary != null) {
+            for (int i = 0; i < mLibrary.size(); i++) {
+                if (mLibrary.get(i).getId().equals(movieId))
+                    return true;
+            }
         }
         return false;
     }
 
     public String getShowIdByTmdbId(String movieId){
-        for (int i = 0; i < mLibrary.size(); i++) {
-            if (mLibrary.get(i).getId().equals("tmdb" + movieId))
-                return mLibrary.get(i).getShowId();
+        if (mLibrary != null) {
+            for (int i = 0; i < mLibrary.size(); i++) {
+                if (mLibrary.get(i).getId().equals("tmdb" + movieId))
+                    return mLibrary.get(i).getShowId();
+            }
         }
         return "0";
     }
 
     public boolean hasWatched(String movieId){
-        for (int i = 0; i < mLibrary.size(); i++) {
-            if (mLibrary.get(i).getId().equals("tmdb" + movieId)) {
-                if(!mLibrary.get(i).getPlayCount().equals("0"))
-                    return true;
+        if (mLibrary != null) {
+            for (int i = 0; i < mLibrary.size(); i++) {
+                if (mLibrary.get(i).getId().equals("tmdb" + movieId)) {
+                    if (!mLibrary.get(i).getPlayCount().equals("0"))
+                        return true;
+                }
             }
         }
         return false;

@@ -112,7 +112,13 @@ public class Main extends NMJActivity {
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            updateLibraryCounts();
+            if(intent.getAction().equals("NMJManager-movies-update") ||
+                    intent.getAction().equals("NMJManager-tvshows-update")) {
+                updateLibraryCounts();
+            } else if (intent.getAction().equals("NMJManager-movie-tabs")){
+                Toast.makeText(context, "Reload detected", Toast.LENGTH_SHORT).show();
+
+            }
         }
     };
 
@@ -131,7 +137,7 @@ public class Main extends NMJActivity {
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         mConfirmExit = settings.getBoolean(CONFIRM_BACK_PRESS, false);
-        mStartup = Integer.valueOf(settings.getString(STARTUP_SELECTION, "0"));
+        mStartup = Integer.valueOf(settings.getString(STARTUP_SELECTION, "1"));
 
         mDbHelper = NMJManagerApplication.getNMJAdapter();
         mDbHelperTv = NMJManagerApplication.getTvDbAdapter();
@@ -199,12 +205,17 @@ public class Main extends NMJActivity {
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close);
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
+        System.out.println("Selected Index:" + selectedIndex);
         if (savedInstanceState != null && savedInstanceState.containsKey("selectedIndex")) {
             selectedIndex = savedInstanceState.getInt("selectedIndex");
             loadFragment(selectedIndex);
         } else if (getIntent().getExtras() != null && getIntent().getExtras().containsKey("startup")) {
             loadFragment(Integer.parseInt(getIntent().getExtras().getString("startup")));
+            System.out.println("Startup:" + Integer.parseInt(getIntent().getExtras().getString("startup")));
+
         } else {
+            System.out.println("Startup Variable:" + mStartup);
+
             loadFragment(mStartup);
         }
 
@@ -212,7 +223,8 @@ public class Main extends NMJActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_TV_SHOW_LIBRARY));
     }
 
-    private void loadFragment(int type) {
+    public void loadFragment(int type) {
+        System.out.println("Fragment Value: " + type);
         Fragment frag = getSupportFragmentManager().findFragmentByTag("frag" + type);
         if (frag == null) {
             final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();

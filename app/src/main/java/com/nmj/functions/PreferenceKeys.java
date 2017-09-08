@@ -66,7 +66,7 @@ public class PreferenceKeys {
 	public static final String SHOW_MOVIE_LIST = "prefsMovieList";
 	public static final String SHOW_MOVIE_UPCOMING = "prefsMovieUpcoming";
 	public static final String SHOW_MOVIE_POPULAR = "prefsMoviePopular";
-	public static final String SHOW_MOVIE_NOW_RUNNING = "prefsMovieNowRunning";
+	public static final String SHOW_MOVIE_NOW_PLAYING = "prefsMovieNowPlaying";
 	public static final String SHOW_MOVIE_TOP_RATED = "prefsMovieTopRated";
 	public static final String GRID_ITEM_SIZE = "prefsGridItemSize";
 	public static final String SORTING_MOVIES = "prefsSorting";

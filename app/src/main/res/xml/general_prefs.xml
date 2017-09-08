@@ -3,7 +3,7 @@
 
     <PreferenceCategory android:title="@string/prefsUIGeneral">
         <ListPreference
-            android:defaultValue="0"
+            android:defaultValue="1"
             android:entries="@array/startup_screen"
             android:entryValues="@array/startup_screen_codes"
             android:icon="@drawable/ic_home_white_24dp"

@@ -15,6 +15,7 @@ package com.nmj.nmjmanager.fragments;/*
  */
 
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -29,10 +30,17 @@ import com.nmj.functions.NMJLib;
 import com.nmj.loader.TvShowLoader;
 import com.nmj.nmjmanager.R;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import static com.nmj.functions.PreferenceKeys.SHOWS_TAB_SELECTED;
+
 public class TvShowLibraryOverviewFragment extends Fragment {
 
     private ViewPager mViewPager;
     private PagerSlidingTabStrip mTabs;
+    List<String> TITLES = new ArrayList<>();
 
     public TvShowLibraryOverviewFragment() {} // Empty constructor
 
@@ -43,6 +51,13 @@ public class TvShowLibraryOverviewFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.viewpager_with_tabs, container, false);
+        PagerAdapter mAdapter;
+
+        final String[] TITLES1 = {getString(R.string.choiceAllShows), getString(R.string.choiceFavorites), getString(R.string.recently_aired),
+                getString(R.string.watched_tv_shows), getString(R.string.unwatched_tv_shows), getString(R.string.popular_shows),
+                getString(R.string.toprated_shows), getString(R.string.ontv), getString(R.string.airing_today)};
+        for (int i = 0; i < TITLES1.length; i++)
+            TITLES.add(i, TITLES1[i]);
 
         if (NMJLib.hasLollipop())
             ((ActionBarActivity) getActivity()).getSupportActionBar().setElevation(0);
@@ -52,12 +67,20 @@ public class TvShowLibraryOverviewFragment extends Fragment {
 
         mTabs = (PagerSlidingTabStrip) v.findViewById(R.id.tabs);
 
-        mViewPager.setAdapter(new PagerAdapter(getChildFragmentManager()));
+        mViewPager.setAdapter(mAdapter = new PagerAdapter(getChildFragmentManager()));
+
         mTabs.setViewPager(mViewPager);
         mTabs.setVisibility(View.VISIBLE);
 
         // Work-around a bug that sometimes happens with the tabs
         mViewPager.setCurrentItem(0);
+
+        mAdapter.addTab(TITLES.get(0));
+
+        Set<String> values = PreferenceManager.getDefaultSharedPreferences(getActivity()).getStringSet(SHOWS_TAB_SELECTED, null);
+        for (String value : values) {
+            mAdapter.addTab(TITLES.get(Integer.parseInt(value)));
+        }
 
         if (NMJLib.hasLollipop())
             mTabs.setElevation(1f);
@@ -67,22 +90,31 @@ public class TvShowLibraryOverviewFragment extends Fragment {
 
     private class PagerAdapter extends FragmentPagerAdapter {
 
-        private final String[] TITLES = {getString(R.string.choiceAllShows), getString(R.string.choiceFavorites), getString(R.string.recently_aired),
-                getString(R.string.watched_tv_shows), getString(R.string.unwatched_tv_shows), getString(R.string.popular_shows),
-                getString(R.string.toprated_shows), getString(R.string.ontv), getString(R.string.airing_today)};
-
+        private ArrayList<String> tabs = new ArrayList<>();
         public PagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
+        public void addTab(String tab) {
+            tabs.add(tab);
+            notifyDataSetChanged();
+            mTabs.notifyDataSetChanged();
+        }
+
+        public void removeTab(int position) {
+            tabs.remove(position);
+            notifyDataSetChanged();
+            mTabs.notifyDataSetChanged();
+        }
+
         @Override
         public CharSequence getPageTitle(int position) {
-            return TITLES[position];
+            return tabs.get(position);
         }
 
         @Override
         public Fragment getItem(int index) {
-            switch (index) {
+            switch (TITLES.indexOf(getPageTitle(index))) {
                 case 0:
                     return TvShowLibraryFragment.newInstance(TvShowLoader.ALL_SHOWS);
                 case 1:
@@ -108,7 +140,7 @@ public class TvShowLibraryOverviewFragment extends Fragment {
 
         @Override
         public int getCount() {
-            return TITLES.length;
+            return tabs.size();
         }
     }
 }
