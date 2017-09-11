@@ -96,7 +96,7 @@ public class MovieLoader {
     private String mListId, mListTmdbId, mCollectionId, mCollectionTmdbId;
 
     public MovieLoader(Context context, MovieLibraryType libraryType, Intent intent, OnLoadCompletedCallback callback) {
-        System.out.println("Entering MovieLoader");
+        //System.out.println("Entering MovieLoader");
         mContext = context;
         mLibraryType = libraryType;
 
@@ -242,7 +242,7 @@ public class MovieLoader {
         }
 
         mShowingSearchResults = !TextUtils.isEmpty(query);
-            System.out.println("Executing MovieLoader");
+        //System.out.println("Executing MovieLoader");
             mAsyncTask = new MovieLoaderAsyncTask(query);
             mAsyncTask.execute();
     }

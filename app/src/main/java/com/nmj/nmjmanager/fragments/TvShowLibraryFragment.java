@@ -579,7 +579,7 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
             if (show.getTitleType() == "tmdb")
                 mURL = baseUrl + imageSizeUrl;
             else
-                mURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/";
+                mURL = NMJLib.getNMJImageURL();
 
             mPicasso.load(mURL + show.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
             if (mChecked.contains(position)) {

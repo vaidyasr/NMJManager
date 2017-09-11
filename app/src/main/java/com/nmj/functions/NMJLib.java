@@ -144,7 +144,6 @@ import static com.nmj.functions.PreferenceKeys.TRAKT_USERNAME;
 
 @SuppressLint("NewApi")
 public class NMJLib {
-    public static String URL = "";
     public static final String TYPE = "type";
     public static final String MOVIE = "movie";
     public static final String TV_SHOW = "tvshow";
@@ -171,6 +170,9 @@ public class NMJLib {
     private final static String YEAR_PATTERN = "(18|19|20)[0-9][0-9]";
     private final static String WAREZ_PATTERN = "(?i)(dvdscreener|dvdscreen|dvdscr|dvdrip|dvd5|dvd|xvid|divx|m\\-480p|m\\-576p|m\\-720p|m\\-864p|m\\-900p|m\\-1080p|m480p|m576p|m720p|m864p|m900p|m1080p|480p|576p|720p|864p|900p|1080p|1080i|720i|mhd|brrip|bdrip|brscreener|brscreen|brscr|aac|x264|bluray|dts|screener|hdtv|ac3|repack|2\\.1|5\\.1|ac3_6|7\\.1|h264|hdrip|ntsc|proper|readnfo|rerip|subbed|vcd|scvd|pdtv|sdtv|hqts|hdcam|multisubs|650mb|700mb|750mb|webdl|web-dl|bts|korrip|webrip|korsub|1link|sample|tvrip|tvr|extended.editions?|directors cut|tfe|unrated|\\(.*?torrent.*?\\)|\\[.*?\\]|\\(.*?\\)|\\{.*?\\}|part[0-9]|cd[0-9])";
     private final static String ABBREVIATION_PATTERN = "(?<=(^|[.])[\\S&&\\D])[.](?=[\\S&&\\D]([.]|$))";
+    public static String URL = "";
+    public static String mDbPath = "";
+    public static String mDrivePath = "";
     public static int COVER = 1, BACKDROP = 2;
     public static String[] subtitleFormats = new String[]{".srt", ".sub", ".ssa", ".ssf", ".smi", ".txt", ".usf", ".ass", ".stp", ".idx", ".aqt", ".cvd", ".dks", ".jss", ".mpl", ".pjs", ".psb", ".rt", ".svcd", ".usf"};
     private static String[] MEDIA_APPS = new String[]{"com.imdb.mobile", "com.google.android.youtube", "com.ted.android", "com.google.android.videos", "se.mtg.freetv.tv3_dk", "tv.twitch.android.viewer",
@@ -199,8 +201,31 @@ public class NMJLib {
         return URL;
     }
 
-    public static void setNMJServer(String url){
-        URL = "http://" + url + "/";
+    public static void setNMJServer(String url, String port) {
+        URL = "http://" + url + ":" + port + "/";
+    }
+
+    public static String getNMJImageURL() {
+        if (!getNMJServer().equals("") && !getDrivePath().equals(""))
+            return getNMJServer() + "NMJManagerTablet/" + getDrivePath() + "/";
+        else
+            return "";
+    }
+
+    public static String getDbPath() {
+        return mDbPath;
+    }
+
+    public static void setDbPath(String dbPath) {
+        mDbPath = dbPath;
+    }
+
+    public static String getDrivePath() {
+        return mDrivePath;
+    }
+
+    public static void setDrivePath(String drivePath) {
+        mDrivePath = drivePath;
     }
 
     public static String getTmdbApiURL(Context context) {
@@ -2402,13 +2427,16 @@ public class NMJLib {
     public static void setLibrary(Context context, NMJAdapter mDatabase) {
         if(!NMJLib.getNMJServer().equals("")) {
             ArrayList<Library> list = new ArrayList<>();
-            String url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getCount&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db";
+            String url = NMJLib.getNMJServer() +
+                    "NMJManagerTablet_web/getData.php?action=getCount&drivepath=" +
+                    NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath();
 
             JSONObject jObject;
             try {
                 jObject = NMJLib.getJSONObject(context, url);
                 mDatabase.setMovieCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("movies")));
                 mDatabase.setShowCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("shows")));
+                mDatabase.setMusicCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("music")));
                 JSONArray jArray = jObject.getJSONObject("data").getJSONArray("library");
 
                 for (int i = 0; i < jArray.length(); i++) {
@@ -2418,7 +2446,6 @@ public class NMJLib {
                             dObject.getString("CONTENT_TTID")));
                 }
                 mDatabase.setLibrary(list);
-                System.out.println("Library : " + list.toString());
             } catch (Exception ignored) {
             }
         }
@@ -2602,7 +2629,9 @@ public class NMJLib {
                 mode = "add";
             else
                 mode = "remove";
-            String url = getNMJServer() + "NMJManagerTablet_web/getData.php?action=editWatched&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&TTYPE=1&mode=" +
+            String url = getNMJServer()
+                    + "NMJManagerTablet_web/getData.php?action=editWatched&drivepath=" +
+                    NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() + "&TTYPE=1&mode=" +
                     mode + "&showid=" + StringUtils.join(showIds, ",");
             JSONArray array = new JSONArray();
             int count = showIds.size();
@@ -2633,7 +2662,9 @@ public class NMJLib {
                 mode = "add";
             else
                 mode = "remove";
-            String url = getNMJServer() + "NMJManagerTablet_web/getData.php?action=editFavorite&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&TTYPE=1&mode=" +
+            String url = getNMJServer() +
+                    "NMJManagerTablet_web/getData.php?action=editFavorite&drivepath=" +
+                    NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() + "&TTYPE=1&mode=" +
                     mode + "&showid=" + StringUtils.join(showIds, ",");
             ;
             jObject = NMJLib.getJSONObject(mContext, url.replace(" ", "%20"));
@@ -2746,24 +2777,37 @@ public class NMJLib {
         System.out.println("LoadType: " + loadType);
         if (!NMJLib.getNMJServer().equals("")) {
             if (id != null && loadType.equals("list"))
-                url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getLists&drivepath=guerilla&sourceurl=guerilla&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
+                url = NMJLib.getNMJServer() +
+                        "NMJManagerTablet_web/getData.php?action=getLists&drivepath=" +
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() + "&id=" + id +
+                        "&sortby=title&orderby=asc";
             else if (id != null && loadType.equals("collection"))
-                url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
+                url = NMJLib.getNMJServer() +
+                        "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=" +
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() + "&id=" + id +
+                        "&sortby=title&orderby=asc";
             else if (videoType.equals("tv"))
-                url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" + getTmdbApiKey(mContext) + "&language=en";
+                url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" +
+                        getTmdbApiKey(mContext) + "&language=en";
             else
-                url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
+                url = NMJLib.getNMJServer()
+                        + "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=" +
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() +
+                        "&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" +
+                        videoType + "&VALUE=&searchtype=title";
 
             try {
                 JSONObject jObject;
                 JSONArray jArray;
                 String CacheId = "";
                 if (id != null && loadType.equals("list"))
-                    CacheId = "list_" + id;
+                    CacheId = NMJLib.getDrivePath() + "_list_" + id;
                 else if (id != null && loadType.equals("collection"))
-                    CacheId = "collection_" + id;
-                else
+                    CacheId = NMJLib.getDrivePath() + "_collection_" + id;
+                else if (videoType.equals("tv"))
                     CacheId = videoType + "_" + loadType;
+                else
+                    CacheId = NMJLib.getDrivePath() + "_" + videoType + "_" + loadType;
                 //NMJLib.getDiskCache(mContext).clearCache();
                 CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
 
@@ -2834,25 +2878,38 @@ public class NMJLib {
         System.out.println("LoadType: " + loadType);
         if (!NMJLib.getNMJServer().equals("")) {
             if (id != null && loadType.equals("list"))
-                url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getLists&drivepath=guerilla&sourceurl=guerilla&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
+                url = NMJLib.getNMJServer() +
+                        "NMJManagerTablet_web/getData.php?action=getLists&drivepath=" +
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() + "&id=" + id +
+                        "&sortby=title&orderby=asc";
             else if (id != null && loadType.equals("collection"))
-                url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
+                url = NMJLib.getNMJServer() +
+                        "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=" +
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() + "&id=" + id +
+                        "&sortby=title&orderby=asc";
             else if (videoType.equals("movie"))
-                url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" + getTmdbApiKey(mContext) + "&language=en";
+                url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" +
+                        getTmdbApiKey(mContext) + "&language=en";
             else
-                url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
+                url = NMJLib.getNMJServer() +
+                        "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=" +
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() +
+                        "/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" +
+                        loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
 
             try {
                 JSONObject jObject;
                 JSONArray jArray;
                 String CacheId = "";
                 if (id != null && loadType.equals("list"))
-                    CacheId = "list_" + id;
+                    CacheId = NMJLib.getDrivePath() + "_list_" + id;
                 else if (id != null && loadType.equals("collection"))
-                    CacheId = "collection_" + id;
-                else
+                    CacheId = NMJLib.getDrivePath() + "_collection_" + id;
+                else if (videoType.equals("movie"))
                     CacheId = videoType + "_" + loadType;
-                NMJLib.getDiskCache(mContext).clearCache();
+                else
+                    CacheId = NMJLib.getDrivePath() + "_" + videoType + "_" + loadType;
+                //NMJLib.getDiskCache(mContext).clearCache();
                 CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
 
                 if (!cacheManager.exists(CacheId)) {

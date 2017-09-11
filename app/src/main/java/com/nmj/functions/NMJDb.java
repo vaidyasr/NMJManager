@@ -20,37 +20,69 @@ import android.content.Context;
 
 public class NMJDb {
 
-	private String IP_ADDRESS, PORT, DISPLAY_NAME;
-	
-	public NMJDb(Context context, String ip_address, String port, String display_name) {
+	private String mName, mDbPath, mDrivePath, mNMJType, mWritable, mImage, mJukebox;
+
+	public NMJDb(Context context, String name, String dbpath, String drivepath) {
 
         // Set up movie fields based on constructor
-		IP_ADDRESS = ip_address;
-		PORT = port;
-		DISPLAY_NAME = display_name;
+		mName = name;
+		mDbPath = dbpath;
+		mDrivePath = drivepath;
 	}
 
-	public String getMachine() {
-		return IP_ADDRESS;
+	public String getName() {
+		return mName;
 	}
 
-	public void setMachine(String machine) {
-		this.IP_ADDRESS = machine;
+	public void setName(String name) {
+		this.mName = name;
 	}
 
-	public String getPort() {
-		return PORT;
+	public String getDbPath() {
+		return mDbPath;
 	}
 
-	public void setPort(String port) {
-		this.PORT = port;
+	public void setDbPath(String dbPath) {
+		this.mDbPath = dbPath;
 	}
 
-	public String getDisplayName() {
-		return DISPLAY_NAME;
+	public String getDrivePath() {
+		return mDrivePath;
 	}
 
-	public void setDisplayName(String displayName) {
-		this.DISPLAY_NAME = displayName;
+	public void setDrivePath(String drivePath) {
+		this.mDrivePath = drivePath;
+	}
+
+	public String getNMJType() {
+		return mNMJType;
+	}
+
+	public void setNMJType(String nmjType) {
+		mNMJType = nmjType;
+	}
+
+	public String getImage() {
+		return mImage;
+	}
+
+	public void setImage(String image) {
+		mImage = image;
+	}
+
+	public String getJukebox() {
+		return mJukebox;
+	}
+
+	public void setJukebox(String jukebox) {
+		mJukebox = jukebox;
+	}
+
+	public String getWritable() {
+		return mWritable;
+	}
+
+	public void setWritable(String writable) {
+		mWritable = writable;
 	}
 }

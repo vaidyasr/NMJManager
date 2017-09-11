@@ -123,7 +123,7 @@ public class NMJMovieService extends NMJApiService {
     public Movie getCompleteNMJMovie(String id, String language) {
         Movie movie = new Movie();
         movie.setShowId(id);
-        String nmjImgURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/";
+        String nmjImgURL = NMJLib.getNMJImageURL();
 
         if (id.equals(DbAdapterMovies.UNIDENTIFIED_ID))
             return movie;
@@ -133,12 +133,15 @@ public class NMJMovieService extends NMJApiService {
             String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
             JSONObject jObject;
-            String CacheId = "nmj_" + id;
+            String CacheId = NMJLib.getDrivePath() + "_nmj_" + id;
 
             CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
             if (!cacheManager.exists(CacheId)) {
                 System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&showid=" + id + "&title_type=1");
+                jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServer() +
+                        "NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=" +
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&showid=" +
+                        id + "&title_type=1");
                 NMJLib.putCache(cacheManager, CacheId, jObject.toString());
             }
             System.out.println("Getting Cache from " + CacheId);

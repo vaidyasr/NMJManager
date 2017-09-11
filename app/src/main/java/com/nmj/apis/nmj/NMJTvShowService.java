@@ -135,7 +135,7 @@ public class NMJTvShowService extends TvShowApiService {
     public TvShow getCompleteNMJTvShow(String id, String language) {
         TvShow show = new TvShow();
         show.setShowId(id);
-        String nmjImgURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/";
+        String nmjImgURL = NMJLib.getNMJImageURL();
 
         if (id.equals(DbAdapterMovies.UNIDENTIFIED_ID))
             return show;
@@ -145,13 +145,15 @@ public class NMJTvShowService extends TvShowApiService {
             String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
             JSONObject jObject;
-            String CacheId = "nmj_" + id;
+            String CacheId = NMJLib.getDrivePath() + "_nmj_" + id;
             String dbtype;
 
             CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
             if (!cacheManager.exists(CacheId)) {
                 System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&showid=" + id + "&title_type=2");
+                jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServer() +
+                        "NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=" +
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&showid=" + id + "&title_type=2");
                 NMJLib.putCache(cacheManager, CacheId, jObject.toString());
             }
             System.out.println("Getting Cache from " + CacheId);

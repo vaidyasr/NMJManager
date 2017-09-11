@@ -85,6 +85,7 @@ import static com.nmj.functions.PreferenceKeys.SHOW_TITLES_IN_GRID;
 
 public class MovieLibraryFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
+    boolean loadingMore = false;
     private Context mContext;
     private String baseUrl, imageSizeUrl;
     private SharedPreferences mSharedPreferences;
@@ -99,7 +100,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     private SearchView mSearchView;
     private View mEmptyLibraryLayout;
     private TextView mEmptyLibraryTitle, mEmptyLibraryDescription;
-    boolean loadingMore = false;
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -683,7 +683,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             if (movie.getTitleType() == "tmdb")
                 mURL = baseUrl + imageSizeUrl;
             else
-                mURL = NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/";
+                mURL = NMJLib.getNMJImageURL();
 
             mPicasso.load(mURL + movie.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
             if (mChecked.contains(position)) {

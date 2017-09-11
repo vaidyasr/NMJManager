@@ -675,7 +675,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
             protected Void doInBackground(Void... params) {
                 String imgurl;
                 if (!mShow.getShowId().equals("0"))
-                    imgurl = NMJLib.getNMJServer() + "NMJManagerTablet_web/guerilla/";
+                    imgurl = NMJLib.getNMJImageURL();
                 else
                     imgurl = "";
 

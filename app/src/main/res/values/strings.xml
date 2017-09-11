@@ -376,7 +376,7 @@
     <string name="loading_movie_parts">Loading movie parts</string>
     <string name="few_moments">This may take a few moments…</string>
     <string name="drawerMyMovies">My Movies</string>
-    <string name="drawerSelectDB">Select NMJ database...</string>
+    <string name="drawerSelectDB">Add NMJ database...</string>
     <string name="drawerMyTvShows">My TV Shows</string>
     <string name="drawerOnlineMovies">Online Movies</string>
     <string name="drawerMyMusic">My Music</string>
