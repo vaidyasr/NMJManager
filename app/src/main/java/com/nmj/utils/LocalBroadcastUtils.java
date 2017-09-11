@@ -25,7 +25,10 @@ import com.nmj.nmjmanager.NMJManagerApplication;
 public class LocalBroadcastUtils {
 
 	public static final String UPDATE_MOVIE_LIBRARY = "NMJManager-movies-update";
+	public static final String LOAD_MOVIE_LIBRARY = "NMJManager-movies-load";
+	public static final String LOAD_TV_SHOW_LIBRARY = "NMJManager-tvshows-load";
 	public static final String UPDATE_TV_SHOW_LIBRARY = "NMJManager-tvshows-update";
+	public static final String UPDATE_LIBRARY_COUNT = "NMJManager-library-update";
 	public static final String CLEAR_IMAGE_CACHE = "clear-image-cache";
     public static final String UPDATE_TV_SHOW_SEASONS_OVERVIEW = "NMJManager-tvshows-seasons-update";
     public static final String UPDATE_TV_SHOW_EPISODES_OVERVIEW = "NMJManager-tvshows-episodes-update";
@@ -41,7 +44,16 @@ public class LocalBroadcastUtils {
 	public static void updateMovieLibrary(Context context) {
 		LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(UPDATE_MOVIE_LIBRARY));
 	}
-	
+
+	public static void loadMovieLibrary(Context context) {
+		LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(LOAD_MOVIE_LIBRARY));
+	}
+
+	public static void updateLibraryCount(Context context) {
+		LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(UPDATE_LIBRARY_COUNT));
+	}
+
+
 	/**
 	 * Force the TV show library to clear the cache and reload everything.
 	 * @param context
@@ -49,7 +61,10 @@ public class LocalBroadcastUtils {
 	public static void updateTvShowLibrary(Context context) {
 		LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(UPDATE_TV_SHOW_LIBRARY));
 	}
-	
+
+	public static void loadTvShowLibrary(Context context) {
+		LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(LOAD_TV_SHOW_LIBRARY));
+	}
 	/**
 	 * Clear the image cache.
 	 * @param context

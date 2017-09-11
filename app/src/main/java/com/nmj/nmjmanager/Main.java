@@ -28,6 +28,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -36,6 +37,8 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
@@ -43,6 +46,7 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,6 +54,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -60,13 +66,19 @@ import android.widget.Toast;
 //import com.iainconnor.objectcache.DiskCache;
 //import com.iainconnor.objectcache.CacheManager;
 
+import com.google.gson.JsonObject;
 import com.nmj.base.NMJActivity;
 import com.nmj.db.DbAdapterMovies;
+import com.nmj.db.DbAdapterSources;
 import com.nmj.db.DbAdapterTvShows;
+import com.nmj.functions.AsyncTask;
 import com.nmj.functions.BlurTransformation;
+import com.nmj.functions.FileSource;
 import com.nmj.functions.MenuItem;
 import com.nmj.functions.NMJAdapter;
+import com.nmj.functions.NMJDb;
 import com.nmj.functions.NMJLib;
+import com.nmj.functions.PreferenceKeys;
 import com.nmj.loader.MovieFilter;
 import com.nmj.nmjmanager.fragments.AccountsFragment;
 import com.nmj.nmjmanager.fragments.ContactDeveloperFragment;
@@ -79,25 +91,36 @@ import com.nmj.utils.TypefaceUtils;
 import com.nmj.utils.ViewUtils;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
 
 import static com.nmj.functions.PreferenceKeys.CONFIRM_BACK_PRESS;
 import static com.nmj.functions.PreferenceKeys.STARTUP_SELECTION;
-import static com.nmj.functions.PreferenceKeys.MOVIES_TABS_SELECTED;
-import static com.nmj.functions.PreferenceKeys.SHOWS_TAB_SELECTED;
 import static com.nmj.functions.PreferenceKeys.TRAKT_FULL_NAME;
 import static com.nmj.functions.PreferenceKeys.TRAKT_USERNAME;
 
 @SuppressLint("NewApi")
 public class Main extends NMJActivity {
 
-    public static final int MOVIES = 1, SHOWS = 2, MUSIC = 3, SELECT = 4;
+    public static final int MOVIES = 1, SHOWS = 2, MUSIC = 3, SELECT = 4, SOURCE = 5;
+    private ArrayList<NMJDb> nmjdb = new ArrayList<NMJDb>();
     protected ListView mDrawerList;
+    private EditText ip_address, port, display_name;
+    private String db_ip, db_port, db_display;
+    private JSONObject jObject;
+    private JSONArray db;
     private int mNumMovies, mNumShows, selectedIndex, mStartup, mNumMusic;
     private Typeface mTfMedium, mTfRegular;
     private DrawerLayout mDrawerLayout;
@@ -108,17 +131,13 @@ public class Main extends NMJActivity {
     private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
     private List<ApplicationInfo> mApplicationList;
     private Picasso mPicasso;
+    AlertDialog alertDialog;
+    private Context mContext;
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().equals("NMJManager-movies-update") ||
-                    intent.getAction().equals("NMJManager-tvshows-update")) {
-                updateLibraryCounts();
-            } else if (intent.getAction().equals("NMJManager-movie-tabs")){
-                Toast.makeText(context, "Reload detected", Toast.LENGTH_SHORT).show();
-
-            }
+            updateLibraryCounts();
         }
     };
 
@@ -133,11 +152,14 @@ public class Main extends NMJActivity {
 
         super.onCreate(savedInstanceState);
 
+        mContext = NMJManagerApplication.getContext();
+
         mPicasso = NMJManagerApplication.getPicasso(getApplicationContext());
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         mConfirmExit = settings.getBoolean(CONFIRM_BACK_PRESS, false);
         mStartup = Integer.valueOf(settings.getString(STARTUP_SELECTION, "1"));
+        ip_address = (EditText) findViewById(R.id.ip_address);
 
         mDbHelper = NMJManagerApplication.getNMJAdapter();
         mDbHelperTv = NMJManagerApplication.getTvDbAdapter();
@@ -170,15 +192,10 @@ public class Main extends NMJActivity {
                         break;
 
                     case MenuItem.SECTION:
-                        loadFragment(mMenuItems.get(arg2).getFragment());
+                        loadFragment(mMenuItems.get(arg2).getFragment(), 0);
                         break;
-                    case MenuItem.THIRD_PARTY_APP:
-                        final PackageManager pm = getPackageManager();
-                        Intent i = pm.getLaunchIntentForPackage(mMenuItems.get(arg2).getPackageName());
-                        if (i != null) {
-                            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(i);
-                        }
+                    case MenuItem.NMJ_DB:
+                        loadFragment(mMenuItems.get(arg2).getFragment(), arg2);
                         break;
                     case MenuItem.SETTINGS_AREA:
 
@@ -208,23 +225,32 @@ public class Main extends NMJActivity {
         System.out.println("Selected Index:" + selectedIndex);
         if (savedInstanceState != null && savedInstanceState.containsKey("selectedIndex")) {
             selectedIndex = savedInstanceState.getInt("selectedIndex");
-            loadFragment(selectedIndex);
+            loadFragment(selectedIndex, 0);
         } else if (getIntent().getExtras() != null && getIntent().getExtras().containsKey("startup")) {
-            loadFragment(Integer.parseInt(getIntent().getExtras().getString("startup")));
+            loadFragment(Integer.parseInt(getIntent().getExtras().getString("startup")), 0);
             System.out.println("Startup:" + Integer.parseInt(getIntent().getExtras().getString("startup")));
 
         } else {
             System.out.println("Startup Variable:" + mStartup);
 
-            loadFragment(mStartup);
+            loadFragment(mStartup, 0);
         }
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_MOVIE_LIBRARY));
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_TV_SHOW_LIBRARY));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_LIBRARY_COUNT));
     }
 
-    public void loadFragment(int type) {
-        System.out.println("Fragment Value: " + type);
+    public static void reloadFragment(String fragment) {
+        FragmentActivity activity = (FragmentActivity) NMJManagerApplication.getContext();
+        final Fragment frag = activity.getSupportFragmentManager().findFragmentByTag(fragment);
+        FragmentTransaction ft = activity.getSupportFragmentManager().beginTransaction();
+        ft.detach(frag);
+        ft.attach(frag);
+        ft.commit();
+    }
+
+    public void loadFragment(int type, int index) {
         Fragment frag = getSupportFragmentManager().findFragmentByTag("frag" + type);
         if (frag == null) {
             final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -240,7 +266,24 @@ public class Main extends NMJActivity {
                     ft.replace(R.id.content_frame, MovieDiscoveryViewPagerFragment.newInstance(), "frag" + type);
                     break;
                 case SELECT:
-                    //createAndShowAlertDialog(activity, setupItemArray(map, false), R.string.selectGenre, TvShowFilter.GENRE);;
+                    getNMJDatabase();
+                    break;
+                case SOURCE:
+                    System.out.println("Selected: " + nmjdb.get(index-7).getMachine());
+/*                    NMJLib.setNMJServer(nmjdb.get(index-7).getMachine());
+                    if (mStartup == 1)
+                        LocalBroadcastUtils.loadMovieLibrary(NMJManagerApplication.getContext());
+                    else if (mStartup == 2)
+                        LocalBroadcastUtils.loadTvShowLibrary(NMJManagerApplication.getContext());
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            NMJLib.setLibrary(NMJManagerApplication.getContext(), mDbHelper);
+                            LocalBroadcastUtils.updateLibraryCount(NMJManagerApplication.getContext());
+                        }
+                    }.start();*/
+                    showMessageAsync();
+                    //ft.replace(R.id.content_frame, MovieLibraryOverviewFragment.newInstance(), "frag" + type);
                     break;
             }
             ft.commit();
@@ -264,25 +307,164 @@ public class Main extends NMJActivity {
             mDrawerLayout.closeDrawers();
     }
 
-    private void createAndShowAlertDialog(Activity activity, final CharSequence[] temp, int title, final int type) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setTitle(title)
-                .setItems(temp, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Let's get what the user selected and remove the parenthesis at the end
-                        String selected = temp[which].toString();
-                        selected = selected.substring(0, selected.lastIndexOf("(")).trim();
+    protected void getNMJDatabase() {
+        Context context = this;
+        // get prompts.xml view
+        LayoutInflater li = LayoutInflater.from(context);
+        View promptsView = li.inflate(R.layout.nmj_input, null);
 
-                        // Add filter
-                        MovieFilter filter = new MovieFilter(type);
-                        filter.setFilter(selected);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                context);
+        alertDialogBuilder.setTitle(getString(R.string.selectLogin));
 
-                        // Re-load the library with the new filter
+        // set prompts.xml to alertdialog builder
+        alertDialogBuilder.setView(promptsView);
 
-                        // Dismiss the dialog
-                        dialog.dismiss();
+        final EditText userInput = (EditText) promptsView
+                .findViewById(R.id.ip_address);
+
+        // create alert dialog
+        alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+
+    public void cancel(View v) {
+        alertDialog.dismiss();
+    }
+
+    public void ok(View v) {
+        ip_address = (EditText) alertDialog.findViewById(R.id.ip_address);
+        port = (EditText) alertDialog.findViewById(R.id.port);
+        display_name = (EditText) alertDialog.findViewById(R.id.display_name);
+
+        if (ip_address.getText().toString().isEmpty()) {
+            Toast.makeText(this, getString(R.string.enterNetworkAddress), Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        try {
+            jObject = new JSONObject(PreferenceManager.getDefaultSharedPreferences(this).getString(PreferenceKeys.STORED_DB, ""));
+            db = jObject.getJSONArray("machines");
+            int count = db.length();
+
+            //JSONArray jarr = new JSONArray();
+            JSONObject jobj = new JSONObject();
+            jobj.put("IP_ADDRESS", ip_address.getText().toString());
+            jobj.put("PORT", port.getText().toString());
+            jobj.put("DISPLAY_NAME", display_name.getText().toString());
+            db.put(jobj);
+            JSONObject jobj1 = new JSONObject();
+            jobj1.put("machines", db);
+            PreferenceManager.getDefaultSharedPreferences(this).edit().putString(PreferenceKeys.STORED_DB, jobj1.toString()).apply();
+
+        } catch (Exception e) {
+
+        }
+        Toast.makeText(this, "IP address saved", Toast.LENGTH_LONG).show();
+        setupMenuItems(true);
+        alertDialog.dismiss();
+    }
+
+    public void showMessageAsync() {
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle("Choose an animal");
+
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+            JSONObject jObject;
+            JSONArray jArray;
+
+            protected Void doInBackground(Void... params) {
+                try {
+                    jObject = NMJLib.getJSONObject(mContext, "http://192.168.1.108/NMJManagerTablet_web/getData.php?action=getDrives&type=local");
+                    jArray = jObject.getJSONArray("data");
+                    for (int i = 0; i < jArray.length(); i++) {
+                        JSONObject dObject = jArray.getJSONObject(i);
                     }
-                });
+                } catch (Exception e){
+
+                }
+                return null;
+            }
+
+            protected void onPostExecute(Void result) {
+// add a list
+        String[] animals = {"horse", "cow", "camel", "sheep", "goat"};
+        builder.setItems(animals, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0: // horse
+                    case 1: // cow
+                    case 2: // camel
+                    case 3: // sheep
+                    case 4: // goat
+                }
+            }
+        });
+
+// create and show the alert dialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
+            }
+
+        };
+
+        task.execute();
+
+    }
+
+    public void search(View v) {
+        TreeSet<String> uniqueSources = new TreeSet<String>();
+        final CharSequence[] items = new CharSequence[uniqueSources.size() + 1];
+        items[items.length - 1] = getString(R.string.scanForSources);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.addNMJDatabase));
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == (items.length - 1)) {
+                    Intent intent = new Intent();
+                    intent.setClass(getApplicationContext(), SearchForNetworkShares.class);
+                    startActivity(intent);
+                } else {
+                    showUserDialog(items, which);
+                }
+            }
+        });
+        builder.show();
+    }
+
+    private void showUserDialog(final CharSequence[] items, final int which) {
+
+    }
+
+
+    private void getNMJDatabase1(int title) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title);
+// Set up the input
+        final EditText input = new EditText(this);
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+// Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String mText = input.getText().toString();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
         builder.show();
     }
 
@@ -319,43 +501,28 @@ public class Main extends NMJActivity {
         mMenuItems.add(new MenuItem(getString(R.string.drawerMyTvShows), mNumShows, MenuItem.SECTION, null, SHOWS, R.drawable.ic_tv_grey600_24dp));
         mMenuItems.add(new MenuItem(getString(R.string.drawerMyMusic), mNumMusic, MenuItem.SECTION, null, MUSIC, R.drawable.ic_music_grey600_24dp));
 
-        //mMenuItems.add(new MenuItem(getString(R.string.drawerWebVideos), -1, MenuItem.SECTION, null, WEB_VIDEOS, R.drawable.ic_cloud_grey600_24dp));
-
-        // Third party applications
-        final PackageManager pm = getPackageManager();
-
-/*        if (refreshThirdPartyApps) {
-            mApplicationList = pm.getInstalledApplications(PackageManager.GET_META_DATA);
-        }
-
-        List<MenuItem> temp = new ArrayList<MenuItem>();
-        for (int i = 0; i < mApplicationList.size(); i++) {
-            if (NMJLib.isMediaApp(mApplicationList.get(i))) {
-                temp.add(new MenuItem(pm.getApplicationLabel(mApplicationList.get(i)).toString(), -1, MenuItem.THIRD_PARTY_APP, mApplicationList.get(i).packageName));
-            }
-        }
-
-        if (temp.size() > 0) {
-            // Menu section header*/
-            mMenuItems.add(new MenuItem(MenuItem.SEPARATOR_EXTRA_PADDING));
-            //mMenuItems.add(new MenuItem(getString(R.string.installed_media_apps), -1, MenuItem.SUB_HEADER, null));
+        mMenuItems.add(new MenuItem(MenuItem.SEPARATOR_EXTRA_PADDING));
         mMenuItems.add(new MenuItem(getString(R.string.drawerSelectDB), -1, MenuItem.SECTION, null, SELECT, R.drawable.ic_add_grey600_24dp));
+        try {
+            jObject = new JSONObject(PreferenceManager.getDefaultSharedPreferences(this).getString(PreferenceKeys.STORED_DB, ""));
+            db = jObject.getJSONArray("machines");
+            System.out.println("Available Machines: " + db.toString());
+            if (db.length() > 0)
+                mMenuItems.add(new MenuItem("Available", -1, MenuItem.SUB_HEADER, null));
 
-/*        }*/
-
-/*        Collections.sort(temp, new Comparator<MenuItem>() {
-            @Override
-            public int compare(MenuItem lhs, MenuItem rhs) {
-                return lhs.getTitle().compareToIgnoreCase(rhs.getTitle());
+            for (int i = 0; i < db.length(); i++) {
+                JSONObject dObject = db.getJSONObject(i);
+                System.out.println("JSON: " + dObject.toString());
+                NMJDb tmpdb = new NMJDb(NMJManagerApplication.getContext(),
+                        NMJLib.getStringFromJSONObject(dObject, "IP_ADDRESS", ""),
+                        NMJLib.getStringFromJSONObject(dObject, "PORT", "80"),
+                        NMJLib.getStringFromJSONObject(dObject, "DISPLAY_NAME", ""));
+                nmjdb.add(i, tmpdb);
+                mMenuItems.add(new MenuItem(nmjdb.get(i).getDisplayName().equals("") ? nmjdb.get(i).getMachine() : nmjdb.get(i).getDisplayName() + " (" + nmjdb.get(i).getMachine() + ")", -1, MenuItem.NMJ_DB, null, SOURCE, R.drawable.ic_db_grey600_24dp));
             }
-        });
-
-        for (int i = 0; i < temp.size(); i++) {
-            mMenuItems.add(temp.get(i));
+        } catch (Exception e) {
+            System.out.println("Exception Occured");
         }
-
-        temp.clear();*/
-
         mMenuItems.add(new MenuItem(MenuItem.SEPARATOR_EXTRA_PADDING));
 
         mMenuItems.add(new MenuItem(getString(R.string.settings_name), MenuItem.SETTINGS_AREA, R.drawable.ic_settings_grey600_24dp));
@@ -381,7 +548,6 @@ public class Main extends NMJActivity {
             @Override
             public void run() {
                 try {
-                    NMJLib.setLibrary(NMJManagerApplication.getContext(), mDbHelper);
                     mNumMovies = mDbHelper.getMovieCount();
                     mNumShows = mDbHelper.getShowCount();
                     mNumMusic = mDbHelper.getMusicCount();
@@ -393,7 +559,8 @@ public class Main extends NMJActivity {
                             ((BaseAdapter) mDrawerList.getAdapter()).notifyDataSetChanged();
                         }
                     });
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
         }.start();
     }
@@ -412,7 +579,7 @@ public class Main extends NMJActivity {
             return true;
         }
 
-        switch(item.getItemId()) {
+        switch (item.getItemId()) {
             case android.R.id.home:
                 if (!mDrawerLayout.isDrawerOpen(mDrawerList)) {
                     mDrawerLayout.openDrawer(mDrawerList);
@@ -506,7 +673,7 @@ public class Main extends NMJActivity {
                 case MenuItem.SUB_HEADER:
                     return 3;
                 case MenuItem.SECTION:
-                case MenuItem.THIRD_PARTY_APP:
+                case MenuItem.NMJ_DB:
                     return 4;
                 default:
                     return 5;
@@ -584,7 +751,7 @@ public class Main extends NMJActivity {
                 TextView title = (TextView) convertView.findViewById(R.id.title);
                 title.setText(mMenuItems.get(position).getTitle());
                 title.setTypeface(mTfMedium);
-            } else if (mMenuItems.get(position).getType() == MenuItem.THIRD_PARTY_APP || mMenuItems.get(position).getType() == MenuItem.SECTION) {
+            } else if (mMenuItems.get(position).getType() == MenuItem.SECTION) {
                 convertView = mInflater.inflate(R.layout.menu_drawer_item, parent, false);
 
                 // Icon

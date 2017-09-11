@@ -103,10 +103,12 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            System.out.println("Receiving broadcast");
             if (mMovieLoader != null) {
                 if (intent.filterEquals(new Intent("NMJManager-movie-actor-search"))) {
                     mMovieLoader.search("actor: " + intent.getStringExtra("intent_extra_data_key"));
                 } else {
+                    hideEmptyView();
                     mMovieLoader.load();
                 }
                 showProgressBar();
@@ -123,7 +125,8 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     /**
      * Empty constructor as per the Fragment documentation
      */
-    public MovieLibraryFragment() {}
+    public MovieLibraryFragment() {
+    }
 
     public static MovieLibraryFragment newInstance(int type) {
         MovieLibraryFragment frag = new MovieLibraryFragment();
@@ -163,6 +166,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
 
         LocalBroadcastManager.getInstance(mContext).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_MOVIE_LIBRARY));
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter("NMJManager-movie-actor-search"));
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.LOAD_MOVIE_LIBRARY));
     }
 
     @Override
@@ -198,10 +202,11 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             }
         });
 
-        mGridView.setOnScrollListener(new OnScrollListener(){
+        mGridView.setOnScrollListener(new OnScrollListener() {
 
             @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {}
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            }
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem,
@@ -300,6 +305,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         mMovieLoader.load();
         showProgressBar();
 
+
         return v;
     }
 
@@ -320,14 +326,14 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             intent.putExtra("listTmdbId", tmdbId);
             intent.setClass(mContext, MovieList.class);
             //startActivity(intent);
-        } else if(mMovieLoader.getType() == MovieLibraryType.UPCOMING ||
+        } else if (mMovieLoader.getType() == MovieLibraryType.UPCOMING ||
                 mMovieLoader.getType() == MovieLibraryType.TOP_RATED ||
                 mMovieLoader.getType() == MovieLibraryType.POPULAR ||
                 mMovieLoader.getType() == MovieLibraryType.NOW_PLAYING) { // Collection
             intent.putExtra("tmdbId", tmdbId);
             intent.putExtra("showId", NMJManagerApplication.getNMJAdapter().getShowIdByTmdbId(tmdbId));
             intent.setClass(mContext, NMJMovieDetails.class);
-        }else {
+        } else {
             intent.putExtra("tmdbId", tmdbId);
             intent.putExtra("showId", mAdapter.getItem(position).getShowId());
             intent.setClass(mContext, NMJMovieDetails.class);
@@ -392,8 +398,11 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 }
                 return true;
             }
+
             @Override
-            public boolean onQueryTextSubmit(String query) { return false; }
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
         });
 
         SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
@@ -610,7 +619,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         public boolean isEmpty() {
             return getCount() == 0 && !mLoading;
         }
-        
+
         @Override
         public int getCount() {
             if (mMovieLoader != null)

@@ -166,6 +166,7 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
 
         LocalBroadcastManager.getInstance(mContext).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_TV_SHOW_LIBRARY));
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter("NMJManager-shows-actor-search"));
+        LocalBroadcastManager.getInstance(mContext).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.LOAD_TV_SHOW_LIBRARY));
     }
 
     @Override

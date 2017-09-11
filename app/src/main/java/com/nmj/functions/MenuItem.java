@@ -18,7 +18,7 @@ package com.nmj.functions;
 
 public class MenuItem {
 	
-	public static final int HEADER = 0, SEPARATOR = 1000, SEPARATOR_EXTRA_PADDING = 1100, SUB_HEADER = 1500, SECTION = 2000, THIRD_PARTY_APP = 3000, SETTINGS_AREA = 4000;
+	public static final int HEADER = 0, SEPARATOR = 1000, SEPARATOR_EXTRA_PADDING = 1100, SUB_HEADER = 1500, SECTION = 2000, NMJ_DB = 3000, SETTINGS_AREA = 4000;
 	
 	private int mType, mCount, mFragment, mIcon;
 	private String mTitle, mPackageName;

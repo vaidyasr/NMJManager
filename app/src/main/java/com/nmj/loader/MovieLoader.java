@@ -96,6 +96,7 @@ public class MovieLoader {
     private String mListId, mListTmdbId, mCollectionId, mCollectionTmdbId;
 
     public MovieLoader(Context context, MovieLibraryType libraryType, Intent intent, OnLoadCompletedCallback callback) {
+        System.out.println("Entering MovieLoader");
         mContext = context;
         mLibraryType = libraryType;
 
@@ -241,9 +242,9 @@ public class MovieLoader {
         }
 
         mShowingSearchResults = !TextUtils.isEmpty(query);
-
-        mAsyncTask = new MovieLoaderAsyncTask(query);
-        mAsyncTask.execute();
+            System.out.println("Executing MovieLoader");
+            mAsyncTask = new MovieLoaderAsyncTask(query);
+            mAsyncTask.execute();
     }
 
 
@@ -436,8 +437,6 @@ public class MovieLoader {
 
         @Override
         protected Void doInBackground(Void... params) {
-            //if (NMJManagerApplication.getNMJAdapter().getLibrary() == null)
-                //NMJLib.setLibrary(mContext, mDatabase);
             switch (mLibraryType) {
                 case ALL_MOVIES:
                     mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "all", ""));

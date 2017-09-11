@@ -1,0 +1,97 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:gravity="bottom" >
+
+        <EditText
+            android:id="@+id/ip_address"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:drawableLeft="@drawable/ic_language_white_24dp"
+            android:drawableStart="@drawable/ic_language_white_24dp"
+            android:drawablePadding="8dp"
+            android:ems="10"
+            android:hint="@string/networkIpAddress"
+            android:maxLines="1">
+            <requestFocus />
+        </EditText>
+
+        <ImageButton
+            android:id="@+id/imageButton1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="search"
+            android:src="@drawable/ic_search_white_24dp" />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/port"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:drawableLeft="@drawable/ic_port_white_24dp"
+        android:drawableStart="@drawable/ic_port_white_24dp"
+        android:drawablePadding="8dp"
+        android:ems="10"
+        android:hint="Port, default 80"
+        android:maxLines="1"/>
+
+    <EditText
+        android:id="@+id/display_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:drawableLeft="@drawable/ic_displayname_white_24dp"
+        android:drawablePadding="8dp"
+        android:ems="10"
+        android:hint="Display name"
+        android:maxLines="1"/>
+
+    <LinearLayout
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:measureWithLargestChild="true"
+        android:orientation="horizontal"
+        android:paddingLeft="2dip"
+        android:paddingRight="2dip"
+        android:paddingTop="0dip" >
+
+        <Button
+            android:id="@+id/cancel_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="cancel"
+            android:textColor="#fff"
+            android:text="@android:string/cancel" />
+
+        <Button
+            android:id="@+id/ok_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="ok"
+            android:textColor="#fff"
+            android:text="@android:string/ok" />
+    </LinearLayout>
+
+</LinearLayout>

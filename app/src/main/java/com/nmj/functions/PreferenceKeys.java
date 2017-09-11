@@ -27,6 +27,7 @@ public class PreferenceKeys {
 	
 	private PreferenceKeys() {} // No instantiation
 
+	public static final String STORED_DB = "";
 	public static final String TRAKT_USERNAME = "traktUsername";
 	public static final String TRAKT_PASSWORD = "traktPassword";
 	public static final String TRAKT_FULL_NAME = "traktFullName";

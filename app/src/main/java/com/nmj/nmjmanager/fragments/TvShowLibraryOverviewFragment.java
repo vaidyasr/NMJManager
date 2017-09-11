@@ -31,9 +31,12 @@ import com.nmj.loader.TvShowLoader;
 import com.nmj.nmjmanager.R;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import static com.nmj.functions.PreferenceKeys.MOVIES_TABS_SELECTED;
 import static com.nmj.functions.PreferenceKeys.SHOWS_TAB_SELECTED;
 
 public class TvShowLibraryOverviewFragment extends Fragment {
@@ -78,8 +81,19 @@ public class TvShowLibraryOverviewFragment extends Fragment {
         mAdapter.addTab(TITLES.get(0));
 
         Set<String> values = PreferenceManager.getDefaultSharedPreferences(getActivity()).getStringSet(SHOWS_TAB_SELECTED, null);
-        for (String value : values) {
-            mAdapter.addTab(TITLES.get(Integer.parseInt(value)));
+        List<String> list = new ArrayList<String>(values);
+        Collections.sort(list, new Comparator<String>()
+        {
+            @Override
+            public int compare(String s1, String s2)
+            {
+                Integer val1 = Integer.parseInt(s1);
+                Integer val2 = Integer.parseInt(s2);
+                return val1.compareTo(val2);
+            }
+        });
+        for (int i=0; i<list.size();i++){
+            mAdapter.addTab(TITLES.get(Integer.parseInt(list.get(i))));
         }
 
         if (NMJLib.hasLollipop())

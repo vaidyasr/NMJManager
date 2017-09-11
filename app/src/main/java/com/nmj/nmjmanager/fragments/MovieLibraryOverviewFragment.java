@@ -85,17 +85,15 @@ public class MovieLibraryOverviewFragment extends Fragment {
 
         Set<String> values = PreferenceManager.getDefaultSharedPreferences(getActivity()).getStringSet(MOVIES_TABS_SELECTED, null);
         List<String> list = new ArrayList<String>(values);
-        Collections.sort(list, new Comparator<String>()
-        {
+        Collections.sort(list, new Comparator<String>() {
             @Override
-            public int compare(String s1, String s2)
-            {
+            public int compare(String s1, String s2) {
                 Integer val1 = Integer.parseInt(s1);
                 Integer val2 = Integer.parseInt(s2);
                 return val1.compareTo(val2);
             }
         });
-        for (int i=0; i<list.size();i++){
+        for (int i = 0; i < list.size(); i++) {
             mAdapter.addTab(TITLES.get(Integer.parseInt(list.get(i))));
         }
         if (NMJLib.hasLollipop())

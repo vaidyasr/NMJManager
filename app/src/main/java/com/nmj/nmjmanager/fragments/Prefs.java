@@ -16,12 +16,10 @@
 
 package com.nmj.nmjmanager.fragments;
 
+import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -30,14 +28,14 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.preference.MultiSelectListPreference;
 import android.widget.Toast;
 import java.util.Set;
 
+import com.nmj.functions.NMJLib;
 import com.nmj.functions.PreferenceKeys;
+import com.nmj.nmjmanager.Main;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.utils.FileUtils;
@@ -52,8 +50,6 @@ import static com.nmj.functions.PreferenceKeys.IGNORED_FILES_ENABLED;
 import static com.nmj.functions.PreferenceKeys.LANGUAGE_PREFERENCE;
 import static com.nmj.functions.PreferenceKeys.MOVIES_TABS_SELECTED;
 import static com.nmj.functions.PreferenceKeys.SHOWS_TAB_SELECTED;
-import static com.nmj.utils.LocalBroadcastUtils.UPDATE_MOVIE_LIBRARY;
-import static com.nmj.utils.LocalBroadcastUtils.UPDATE_MOVIE_TABS;
 
 public class Prefs extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
@@ -227,10 +223,10 @@ public class Prefs extends PreferenceFragment implements OnSharedPreferenceChang
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(MOVIES_TABS_SELECTED)) {
-            LocalBroadcastManager.getInstance(NMJManagerApplication.getContext()).sendBroadcast(new Intent(UPDATE_MOVIE_TABS));
+            Main.reloadFragment("frag1");
         }
         if (key.equals(SHOWS_TAB_SELECTED)) {
-
+            Main.reloadFragment("frag2");
         }
         if (key.equals(IGNORED_FILES_ENABLED)) {
             if (mPref != null)

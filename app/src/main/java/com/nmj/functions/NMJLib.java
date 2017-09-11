@@ -144,6 +144,7 @@ import static com.nmj.functions.PreferenceKeys.TRAKT_USERNAME;
 
 @SuppressLint("NewApi")
 public class NMJLib {
+    public static String URL = "";
     public static final String TYPE = "type";
     public static final String MOVIE = "movie";
     public static final String TV_SHOW = "tvshow";
@@ -193,9 +194,13 @@ public class NMJLib {
 
     public static String getNMJServer() {
         //String url = "http://www.pchportal.duckdns.org/";
-        String url = "http://192.168.1.108/";
+        //String url = "http://192.168.1.108/";
 
-        return url;
+        return URL;
+    }
+
+    public static void setNMJServer(String url){
+        URL = "http://" + url + "/";
     }
 
     public static String getTmdbApiURL(Context context) {
@@ -2395,25 +2400,27 @@ public class NMJLib {
      * @return List of movie objects from the supplied URL.
      */
     public static void setLibrary(Context context, NMJAdapter mDatabase) {
-        ArrayList<Library> list = new ArrayList<>();
-        String url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getCount&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db";
+        if(!NMJLib.getNMJServer().equals("")) {
+            ArrayList<Library> list = new ArrayList<>();
+            String url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getCount&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db";
 
-        JSONObject jObject;
-        try {
-            jObject = NMJLib.getJSONObject(context, url);
-            mDatabase.setMovieCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("movies")));
-            mDatabase.setShowCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("shows")));
-            JSONArray jArray = jObject.getJSONObject("data").getJSONArray("library");
+            JSONObject jObject;
+            try {
+                jObject = NMJLib.getJSONObject(context, url);
+                mDatabase.setMovieCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("movies")));
+                mDatabase.setShowCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("shows")));
+                JSONArray jArray = jObject.getJSONObject("data").getJSONArray("library");
 
-            for (int i = 0; i < jArray.length(); i++) {
-                JSONObject dObject = jArray.getJSONObject(i);
-                list.add(new Library(dObject.getString("ID"),
-                        dObject.getString("PLAY_COUNT"),
-                        dObject.getString("CONTENT_TTID")));
+                for (int i = 0; i < jArray.length(); i++) {
+                    JSONObject dObject = jArray.getJSONObject(i);
+                    list.add(new Library(dObject.getString("ID"),
+                            dObject.getString("PLAY_COUNT"),
+                            dObject.getString("CONTENT_TTID")));
+                }
+                mDatabase.setLibrary(list);
+                System.out.println("Library : " + list.toString());
+            } catch (Exception ignored) {
             }
-            mDatabase.setLibrary(list);
-            System.out.println("Library : " + list.toString());
-        } catch (Exception ignored) {
         }
         //return jObject;
     }
@@ -2737,78 +2744,80 @@ public class NMJLib {
         ArrayList<NMJTvShow> list = new ArrayList<>();
         String url;
         System.out.println("LoadType: " + loadType);
-        if (id != null && loadType.equals("list"))
-            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getLists&drivepath=guerilla&sourceurl=guerilla&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
-        else if (id != null && loadType.equals("collection"))
-            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
-        else if (videoType.equals("tv"))
-            url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" + getTmdbApiKey(mContext) + "&language=en";
-        else
-            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
-
-        try {
-            JSONObject jObject;
-            JSONArray jArray;
-            String CacheId = "";
+        if (!NMJLib.getNMJServer().equals("")) {
             if (id != null && loadType.equals("list"))
-                CacheId = "list_" + id;
+                url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getLists&drivepath=guerilla&sourceurl=guerilla&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
             else if (id != null && loadType.equals("collection"))
-                CacheId = "collection_" + id;
+                url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
+            else if (videoType.equals("tv"))
+                url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" + getTmdbApiKey(mContext) + "&language=en";
             else
-                CacheId = videoType + "_" + loadType;
-            //NMJLib.getDiskCache(mContext).clearCache();
-            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
+                url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
 
-            if (!cacheManager.exists(CacheId)) {
-                System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, url.replace(" ", "%20"));
-                NMJLib.putCache(cacheManager, CacheId, jObject.toString());
-            }
-            System.out.println("Getting Cache from " + CacheId);
-            jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
-            if (videoType.equals("movie") || videoType.equals("tv"))
-                jArray = jObject.getJSONArray("results");
-            else
-                jArray = jObject.getJSONArray("data");
+            try {
+                JSONObject jObject;
+                JSONArray jArray;
+                String CacheId = "";
+                if (id != null && loadType.equals("list"))
+                    CacheId = "list_" + id;
+                else if (id != null && loadType.equals("collection"))
+                    CacheId = "collection_" + id;
+                else
+                    CacheId = videoType + "_" + loadType;
+                //NMJLib.getDiskCache(mContext).clearCache();
+                CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
 
-            for (int i = 0; i < jArray.length(); i++) {
-                JSONObject dObject = jArray.getJSONObject(i);
-                String title, release_date, tmdbid, rating, poster;
-                if (videoType.equals("tv")) {
-                    tmdbid = "tmdb" + NMJLib.getStringFromJSONObject(dObject, "id", "");
-                    rating = NMJLib.getStringFromJSONObject(dObject, "vote_average", "");
-                    title = NMJLib.getStringFromJSONObject(dObject, "name", "");
-                    release_date = NMJLib.getStringFromJSONObject(dObject, "first_air_date", "");
-                    poster = NMJLib.getStringFromJSONObject(dObject, "poster_path", "");
-
-                } else {
-                    tmdbid = NMJLib.getStringFromJSONObject(dObject, "tmdbid", "");
-                    rating = NMJLib.getStringFromJSONObject(dObject, "RATING", "");
-                    title = NMJLib.getStringFromJSONObject(dObject, "TITLE", "");
-                    release_date = NMJLib.getStringFromJSONObject(dObject, "RELEASE_DATE", "");
-                    poster = NMJLib.getStringFromJSONObject(dObject, "POSTER", "");
+                if (!cacheManager.exists(CacheId)) {
+                    System.out.println("Putting Cache in " + CacheId);
+                    jObject = NMJLib.getJSONObject(mContext, url.replace(" ", "%20"));
+                    NMJLib.putCache(cacheManager, CacheId, jObject.toString());
                 }
-                list.add(new NMJTvShow(mContext,
-                        title,
-                        tmdbid,
-                        rating,
-                        release_date,
-                        NMJLib.getStringFromJSONObject(dObject, "GENRES", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "FAVOURITE", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "LIST_ID", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "COLLECTION_ID", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "TO_WATCH", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "PLAY_COUNT", "0"),
-                        NMJLib.getStringFromJSONObject(dObject, "CREATE_TIME", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "PARENTAL_CONTROL", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "RUNTIME", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "SHOW_ID", "0"),
-                        NMJLib.getStringFromJSONObject(dObject, "TITLE_TYPE", "0"),
-                        poster,
-                        true));
+                System.out.println("Getting Cache from " + CacheId);
+                jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
+                if (videoType.equals("movie") || videoType.equals("tv"))
+                    jArray = jObject.getJSONArray("results");
+                else
+                    jArray = jObject.getJSONArray("data");
+
+                for (int i = 0; i < jArray.length(); i++) {
+                    JSONObject dObject = jArray.getJSONObject(i);
+                    String title, release_date, tmdbid, rating, poster;
+                    if (videoType.equals("tv")) {
+                        tmdbid = "tmdb" + NMJLib.getStringFromJSONObject(dObject, "id", "");
+                        rating = NMJLib.getStringFromJSONObject(dObject, "vote_average", "");
+                        title = NMJLib.getStringFromJSONObject(dObject, "name", "");
+                        release_date = NMJLib.getStringFromJSONObject(dObject, "first_air_date", "");
+                        poster = NMJLib.getStringFromJSONObject(dObject, "poster_path", "");
+
+                    } else {
+                        tmdbid = NMJLib.getStringFromJSONObject(dObject, "tmdbid", "");
+                        rating = NMJLib.getStringFromJSONObject(dObject, "RATING", "");
+                        title = NMJLib.getStringFromJSONObject(dObject, "TITLE", "");
+                        release_date = NMJLib.getStringFromJSONObject(dObject, "RELEASE_DATE", "");
+                        poster = NMJLib.getStringFromJSONObject(dObject, "POSTER", "");
+                    }
+                    list.add(new NMJTvShow(mContext,
+                            title,
+                            tmdbid,
+                            rating,
+                            release_date,
+                            NMJLib.getStringFromJSONObject(dObject, "GENRES", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "FAVOURITE", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "LIST_ID", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "COLLECTION_ID", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "TO_WATCH", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "PLAY_COUNT", "0"),
+                            NMJLib.getStringFromJSONObject(dObject, "CREATE_TIME", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "PARENTAL_CONTROL", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "RUNTIME", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "SHOW_ID", "0"),
+                            NMJLib.getStringFromJSONObject(dObject, "TITLE_TYPE", "0"),
+                            poster,
+                            true));
+                }
+            } catch (Exception e) {
+                System.out.println("Output: " + e.toString());
             }
-        } catch (Exception e) {
-            System.out.println("Output: " + e.toString());
         }
         return list;
     }
@@ -2823,70 +2832,72 @@ public class NMJLib {
         ArrayList<NMJMovie> list = new ArrayList<>();
         String url;
         System.out.println("LoadType: " + loadType);
-        if (id != null && loadType.equals("list"))
-            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getLists&drivepath=guerilla&sourceurl=guerilla&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
-        else if (id != null && loadType.equals("collection"))
-            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
-        else if (videoType.equals("movie"))
-            url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" + getTmdbApiKey(mContext) + "&language=en";
-        else
-            url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
-
-        try {
-            JSONObject jObject;
-            JSONArray jArray;
-            String CacheId = "";
+        if (!NMJLib.getNMJServer().equals("")) {
             if (id != null && loadType.equals("list"))
-                CacheId = "list_" + id;
+                url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getLists&drivepath=guerilla&sourceurl=guerilla&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
             else if (id != null && loadType.equals("collection"))
-                CacheId = "collection_" + id;
+                url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=guerilla&sourceurl=undefined&dbpath=guerilla/nmj_database/media.db&id=" + id + "&sortby=title&orderby=asc";
+            else if (videoType.equals("movie"))
+                url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" + getTmdbApiKey(mContext) + "&language=en";
             else
-                CacheId = videoType + "_" + loadType;
-            NMJLib.getDiskCache(mContext).clearCache();
-            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
+                url = NMJLib.getNMJServer() + "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=guerilla&dbpath=guerilla/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
 
-            if (!cacheManager.exists(CacheId)) {
-                System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, url.replace(" ", "%20"));
-                NMJLib.putCache(cacheManager, CacheId, jObject.toString());
-            }
-            System.out.println("Getting Cache from " + CacheId);
-            jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
-            if (videoType.equals("movie") || videoType.equals("tv"))
-                jArray = jObject.getJSONArray("results");
-            else
-                jArray = jObject.getJSONArray("data");
+            try {
+                JSONObject jObject;
+                JSONArray jArray;
+                String CacheId = "";
+                if (id != null && loadType.equals("list"))
+                    CacheId = "list_" + id;
+                else if (id != null && loadType.equals("collection"))
+                    CacheId = "collection_" + id;
+                else
+                    CacheId = videoType + "_" + loadType;
+                NMJLib.getDiskCache(mContext).clearCache();
+                CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
 
-            for (int i = 0; i < jArray.length(); i++) {
-                JSONObject dObject = jArray.getJSONObject(i);
-                String title, release_date;
-                if (videoType.equals("movie")) {
-                    title = NMJLib.getStringFromJSONObject(dObject, "title", "");
-                    release_date = NMJLib.getStringFromJSONObject(dObject, "release_date", "");
-                } else {
-                    title = NMJLib.getStringFromJSONObject(dObject, "TITLE", "");
-                    release_date = NMJLib.getStringFromJSONObject(dObject, "RELEASE_DATE", "");
+                if (!cacheManager.exists(CacheId)) {
+                    System.out.println("Putting Cache in " + CacheId);
+                    jObject = NMJLib.getJSONObject(mContext, url.replace(" ", "%20"));
+                    NMJLib.putCache(cacheManager, CacheId, jObject.toString());
                 }
-                list.add(new NMJMovie(mContext,
-                        title,
-                        (NMJLib.getStringFromJSONObject(dObject, "tmdbid", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "id", "") : NMJLib.getStringFromJSONObject(dObject, "tmdbid", ""),
-                        (NMJLib.getStringFromJSONObject(dObject, "RATING", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "vote_average", "") : NMJLib.getStringFromJSONObject(dObject, "RATING", ""),
-                        release_date,
-                        NMJLib.getStringFromJSONObject(dObject, "GENRES", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "FAVOURITE", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "LIST_ID", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "COLLECTION_ID", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "TO_WATCH", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "PLAY_COUNT", "0"),
-                        NMJLib.getStringFromJSONObject(dObject, "CREATE_TIME", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "PARENTAL_CONTROL", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "RUNTIME", ""),
-                        NMJLib.getStringFromJSONObject(dObject, "SHOW_ID", "0"),
-                        NMJLib.getStringFromJSONObject(dObject, "TITLE_TYPE", "0"),
-                        (NMJLib.getStringFromJSONObject(dObject, "POSTER", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "poster_path", "") : NMJLib.getStringFromJSONObject(dObject, "POSTER", ""),
-                        true));
+                System.out.println("Getting Cache from " + CacheId);
+                jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
+                if (videoType.equals("movie") || videoType.equals("tv"))
+                    jArray = jObject.getJSONArray("results");
+                else
+                    jArray = jObject.getJSONArray("data");
+
+                for (int i = 0; i < jArray.length(); i++) {
+                    JSONObject dObject = jArray.getJSONObject(i);
+                    String title, release_date;
+                    if (videoType.equals("movie")) {
+                        title = NMJLib.getStringFromJSONObject(dObject, "title", "");
+                        release_date = NMJLib.getStringFromJSONObject(dObject, "release_date", "");
+                    } else {
+                        title = NMJLib.getStringFromJSONObject(dObject, "TITLE", "");
+                        release_date = NMJLib.getStringFromJSONObject(dObject, "RELEASE_DATE", "");
+                    }
+                    list.add(new NMJMovie(mContext,
+                            title,
+                            (NMJLib.getStringFromJSONObject(dObject, "tmdbid", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "id", "") : NMJLib.getStringFromJSONObject(dObject, "tmdbid", ""),
+                            (NMJLib.getStringFromJSONObject(dObject, "RATING", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "vote_average", "") : NMJLib.getStringFromJSONObject(dObject, "RATING", ""),
+                            release_date,
+                            NMJLib.getStringFromJSONObject(dObject, "GENRES", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "FAVOURITE", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "LIST_ID", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "COLLECTION_ID", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "TO_WATCH", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "PLAY_COUNT", "0"),
+                            NMJLib.getStringFromJSONObject(dObject, "CREATE_TIME", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "PARENTAL_CONTROL", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "RUNTIME", ""),
+                            NMJLib.getStringFromJSONObject(dObject, "SHOW_ID", "0"),
+                            NMJLib.getStringFromJSONObject(dObject, "TITLE_TYPE", "0"),
+                            (NMJLib.getStringFromJSONObject(dObject, "POSTER", "")).equals("") ? NMJLib.getStringFromJSONObject(dObject, "poster_path", "") : NMJLib.getStringFromJSONObject(dObject, "POSTER", ""),
+                            true));
+                }
+            } catch (Exception ignored) {
             }
-        } catch (Exception ignored) {
         }
         return list;
     }

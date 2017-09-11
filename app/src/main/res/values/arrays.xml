@@ -6,6 +6,12 @@
         <item>@string/drawerMyTvShows</item>
         <item>@string/drawerMyMusic</item>
     </string-array>
+    <string-array name="pch_models">
+        <item>A500/VTEN</item>
+        <item>A400</item>
+        <item>C200/300</item>
+        <item>NAS</item>
+    </string-array>
     <string-array name="movie_tabs">
         <item>@string/choiceFavorites</item>
         <item>@string/choiceNewReleases</item>
