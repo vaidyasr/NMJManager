@@ -4,8 +4,8 @@
     <item
         android:id="@+id/favorite_menu"
         android:icon="@drawable/ic_favorite_white_24dp"
-        app:showAsAction="always"
-        android:title="@string/menuFavouriteTitle">
+        android:title="@string/menuFavouriteTitle"
+        app:showAsAction="always">
         <menu>
             <item
                 android:id="@+id/movie_add_fav"
@@ -20,8 +20,8 @@
     <item
         android:id="@+id/watched_menu"
         android:icon="@drawable/ic_visibility_white_24dp"
-        app:showAsAction="always"
-        android:title="@string/markedAsWatched">
+        android:title="@string/markedAsWatched"
+        app:showAsAction="always">
         <menu>
             <item
                 android:id="@+id/movie_watched"
@@ -36,8 +36,8 @@
     <item
         android:id="@+id/watchlist_menu"
         android:icon="@drawable/ic_queue_white_24dp"
-        app:showAsAction="always"
-        android:title="@string/watchLater">
+        android:title="@string/watchLater"
+        app:showAsAction="ifRoom">
         <menu>
             <item
                 android:id="@+id/add_to_watchlist"
@@ -52,8 +52,8 @@
     <item
         android:id="@+id/add_list_menu"
         android:icon="@drawable/ic_add_list_white_24dp"
-        app:showAsAction="always"
-        android:title="@string/addToList">
+        android:title="@string/addToList"
+        app:showAsAction="ifRoom">
         <menu>
             <item
                 android:id="@+id/add_to_list"
@@ -64,5 +64,28 @@
                 android:title="@string/removeFromList">
             </item>
         </menu>
+    </item>
+    <item
+        android:id="@+id/edit_button_2"
+        android:icon="@drawable/ic_edit_white_24dp"
+        android:title="@string/editVideo"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item
+                android:id="@+id/update_from_tmdb"
+                android:title="@string/updateData"></item>
+            <item
+                android:id="@+id/update_images"
+                android:title="@string/updateImages"></item>
+            <item
+                android:id="@+id/update_mediainfo"
+                android:title="@string/updateMediaInfo"></item>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/delete_button_2"
+        android:icon="@drawable/ic_delete_white_24dp"
+        android:title="@string/deleteVideo"
+        app:showAsAction="ifRoom">
     </item>
 </menu>

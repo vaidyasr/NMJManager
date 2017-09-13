@@ -52,6 +52,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.AbsListView.OnScrollListener;
 
 import com.github.ksoichiro.android.observablescrollview.ObservableGridView;
 import com.nmj.functions.CoverItem;
@@ -86,6 +87,10 @@ import java.util.Set;
 import static com.nmj.functions.PreferenceKeys.GRID_ITEM_SIZE;
 import static com.nmj.functions.PreferenceKeys.IGNORED_TITLE_PREFIXES;
 import static com.nmj.functions.PreferenceKeys.SHOW_TITLES_IN_GRID;
+import static com.nmj.loader.TvShowLibraryType.AIRING_TODAY;
+import static com.nmj.loader.TvShowLibraryType.POPULAR;
+import static com.nmj.loader.TvShowLibraryType.TOP_RATED;
+import static com.nmj.loader.TvShowLibraryType.ON_TV;
 
 public class TvShowLibraryFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -201,6 +206,8 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
                 viewTvShowDetails(arg2, arg1);
             }
         });
+        mGridView.setOnScrollListener(new EndlessScrollListener());
+
         mGridView.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE_MODAL);
         mGridView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
             @Override
@@ -478,6 +485,53 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
         } else if (key.equals(SHOW_TITLES_IN_GRID)) {
             mShowTitles = sharedPreferences.getBoolean(SHOW_TITLES_IN_GRID, true);
             mAdapter.notifyDataSetChanged();
+        }
+    }
+
+    public class EndlessScrollListener implements OnScrollListener {
+
+        private int visibleThreshold = 5;
+        private int currentPage = 0;
+        private int previousTotal = 0;
+        private boolean loading = true;
+
+        public EndlessScrollListener() {
+        }
+
+        public EndlessScrollListener(int visibleThreshold) {
+            this.visibleThreshold = visibleThreshold;
+        }
+
+        @Override
+        public void onScroll(AbsListView view, int firstVisibleItem,
+                             int visibleItemCount, int totalItemCount) {
+            if (loading) {
+                if (totalItemCount > previousTotal) {
+                    loading = false;
+                    previousTotal = totalItemCount;
+                    currentPage++;
+                }
+            }
+            if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
+                // I load the next page of gigs using a background task,
+                // but you can call any function here.
+                System.out.println("Current Page: " + currentPage);
+                if (TvShowLibraryType.fromInt(getArguments().getInt("type")) == TOP_RATED ||
+                        TvShowLibraryType.fromInt(getArguments().getInt("type")) == POPULAR ||
+                        TvShowLibraryType.fromInt(getArguments().getInt("type")) == ON_TV ||
+                        TvShowLibraryType.fromInt(getArguments().getInt("type")) == AIRING_TODAY)
+                    mTvShowLoader.loadMore(totalItemCount, currentPage + 1);
+                else
+                    mTvShowLoader.loadMore(totalItemCount, 25);
+
+                mAdapter.notifyDataSetChanged();
+                System.out.println("Loading...");
+                loading = true;
+            }
+        }
+
+        @Override
+        public void onScrollStateChanged(AbsListView view, int scrollState) {
         }
     }
 

@@ -112,10 +112,8 @@ import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 
 import static com.nmj.functions.PreferenceKeys.CONFIRM_BACK_PRESS;
-import static com.nmj.functions.PreferenceKeys.LAST_DB;
 import static com.nmj.functions.PreferenceKeys.LOAD_LAST_DATABASE;
 import static com.nmj.functions.PreferenceKeys.STARTUP_SELECTION;
-import static com.nmj.functions.PreferenceKeys.STORED_DB;
 import static com.nmj.functions.PreferenceKeys.TRAKT_FULL_NAME;
 import static com.nmj.functions.PreferenceKeys.TRAKT_USERNAME;
 
@@ -197,9 +195,14 @@ public class Main extends NMJActivity {
         //PreferenceManager.getDefaultSharedPreferences(this).edit().putString(STORED_DB, "").apply();
 
         if(PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(LOAD_LAST_DATABASE, true)){
-            System.out.println("Last DB: " + PreferenceManager.getDefaultSharedPreferences(mContext).getString(LAST_DB, ""));
+            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+            String last_db = sharedPref.getString("LAST_DB", "");
+            //SharedPreferences.Editor editor = sharedPref.edit();
+            //editor.putString("LAST_DB", newHighScore);
+            //editor.commit();
+            System.out.println("Last DB: " + last_db);
             try {
-                JSONObject jObject = new JSONObject(PreferenceManager.getDefaultSharedPreferences(mContext).getString(LAST_DB, ""));
+                JSONObject jObject = new JSONObject(last_db);
                 NMJLib.setDbPath(NMJLib.getStringFromJSONObject(jObject, "DB_PATH", ""));
                 NMJLib.setDrivePath(NMJLib.getStringFromJSONObject(jObject, "DRIVE_PATH", ""));
                 NMJLib.setNMJPort(NMJLib.getStringFromJSONObject(jObject, "PORT", ""));
@@ -365,7 +368,7 @@ public class Main extends NMJActivity {
         }
 
         try {
-            String stored_db = PreferenceManager.getDefaultSharedPreferences(mContext).getString(STORED_DB, "");
+            String stored_db = getPreferences(Context.MODE_PRIVATE).getString("STORED_DB", "");
             JSONArray db;
             JSONObject jObject;
             if (stored_db.equals("")) {
@@ -382,9 +385,9 @@ public class Main extends NMJActivity {
             db.put(jobj);
             JSONObject jobj1 = new JSONObject();
             jobj1.put("machines", db);
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString(STORED_DB, jobj1.toString());
+            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString("STORED_DB", jobj1.toString());
             editor.apply();
             //PreferenceManager.getDefaultSharedPreferences(mContext).edit().putString(STORED_DB, ).apply();
             System.out.println("Saved Settings: " + jobj1.toString());
@@ -466,9 +469,9 @@ public class Main extends NMJActivity {
                                     tobj.put("JUKEBOX", nmjdb.get(which).getJukebox());
                                     tobj.put("NMJ_TYPE", nmjdb.get(which).getNMJType());
                                     System.out.println("To cache : " + tobj.toString());
-                                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-                                    SharedPreferences.Editor editor = preferences.edit();
-                                    editor.putString(LAST_DB, tobj.toString());
+                                    SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = sharedPref.edit();
+                                    editor.putString("LAST_DB", tobj.toString());
                                     editor.apply();
                                     //PreferenceManager.getDefaultSharedPreferences(mContext).edit().putString(LAST_DB, tobj.toString()).apply();
                                 } catch ( Exception e){
@@ -604,12 +607,10 @@ System.out.println("Exception Occured while saving DB" + e.toString());
             nmjsource = new ArrayList<>();
             JSONObject jObject;
             JSONArray db;
-            String stored_db = PreferenceManager.getDefaultSharedPreferences(mContext).getString(STORED_DB, "");
-            System.out.println("STORED_DB Variable: " + stored_db);
+            String stored_db = getPreferences(Context.MODE_PRIVATE).getString("STORED_DB", "");
             if (!stored_db.equals("")) {
                 jObject = new JSONObject(stored_db);
                 db = jObject.getJSONArray("machines");
-                System.out.println("Available Machines: " + db.toString());
                 if (db.length() > 0)
                     mMenuItems.add(new MenuItem("Available", -1, MenuItem.SUB_HEADER, null));
 
@@ -639,7 +640,7 @@ System.out.println("Exception Occured while saving DB" + e.toString());
         builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                System.out.println("Selected: " + which);
+                System.out.println("Selected: " + position);
                 deleteMachine(position);
             }
         });
@@ -653,7 +654,26 @@ System.out.println("Exception Occured while saving DB" + e.toString());
     }
 
     public void deleteMachine(int position) {
+        String stored_db = getPreferences(Context.MODE_PRIVATE).getString("STORED_DB", "");
+        JSONObject jObject;
+        JSONArray db;
+        if (!stored_db.equals("")) {
+            try {
+                jObject = new JSONObject(stored_db);
+                db = jObject.getJSONArray("machines");
+                db.remove(position - 7);
+                System.out.println("Available Machines: " + jObject.toString());
+                SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString("STORED_DB", jObject.toString());
+                editor.apply();
+                Toast.makeText(this, nmjsource.get(position - 7).getMachine() + " deleted", Toast.LENGTH_LONG).show();
+                setupMenuItems(false);
+                ((BaseAdapter) mDrawerList.getAdapter()).notifyDataSetChanged();
+            } catch (Exception e) {
 
+            }
+        }
     }
 
     protected void selectListIndex(int index) {
@@ -758,21 +778,36 @@ System.out.println("Exception Occured while saving DB" + e.toString());
         }
     }
 
+    private void showMessage() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        // Setting Dialog Title
+        builder.setTitle("Launch Jukebox Manager");
+
+        // Setting Dialog Message
+        builder.setMessage("Please proceed from your Popcorn Hour Jukebox Manager to create NMJ for this device.");
+
+        // Setting OK Button
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // Write your code here to execute after dialog closed
+                //Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Showing Alert Message
+        builder.show();
+    }
+
     public class ListAdapter extends BaseAdapter {
 
+        ViewHolder holder;
         private String mBackdropPath;
         private LayoutInflater mInflater;
 
         public ListAdapter() {
             mInflater = LayoutInflater.from(getApplicationContext());
             mBackdropPath = NMJLib.getRandomBackdropPath(getApplicationContext());
-        }
-
-        ViewHolder holder;
-
-        class ViewHolder {
-            ImageView icon;
-            TextView title;
         }
 
         @Override
@@ -814,27 +849,11 @@ System.out.println("Exception Occured while saving DB" + e.toString());
             //icon.setColorFilter(color);
             return convertView;
         }
-    }
 
-    private void showMessage(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        // Setting Dialog Title
-        builder.setTitle("Launch Jukebox Manager");
-
-        // Setting Dialog Message
-        builder.setMessage("Please proceed from your Popcorn Hour Jukebox Manager to create NMJ for this device.");
-
-        // Setting OK Button
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                // Write your code here to execute after dialog closed
-                //Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        // Showing Alert Message
-        builder.show();
+        class ViewHolder {
+            ImageView icon;
+            TextView title;
+        }
     }
 
     public class MenuAdapter extends BaseAdapter {

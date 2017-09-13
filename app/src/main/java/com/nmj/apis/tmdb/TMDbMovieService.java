@@ -332,7 +332,6 @@ public class TMDbMovieService extends MovieApiService {
                 NMJLib.putCache(cacheManager, CacheId, jObject.toString());
             }
             System.out.println("Getting Cache from " + CacheId);
-            System.out.println("Data" + NMJLib.getCache(cacheManager, CacheId));
             jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
         } catch (Exception ignored) {
         }

@@ -225,9 +225,22 @@ public class TvShowLoader {
 
         mShowingSearchResults = !TextUtils.isEmpty(query);
 
-        mAsyncTask = new TvShowLoaderAsyncTask(query);
+        if (mLibraryType == TvShowLibraryType.AIRING_TODAY || mLibraryType == TvShowLibraryType.POPULAR ||
+                mLibraryType == TvShowLibraryType.ON_TV || mLibraryType == TvShowLibraryType.TOP_RATED)
+            mAsyncTask = new TvShowLoaderAsyncTask(query, 0, 1);
+        else
+            mAsyncTask = new TvShowLoaderAsyncTask(query, 0, 25);
         mAsyncTask.execute();
     }
+
+    public void loadMore(int start, int count) {
+        if (mAsyncTask != null) {
+            mAsyncTask.cancel(true);
+        }
+        mAsyncTask = new TvShowLoaderAsyncTask("", start, count);
+        mAsyncTask.execute();
+    }
+
 
     /**
      * Used to know if the TvShowLoader is currently
@@ -396,11 +409,13 @@ public class TvShowLoader {
 
         private final ArrayList<NMJTvShow> mTvShowList;
         private final String mSearchQuery;
+        private final int mStart, mCount;
 
-        public TvShowLoaderAsyncTask(String searchQuery) {
+        public TvShowLoaderAsyncTask(String searchQuery, int start, int count) {
             // Lowercase in order to search more efficiently
             mSearchQuery = searchQuery.toLowerCase(Locale.getDefault());
-
+            mStart = start;
+            mCount = count;
             mTvShowList = new ArrayList<NMJTvShow>();
         }
 
@@ -409,36 +424,37 @@ public class TvShowLoader {
 
             switch (mLibraryType) {
                 case ALL_SHOWS:
-                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "all", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "all", "", mStart, mCount));
                     break;
                 case FAVORITES:
-                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "favorites", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "favorites", "", mStart, mCount));
                     break;
                 case RECENTLY_AIRED:
-                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "newReleases", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "newReleases", "", mStart, mCount));
                     break;
                 case UNWATCHED:
-                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "unwatched", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "unwatched", "", mStart, mCount));
                     break;
                 case WATCHED:
-                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "watched", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "TV Shows", "watched", "", mStart, mCount));
                     break;
                 case POPULAR:
-                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "tv", "popular", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "tv", "popular", "", mStart, mCount));
                     break;
                 case TOP_RATED:
-                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "tv", "top_rated", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "tv", "top_rated", "", mStart, mCount));
                     break;
                 case ON_TV:
-                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "tv", "on_the_air", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "tv", "on_the_air", "", mStart, mCount));
                     break;
                 case AIRING_TODAY:
-                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "tv", "airing_today", ""));
+                    mTvShowList.addAll(NMJLib.getTvShowFromJSON(mContext, "tv", "airing_today", "", mStart, mCount));
                     break;
                 default:
                     break;
             }
 
+/*
             int totalSize = mTvShowList.size();
 
             for (TvShowFilter filter : getFilters()) {
@@ -447,11 +463,11 @@ public class TvShowLoader {
                     if (isCancelled())
                         return null;
 
-/*                    ArrayList<Filepath> paths = new ArrayList<>();
+                    ArrayList<Filepath> paths = new ArrayList<>();
                     for (String s : NMJManagerApplication.getTvShowEpisodeMappingsDbAdapter()
                             .getFilepathsForShow(mTvShowList.get(i).getId())) {
                         paths.add(new Filepath(s));
-                    }*/
+                    }
 
                     boolean condition = false;
 
@@ -476,7 +492,7 @@ public class TvShowLoader {
 
                             break;
 
-                        /*case TvShowFilter.FILE_SOURCE:
+case TvShowFilter.FILE_SOURCE:
 
                             for (Filepath path : paths) {
                                 condition = path.getTypeAsString(mContext).equals(filter.getFilter());
@@ -484,7 +500,8 @@ public class TvShowLoader {
                                     break;
                             }
 
-                            break;*/
+                            break;
+
 
                         case TvShowFilter.RELEASE_YEAR:
 
@@ -492,7 +509,7 @@ public class TvShowLoader {
 
                             break;
 
-                        /*case TvShowFilter.FOLDER:
+case TvShowFilter.FOLDER:
 
                             for (Filepath path : paths) {
                                 condition = path.getFilepath().trim().startsWith(filter.getFilter());
@@ -567,7 +584,8 @@ public class TvShowLoader {
                                 }
                             }
 
-                            break;*/
+                            break;
+
                     }
 
                     if (!condition && mTvShowList.size() > i) {
@@ -583,7 +601,6 @@ public class TvShowLoader {
 
                 ArrayList<NMJTvShow> tempCollection = Lists.newArrayList();
 
-/*
                 if (mSearchQuery.startsWith("actor:")) {
                     for (int i = 0; i < mTvShowList.size(); i++) {
                         if (isCancelled())
@@ -614,7 +631,8 @@ public class TvShowLoader {
                         }
                     }
                 }
-*/
+
+
 
                 // Clear the TV show list
                 mTvShowList.clear();
@@ -628,6 +646,7 @@ public class TvShowLoader {
 
             // Sort
             //Collections.sort(mTvShowList, getSortType().getComparator());
+*/
 
             return null;
         }
@@ -635,7 +654,8 @@ public class TvShowLoader {
         @Override
         protected void onPostExecute(Void result) {
             if (!isCancelled()) {
-                mResults = new ArrayList<>(mTvShowList);
+                ArrayList<NMJTvShow> tmpList = new ArrayList<>(mTvShowList);
+                mResults.addAll(tmpList);
                 mCallback.onLoadCompleted();
             } else
                 mTvShowList.clear();

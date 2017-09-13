@@ -170,10 +170,7 @@ public class NMJTvShowService extends TvShowApiService {
             show.setRating(NMJLib.getStringFromJSONObject(jObject, "RATING", "0.0"));
             show.setFirstAirdate(NMJLib.getStringFromJSONObject(jObject, "RELEASE_DATE", ""));
             show.setRuntime(NMJLib.getStringFromJSONObject(jObject, "RUNTIME", "0"));
-
-
             show.setPoster(nmjImgURL + jObject.getString("POSTER"));
-
 
             try {
                 JSONArray genre = jObject.getJSONArray("GENRE");

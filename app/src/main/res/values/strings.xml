@@ -291,6 +291,11 @@
     <string name="removeFromWatchlist">Remove from Watch list</string>
     <string name="watchLater">Watch later</string>
     <string name="addToList">Add to List</string>
+    <string name="updateMediaInfo">Update Mediainfo</string>
+    <string name="updateImages">Update images</string>
+    <string name="updateData">Update from TMDb</string>
+    <string name="deleteVideo">Delete</string>
+    <string name="editVideo">Edit</string>
     <string name="removeFromList">Remove from list</string>
     <string name="ignoreSmallFilesDescription">Ignore video files smaller than the set file size.</string>
     <string name="smallFilesOption_1">Include all files</string>

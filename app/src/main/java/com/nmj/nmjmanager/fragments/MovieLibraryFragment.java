@@ -82,6 +82,10 @@ import java.util.Set;
 import static com.nmj.functions.PreferenceKeys.GRID_ITEM_SIZE;
 import static com.nmj.functions.PreferenceKeys.IGNORED_TITLE_PREFIXES;
 import static com.nmj.functions.PreferenceKeys.SHOW_TITLES_IN_GRID;
+import static com.nmj.loader.MovieLibraryType.NOW_PLAYING;
+import static com.nmj.loader.MovieLibraryType.POPULAR;
+import static com.nmj.loader.MovieLibraryType.TOP_RATED;
+import static com.nmj.loader.MovieLibraryType.UPCOMING;
 
 public class MovieLibraryFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -201,29 +205,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             }
         });
 
-        mGridView.setOnScrollListener(new OnScrollListener() {
-
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-            }
-
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem,
-                                 int visibleItemCount, int totalItemCount) {
-
-                int lastInScreen = firstVisibleItem + visibleItemCount;
-/*                System.out.println("Debug: firstVisibleItem: " + firstVisibleItem);
-                System.out.println("Debug: visibleItemCount: " + visibleItemCount);
-                System.out.println("Debug: lastInScreen: " + lastInScreen);
-                System.out.println("Debug: totalItemCount: " + totalItemCount);*/
-/*                if((lastInScreen == totalItemCount) && !(loadingMore)){
-                    String url = "http://10.0.2.2:8080/CountryWebService" +
-                            "/CountryServlet";
-                    System.out.println("Debug: URL: " + url);
-                    //mMovieLoader.load();
-                }*/
-            }
-        });
+        mGridView.setOnScrollListener(new EndlessScrollListener());
 
         // We only want to display the contextual menu if we're showing movies, not collections
         if (getArguments().getInt("type") != MovieLoader.COLLECTIONS) {
@@ -576,7 +558,54 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         }
     }
 
-    private class LoaderAdapter extends BaseAdapter {
+    public class EndlessScrollListener implements OnScrollListener {
+
+        private int visibleThreshold = 5;
+        private int currentPage = 0;
+        private int previousTotal = 0;
+        private boolean loading = true;
+
+        public EndlessScrollListener() {
+        }
+
+        public EndlessScrollListener(int visibleThreshold) {
+            this.visibleThreshold = visibleThreshold;
+        }
+
+        @Override
+        public void onScroll(AbsListView view, int firstVisibleItem,
+                             int visibleItemCount, int totalItemCount) {
+            if (loading) {
+                if (totalItemCount > previousTotal) {
+                    loading = false;
+                    previousTotal = totalItemCount;
+                    currentPage++;
+                }
+            }
+            if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
+                // I load the next page of gigs using a background task,
+                // but you can call any function here.
+                System.out.println("Current Page: " + currentPage);
+                if (MovieLibraryType.fromInt(getArguments().getInt("type")) == UPCOMING ||
+                        MovieLibraryType.fromInt(getArguments().getInt("type")) == POPULAR ||
+                        MovieLibraryType.fromInt(getArguments().getInt("type")) == NOW_PLAYING ||
+                        MovieLibraryType.fromInt(getArguments().getInt("type")) == TOP_RATED)
+                    mMovieLoader.loadMore(totalItemCount, currentPage + 1);
+                else
+                    mMovieLoader.loadMore(totalItemCount, 25);
+
+                mAdapter.notifyDataSetChanged();
+                System.out.println("Loading...");
+                loading = true;
+            }
+        }
+
+        @Override
+        public void onScrollStateChanged(AbsListView view, int scrollState) {
+        }
+    }
+
+    public class LoaderAdapter extends BaseAdapter {
 
         private final Context mContext;
         private Set<Integer> mChecked = new HashSet<>();

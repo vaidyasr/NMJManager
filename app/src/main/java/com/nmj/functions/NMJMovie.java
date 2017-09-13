@@ -29,7 +29,7 @@ import java.util.Locale;
 public class NMJMovie extends NMJBaseMovie {
 
     private String PLOT, TAGLINE, IMDB_ID, TRAILER, TITLE, TITLE_TYPE;
-
+    private int TOTAL_COUNT;
     private String THUMBNAIL, SHOW_ID, LIST_ID, COLLECTION_ID;
 
     public NMJMovie(Context context, String title, String tmdbId, String rating, String releasedate,String genres,
@@ -118,15 +118,23 @@ public class NMJMovie extends NMJBaseMovie {
         return FAVOURITE;
     }
 
-    public void setFavourite(String fav) {
-        FAVOURITE = fav;
-    }
-
     public void setFavourite(boolean isFavourite) {
         if (isFavourite)
             FAVOURITE = "1";
         else
             FAVOURITE = "0";
+    }
+
+    public void setFavourite(String fav) {
+        FAVOURITE = fav;
+    }
+
+    public void setTotalCound(int count) {
+        TOTAL_COUNT = count;
+    }
+
+    public int getTotalCount() {
+        return TOTAL_COUNT;
     }
 
     public String getHasWatched() {

@@ -25,10 +25,6 @@ package com.nmj.functions;
  */
 public class PreferenceKeys {
 	
-	private PreferenceKeys() {} // No instantiation
-
-	public static final String STORED_DB = "";
-	public static final String LAST_DB = "";
 	public static final String TRAKT_USERNAME = "traktUsername";
 	public static final String TRAKT_PASSWORD = "traktPassword";
 	public static final String TRAKT_FULL_NAME = "traktFullName";
@@ -81,5 +77,8 @@ public class PreferenceKeys {
     public static final String CHROMECAST_BETA_SUPPORT = "prefsChromecastBeta";
     public static final String FILENAME_RECOGNITION = "prefsFilenameRecognition";
     public static final String USE_FAST_BLUR = "prefsUseFastBlur";
+
+    private PreferenceKeys() {
+    } // No instantiation
 
 }
