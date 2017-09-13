@@ -315,7 +315,9 @@
     <string name="translations">Translations</string>
     <string name="prefixes">the ,a ,an ,</string>
     <string name="forceEnglishApplicationLanguage">Force English application language</string>
+    <string name="loadLast">Load last database</string>
     <string name="useEnglishLanguage">Use English language instead of the system language. Requires application restart.</string>
+    <string name="loadLastDatabase">Load last successfully opened database upon start.</string>
     <string name="gridView">Grid view</string>
     <string name="listView">List view</string>
     <string name="deleteFile">Delete file</string>
@@ -488,6 +490,7 @@
     <string name="identifying_movie">Identifying movie…</string>
     <string name="remove_selected_seasons">Remove selected seasons</string>
     <string name="remove_selected_episodes">Remove selected episodes</string>
+    <string name="remove_selected_entry">Remove selected entry</string>
     <string name="set_runtime">Set runtime</string>
     <string name="set_rating">Set rating</string>
     <string name="set_certification">Set certification</string>

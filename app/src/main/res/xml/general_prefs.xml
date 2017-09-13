@@ -16,6 +16,13 @@
             android:key="prefsUseEnglishLanguage"
             android:summary="@string/useEnglishLanguage"
             android:title="@string/forceEnglishApplicationLanguage" />
+
+        <CheckBoxPreference
+            android:icon="@drawable/ic_db_white_24dp"
+            android:key="prefsLoadLastDatabase"
+            android:summary="@string/loadLastDatabase"
+            android:defaultValue="true"
+            android:title="@string/loadLast" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/chooserMovies">
         <MultiSelectListPreference

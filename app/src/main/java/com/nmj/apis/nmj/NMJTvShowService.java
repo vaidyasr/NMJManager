@@ -151,7 +151,7 @@ public class NMJTvShowService extends TvShowApiService {
             CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
             if (!cacheManager.exists(CacheId)) {
                 System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServer() +
+                jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerURL() +
                         "NMJManagerTablet_web/getData.php?action=getVideoDetails&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&showid=" + id + "&title_type=2");
                 NMJLib.putCache(cacheManager, CacheId, jObject.toString());

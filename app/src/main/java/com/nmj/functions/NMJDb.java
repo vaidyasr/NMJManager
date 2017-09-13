@@ -62,14 +62,6 @@ public class NMJDb {
 		mNMJType = nmjType;
 	}
 
-	public String getImage() {
-		return mImage;
-	}
-
-	public void setImage(String image) {
-		mImage = image;
-	}
-
 	public String getJukebox() {
 		return mJukebox;
 	}

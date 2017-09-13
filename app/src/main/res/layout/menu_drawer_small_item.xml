@@ -4,7 +4,8 @@
     android:background="@drawable/selectable_background"
     android:orientation="horizontal"
     android:paddingLeft="16dp"
-    android:paddingRight="16dp">
+    android:paddingRight="16dp"
+    android:descendantFocusability="blocksDescendants">
 
     <ImageView
         android:id="@+id/icon"

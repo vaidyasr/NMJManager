@@ -28,6 +28,7 @@ public class PreferenceKeys {
 	private PreferenceKeys() {} // No instantiation
 
 	public static final String STORED_DB = "";
+	public static final String LAST_DB = "";
 	public static final String TRAKT_USERNAME = "traktUsername";
 	public static final String TRAKT_PASSWORD = "traktPassword";
 	public static final String TRAKT_FULL_NAME = "traktFullName";
@@ -54,21 +55,11 @@ public class PreferenceKeys {
 	public static final String IGNORE_VIDEO_FILE_TYPE = "prefsIgnoreFileType";
 	public static final String IGNORED_TITLE_PREFIXES = "prefsIgnorePrefixesInTitles";
 	public static final String REMOVE_MOVIES_FROM_WATCHLIST = "prefsRemoveMoviesFromWatchlist";
+	public static final String LOAD_LAST_DATABASE = "prefsLoadLastDatabase";
 	public static final String TVSHOWS_COLLECTION_LAYOUT = "prefsSeasonsLayout";
 	public static final String TVSHOWS_EPISODE_ORDER = "prefsEpisodesOrder";
 	public static final String TVSHOWS_SEASON_ORDER = "prefsSeasonsOrder";
 	public static final String SHOW_TITLES_IN_GRID = "prefsShowGridTitles";
-	public static final String SHOW_MOVIE_FAVOURITES = "prefsMovieFavourites";
-	public static final String SHOW_MOVIE_NEW_RELEASES = "prefsMovieNewReleases";
-	public static final String SHOW_MOVIE_WATCHLIST = "prefsMovieWatchlist";
-	public static final String SHOW_MOVIE_WATCHED = "prefsMovieWatched";
-	public static final String SHOW_MOVIE_UNWATCHED = "prefsMovieUnwatched";
-	public static final String SHOW_MOVIE_COLLECTIONS = "prefsMovieCollections";
-	public static final String SHOW_MOVIE_LIST = "prefsMovieList";
-	public static final String SHOW_MOVIE_UPCOMING = "prefsMovieUpcoming";
-	public static final String SHOW_MOVIE_POPULAR = "prefsMoviePopular";
-	public static final String SHOW_MOVIE_NOW_PLAYING = "prefsMovieNowPlaying";
-	public static final String SHOW_MOVIE_TOP_RATED = "prefsMovieTopRated";
 	public static final String GRID_ITEM_SIZE = "prefsGridItemSize";
 	public static final String SORTING_MOVIES = "prefsSorting";
 	public static final String SORTING_TVSHOWS = "prefsSortingTv";

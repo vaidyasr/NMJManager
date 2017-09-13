@@ -103,7 +103,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            System.out.println("Receiving broadcast");
             if (mMovieLoader != null) {
                 if (intent.filterEquals(new Intent("NMJManager-movie-actor-search"))) {
                     mMovieLoader.search("actor: " + intent.getStringExtra("intent_extra_data_key"));
@@ -684,7 +683,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 mURL = baseUrl + imageSizeUrl;
             else
                 mURL = NMJLib.getNMJImageURL();
-
             mPicasso.load(mURL + movie.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
             if (mChecked.contains(position)) {
                 holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));

@@ -31,8 +31,10 @@ import com.nmj.loader.TvShowLoader;
 import com.nmj.nmjmanager.R;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -80,7 +82,8 @@ public class TvShowLibraryOverviewFragment extends Fragment {
 
         mAdapter.addTab(TITLES.get(0));
 
-        Set<String> values = PreferenceManager.getDefaultSharedPreferences(getActivity()).getStringSet(SHOWS_TAB_SELECTED, null);
+        Set<String> defValues = new HashSet<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8"));
+        Set<String> values = PreferenceManager.getDefaultSharedPreferences(getActivity()).getStringSet(SHOWS_TAB_SELECTED, defValues);
         List<String> list = new ArrayList<String>(values);
         Collections.sort(list, new Comparator<String>()
         {

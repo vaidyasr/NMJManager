@@ -171,6 +171,7 @@ public class NMJLib {
     private final static String WAREZ_PATTERN = "(?i)(dvdscreener|dvdscreen|dvdscr|dvdrip|dvd5|dvd|xvid|divx|m\\-480p|m\\-576p|m\\-720p|m\\-864p|m\\-900p|m\\-1080p|m480p|m576p|m720p|m864p|m900p|m1080p|480p|576p|720p|864p|900p|1080p|1080i|720i|mhd|brrip|bdrip|brscreener|brscreen|brscr|aac|x264|bluray|dts|screener|hdtv|ac3|repack|2\\.1|5\\.1|ac3_6|7\\.1|h264|hdrip|ntsc|proper|readnfo|rerip|subbed|vcd|scvd|pdtv|sdtv|hqts|hdcam|multisubs|650mb|700mb|750mb|webdl|web-dl|bts|korrip|webrip|korsub|1link|sample|tvrip|tvr|extended.editions?|directors cut|tfe|unrated|\\(.*?torrent.*?\\)|\\[.*?\\]|\\(.*?\\)|\\{.*?\\}|part[0-9]|cd[0-9])";
     private final static String ABBREVIATION_PATTERN = "(?<=(^|[.])[\\S&&\\D])[.](?=[\\S&&\\D]([.]|$))";
     public static String URL = "";
+    public static String PORT = "";
     public static String mDbPath = "";
     public static String mDrivePath = "";
     public static int COVER = 1, BACKDROP = 2;
@@ -195,19 +196,28 @@ public class NMJLib {
     }
 
     public static String getNMJServer() {
-        //String url = "http://www.pchportal.duckdns.org/";
-        //String url = "http://192.168.1.108/";
-
         return URL;
     }
 
-    public static void setNMJServer(String url, String port) {
-        URL = "http://" + url + ":" + port + "/";
+    public static void setNMJServer(String url) {
+        URL = url;
+    }
+
+    public static void setNMJPort(String port){
+        PORT = port;
+    }
+
+    public static String getNMJPort(){
+        return PORT;
+    }
+
+    public static String getNMJServerURL() {
+        return (!getNMJPort().equals("")) ? "http://" + getNMJServer() + ":" + getNMJPort() : "http://" + getNMJServer() + "/";
     }
 
     public static String getNMJImageURL() {
-        if (!getNMJServer().equals("") && !getDrivePath().equals(""))
-            return getNMJServer() + "NMJManagerTablet/" + getDrivePath() + "/";
+        if (!getNMJServerURL().equals("") && !getDrivePath().equals(""))
+            return getNMJServerURL() + "NMJManagerTablet_web/" + getDrivePath() + "/";
         else
             return "";
     }
@@ -2425,9 +2435,9 @@ public class NMJLib {
      * @return List of movie objects from the supplied URL.
      */
     public static void setLibrary(Context context, NMJAdapter mDatabase) {
-        if(!NMJLib.getNMJServer().equals("")) {
+        if(!NMJLib.getNMJServerURL().equals("")) {
             ArrayList<Library> list = new ArrayList<>();
-            String url = NMJLib.getNMJServer() +
+            String url = NMJLib.getNMJServerURL() +
                     "NMJManagerTablet_web/getData.php?action=getCount&drivepath=" +
                     NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath();
 
@@ -2629,7 +2639,7 @@ public class NMJLib {
                 mode = "add";
             else
                 mode = "remove";
-            String url = getNMJServer()
+            String url = getNMJServerURL()
                     + "NMJManagerTablet_web/getData.php?action=editWatched&drivepath=" +
                     NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() + "&TTYPE=1&mode=" +
                     mode + "&showid=" + StringUtils.join(showIds, ",");
@@ -2662,7 +2672,7 @@ public class NMJLib {
                 mode = "add";
             else
                 mode = "remove";
-            String url = getNMJServer() +
+            String url = getNMJServerURL() +
                     "NMJManagerTablet_web/getData.php?action=editFavorite&drivepath=" +
                     NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() + "&TTYPE=1&mode=" +
                     mode + "&showid=" + StringUtils.join(showIds, ",");
@@ -2775,14 +2785,14 @@ public class NMJLib {
         ArrayList<NMJTvShow> list = new ArrayList<>();
         String url;
         System.out.println("LoadType: " + loadType);
-        if (!NMJLib.getNMJServer().equals("")) {
+        if (!NMJLib.getNMJServerURL().equals("")) {
             if (id != null && loadType.equals("list"))
-                url = NMJLib.getNMJServer() +
+                url = NMJLib.getNMJServerURL() +
                         "NMJManagerTablet_web/getData.php?action=getLists&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() + "&id=" + id +
                         "&sortby=title&orderby=asc";
             else if (id != null && loadType.equals("collection"))
-                url = NMJLib.getNMJServer() +
+                url = NMJLib.getNMJServerURL() +
                         "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() + "&id=" + id +
                         "&sortby=title&orderby=asc";
@@ -2790,7 +2800,7 @@ public class NMJLib {
                 url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" +
                         getTmdbApiKey(mContext) + "&language=en";
             else
-                url = NMJLib.getNMJServer()
+                url = NMJLib.getNMJServerURL()
                         + "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() +
                         "&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" +
@@ -2876,14 +2886,14 @@ public class NMJLib {
         ArrayList<NMJMovie> list = new ArrayList<>();
         String url;
         System.out.println("LoadType: " + loadType);
-        if (!NMJLib.getNMJServer().equals("")) {
+        if (!NMJLib.getNMJServerURL().equals("")) {
             if (id != null && loadType.equals("list"))
-                url = NMJLib.getNMJServer() +
+                url = NMJLib.getNMJServerURL() +
                         "NMJManagerTablet_web/getData.php?action=getLists&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() + "&id=" + id +
                         "&sortby=title&orderby=asc";
             else if (id != null && loadType.equals("collection"))
-                url = NMJLib.getNMJServer() +
+                url = NMJLib.getNMJServerURL() +
                         "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() + "&id=" + id +
                         "&sortby=title&orderby=asc";
@@ -2891,7 +2901,7 @@ public class NMJLib {
                 url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" +
                         getTmdbApiKey(mContext) + "&language=en";
             else
-                url = NMJLib.getNMJServer() +
+                url = NMJLib.getNMJServerURL() +
                         "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() +
                         "/nmj_database/media.db&orderby=asc&filterby=All&sortby=title&load=" +

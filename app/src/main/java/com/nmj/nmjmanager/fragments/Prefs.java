@@ -223,10 +223,10 @@ public class Prefs extends PreferenceFragment implements OnSharedPreferenceChang
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(MOVIES_TABS_SELECTED)) {
-            Main.reloadFragment("frag1");
+            LocalBroadcastUtils.reloadMovieFragment(NMJManagerApplication.getContext());
         }
         if (key.equals(SHOWS_TAB_SELECTED)) {
-            Main.reloadFragment("frag2");
+            LocalBroadcastUtils.reloadTVShowFragment(NMJManagerApplication.getContext());
         }
         if (key.equals(IGNORED_FILES_ENABLED)) {
             if (mPref != null)

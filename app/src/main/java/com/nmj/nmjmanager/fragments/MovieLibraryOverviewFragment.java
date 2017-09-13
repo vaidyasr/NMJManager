@@ -34,8 +34,10 @@ import com.nmj.loader.MovieLoader;
 import com.nmj.nmjmanager.R;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -82,8 +84,8 @@ public class MovieLibraryOverviewFragment extends Fragment {
         // Work-around a bug that sometimes happens with the tabs
         mViewPager.setCurrentItem(0);
         mAdapter.addTab(TITLES.get(0));
-
-        Set<String> values = PreferenceManager.getDefaultSharedPreferences(getActivity()).getStringSet(MOVIES_TABS_SELECTED, null);
+        Set<String> defValues = new HashSet<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"));
+        Set<String> values = PreferenceManager.getDefaultSharedPreferences(getActivity()).getStringSet(MOVIES_TABS_SELECTED, defValues);
         List<String> list = new ArrayList<String>(values);
         Collections.sort(list, new Comparator<String>() {
             @Override
@@ -93,9 +95,11 @@ public class MovieLibraryOverviewFragment extends Fragment {
                 return val1.compareTo(val2);
             }
         });
+
         for (int i = 0; i < list.size(); i++) {
             mAdapter.addTab(TITLES.get(Integer.parseInt(list.get(i))));
         }
+
         if (NMJLib.hasLollipop())
             mTabs.setElevation(1f);
 
@@ -116,8 +120,8 @@ public class MovieLibraryOverviewFragment extends Fragment {
             mTabs.notifyDataSetChanged();
         }
 
-        public void removeTab(int position) {
-            tabs.remove(position);
+        public void refreshTab(int position) {
+            //tabs.remove(position);
             notifyDataSetChanged();
             mTabs.notifyDataSetChanged();
         }
