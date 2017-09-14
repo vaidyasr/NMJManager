@@ -25,7 +25,7 @@ import java.util.Comparator;
 
 public enum MovieSortType {
 
-        TITLE(MovieLoader.TITLE, true),
+    TITLE(MovieLoader.TITLE, false),
         RELEASE(MovieLoader.RELEASE, false),
         DURATION(MovieLoader.DURATION, false),
         RATING(MovieLoader.RATING, false),
@@ -45,8 +45,7 @@ public enum MovieSortType {
         }
 
         public String getSortOrder(){
-            System.out.println("Sort Order: " + mAscendingSort);
-            if(mAscendingSort)
+            if (isAscendingSort())
                 return "asc";
             else
                 return "desc";

@@ -237,17 +237,16 @@ public class NMJLib {
         return mDrivePath;
     }
 
+    public static void setDrivePath(String drivePath) {
+        mDrivePath = drivePath;
+    }
+
     public static String getSortType() {
-        String sortBy = PreferenceManager.getDefaultSharedPreferences(NMJManagerApplication.getContext()).getString(SORTING_MOVIES, "title");
-        return sortBy;
+        return PreferenceManager.getDefaultSharedPreferences(NMJManagerApplication.getContext()).getString(SORTING_MOVIES, "title");
     }
 
     public static String getSortOrder(){
         return PreferenceManager.getDefaultSharedPreferences(NMJManagerApplication.getContext()).getString(PreferenceKeys.SORT_TYPE, "asc");
-    }
-
-    public static void setDrivePath(String drivePath) {
-        mDrivePath = drivePath;
     }
 
     public static String getTmdbApiURL(Context context) {
@@ -2872,7 +2871,9 @@ public class NMJLib {
      * @return List of movie objects from the supplied URL.
      */
     public static ArrayList<NMJMovie> getMovieFromJSON(Context mContext, String videoType,
-                                                       String loadType, String id, int start, int count) {
+                                                       String loadType, String id,
+                                                       String searchText, int start, int count) {
+        System.out.println("Search Query: " + searchText);
         ArrayList<NMJMovie> list = new ArrayList<>();
         String url;
         System.out.println("LoadType: " + loadType);
@@ -2895,8 +2896,13 @@ public class NMJLib {
                 url = NMJLib.getNMJServerURL() +
                         "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() +
-                        "&orderby=" + NMJLib.getSortOrder() + "&filterby=All" + "&sortby=" + NMJLib.getSortType() + "&load=" +
-                        loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
+                        "&orderby=" + NMJLib.getSortOrder() + "&filterby=";
+                if (searchText.equals(""))
+                    url += "All";
+                else
+                    url += "search&VALUE=" + searchText;
+                url += "&sortby=" + NMJLib.getSortType() + "&load=" + loadType + "&TYPE=" +
+                        videoType + "&searchtype=title&Index=&Genre=&Certification=&Year=&Rating=&Resolution=&Others=";
                 if (start != 0)
                     url += "&start=" + start;
                 if (count != 0)
