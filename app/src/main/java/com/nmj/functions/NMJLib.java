@@ -66,6 +66,8 @@ import com.nmj.db.DbAdapterMovies;
 import com.nmj.db.DbAdapterSources;
 import com.nmj.db.DbAdapterTvShowEpisodes;
 import com.nmj.db.DbAdapterTvShows;
+import com.nmj.loader.MovieLoader;
+import com.nmj.loader.MovieSortType;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.nmjmanager.TvShow;
@@ -138,6 +140,7 @@ import static com.nmj.functions.PreferenceKeys.INCLUDE_ADULT_CONTENT;
 import static com.nmj.functions.PreferenceKeys.REMOVE_MOVIES_FROM_WATCHLIST;
 import static com.nmj.functions.PreferenceKeys.SCHEDULED_UPDATES_MOVIE;
 import static com.nmj.functions.PreferenceKeys.SCHEDULED_UPDATES_TVSHOWS;
+import static com.nmj.functions.PreferenceKeys.SORTING_MOVIES;
 import static com.nmj.functions.PreferenceKeys.TMDB_BASE_URL;
 import static com.nmj.functions.PreferenceKeys.TMDB_BASE_URL_TIME;
 import static com.nmj.functions.PreferenceKeys.TRAKT_USERNAME;
@@ -232,6 +235,15 @@ public class NMJLib {
 
     public static String getDrivePath() {
         return mDrivePath;
+    }
+
+    public static String getSortType() {
+        String sortBy = PreferenceManager.getDefaultSharedPreferences(NMJManagerApplication.getContext()).getString(SORTING_MOVIES, "title");
+        return sortBy;
+    }
+
+    public static String getSortOrder(){
+        return PreferenceManager.getDefaultSharedPreferences(NMJManagerApplication.getContext()).getString(PreferenceKeys.SORT_TYPE, "asc");
     }
 
     public static void setDrivePath(String drivePath) {
@@ -2761,13 +2773,11 @@ public class NMJLib {
             if (id != null && loadType.equals("list"))
                 url = NMJLib.getNMJServerURL() +
                         "NMJManagerTablet_web/getData.php?action=getLists&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id +
-                        "&sortby=title&orderby=asc";
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id;
             else if (id != null && loadType.equals("collection"))
                 url = NMJLib.getNMJServerURL() +
                         "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id +
-                        "&sortby=title&orderby=asc";
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id ;
             else if (videoType.equals("tv")) {
                 url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" +
                         getTmdbApiKey(mContext) + "&language=en";
@@ -2778,8 +2788,8 @@ public class NMJLib {
                 url = NMJLib.getNMJServerURL()
                         + "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() +
-                        "&orderby=asc&filterby=All&sortby=title&load=" + loadType + "&TYPE=" +
-                        videoType + "&VALUE=&searchtype=title";
+                        "&orderby=" + NMJLib.getSortOrder() + "&filterby=All" + "&sortby=" + NMJLib.getSortType() + "&load=" +
+                        loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
                 if (start != 0)
                     url += "&start=" + start;
                 if (count != 0)
@@ -2870,13 +2880,11 @@ public class NMJLib {
             if (id != null && loadType.equals("list"))
                 url = NMJLib.getNMJServerURL() +
                         "NMJManagerTablet_web/getData.php?action=getLists&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id +
-                        "&sortby=title&orderby=asc";
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id;
             else if (id != null && loadType.equals("collection"))
                 url = NMJLib.getNMJServerURL() +
                         "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id +
-                        "&sortby=title&orderby=asc";
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id;
             else if (videoType.equals("movie")) {
                 url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" +
                         getTmdbApiKey(mContext) + "&language=en";
@@ -2887,7 +2895,7 @@ public class NMJLib {
                 url = NMJLib.getNMJServerURL() +
                         "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() +
-                        "&orderby=asc&filterby=All&sortby=title&load=" +
+                        "&orderby=" + NMJLib.getSortOrder() + "&filterby=All" + "&sortby=" + NMJLib.getSortType() + "&load=" +
                         loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
                 if (start != 0)
                     url += "&start=" + start;

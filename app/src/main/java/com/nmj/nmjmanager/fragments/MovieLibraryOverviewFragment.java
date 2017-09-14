@@ -76,7 +76,6 @@ public class MovieLibraryOverviewFragment extends Fragment {
         mTabs = (PagerSlidingTabStrip) v.findViewById(R.id.tabs);
 
         mViewPager.setAdapter(mAdapter = new PagerAdapter(getChildFragmentManager()));
-        mViewPager.setOffscreenPageLimit(mViewPager.getAdapter().getCount());
 
         mTabs.setViewPager(mViewPager);
         mTabs.setVisibility(View.VISIBLE);
@@ -99,6 +98,7 @@ public class MovieLibraryOverviewFragment extends Fragment {
         for (int i = 0; i < list.size(); i++) {
             mAdapter.addTab(TITLES.get(Integer.parseInt(list.get(i))));
         }
+        mViewPager.setOffscreenPageLimit(mViewPager.getAdapter().getCount());
 
         if (NMJLib.hasLollipop())
             mTabs.setElevation(1f);
@@ -116,12 +116,6 @@ public class MovieLibraryOverviewFragment extends Fragment {
 
         public void addTab(String tab) {
             tabs.add(tab);
-            notifyDataSetChanged();
-            mTabs.notifyDataSetChanged();
-        }
-
-        public void refreshTab(int position) {
-            //tabs.remove(position);
             notifyDataSetChanged();
             mTabs.notifyDataSetChanged();
         }

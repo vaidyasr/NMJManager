@@ -59,6 +59,7 @@ public class PreferenceKeys {
 	public static final String GRID_ITEM_SIZE = "prefsGridItemSize";
 	public static final String SORTING_MOVIES = "prefsSorting";
 	public static final String SORTING_TVSHOWS = "prefsSortingTv";
+	public static final String SORT_TYPE = "asc";
 	public static final String ROOT_ACCESS = "prefsRootAccess";
 	public static final String STARTUP_SELECTION = "prefsStartup";
     public static final String MOVIES_TABS_SELECTED = "prefsMoviesTabEnableDisable";

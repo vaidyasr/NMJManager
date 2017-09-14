@@ -44,6 +44,14 @@ public enum MovieSortType {
             mAscendingSort = !mAscendingSort;
         }
 
+        public String getSortOrder(){
+            System.out.println("Sort Order: " + mAscendingSort);
+            if(mAscendingSort)
+                return "asc";
+            else
+                return "desc";
+        }
+
         private boolean isAscendingSort() {
             return mAscendingSort;
         }

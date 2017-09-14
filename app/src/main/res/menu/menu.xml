@@ -9,7 +9,7 @@
     </item>
     <item
         android:id="@+id/sort"
-        android:icon="@drawable/ic_sort_white_24dp"
+        android:icon="@drawable/ic_sort_desc_white_24dp"
         app:showAsAction="ifRoom"
         android:title="@string/stringSort">
         <menu>

@@ -337,6 +337,11 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu, menu);
 
+        if(NMJLib.getSortType().equals("asc"))
+            menu.findItem(R.id.sort).setIcon(R.drawable.ic_sort_asc_white_24dp);
+        else
+            menu.findItem(R.id.sort).setIcon(R.drawable.ic_sort_desc_white_24dp);
+
         menu.findItem(R.id.random).setVisible(mMovieLoader.getType() != MovieLibraryType.COLLECTIONS &&
                 mMovieLoader.getType() != MovieLibraryType.LISTS);
 
@@ -349,6 +354,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 mMovieLoader.getType() == MovieLibraryType.TOP_RATED ||
                 mMovieLoader.getType() == MovieLibraryType.NOW_PLAYING ||
                 mMovieLoader.getType() == MovieLibraryType.UPCOMING) {
+            menu.findItem(R.id.search_textbox).setVisible(false);
             menu.findItem(R.id.sort).setVisible(false);
             menu.findItem(R.id.filters).setVisible(false);
             menu.findItem(R.id.random).setVisible(false);
@@ -405,26 +411,31 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 break;
             case R.id.menuSortAdded:
                 mMovieLoader.setSortType(MovieSortType.DATE_ADDED);
+                mMovieLoader.clearAll();
                 mMovieLoader.load();
                 showProgressBar();
                 break;
             case R.id.menuSortRating:
                 mMovieLoader.setSortType(MovieSortType.RATING);
+                mMovieLoader.clearAll();
                 mMovieLoader.load();
                 showProgressBar();
                 break;
             case R.id.menuSortRelease:
                 mMovieLoader.setSortType(MovieSortType.RELEASE);
+                mMovieLoader.clearAll();
                 mMovieLoader.load();
                 showProgressBar();
                 break;
             case R.id.menuSortTitle:
                 mMovieLoader.setSortType(MovieSortType.TITLE);
+                mMovieLoader.clearAll();
                 mMovieLoader.load();
                 showProgressBar();
                 break;
             case R.id.menuSortDuration:
                 mMovieLoader.setSortType(MovieSortType.DURATION);
+                mMovieLoader.clearAll();
                 mMovieLoader.load();
                 showProgressBar();
                 break;

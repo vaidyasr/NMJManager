@@ -76,11 +76,11 @@ public class TvShowLoader {
             WEIGHTED_RATING = 6;
 
     // For saving the sorting type preference
-    public static final String SORT_TITLE = "sortTitle",
-            SORT_RELEASE = "sortRelease",
-            SORT_RATING = "sortRating",
-            SORT_NEWEST_EPISODE = "sortNewestEpisode",
-            SORT_DURATION = "sortDuration";
+    public static final String SORT_TITLE = "title",
+            SORT_RELEASE = "release",
+            SORT_RATING = "rating",
+            SORT_NEWEST_EPISODE = "date",
+            SORT_DURATION = "duration";
 
     private final Context mContext;
     private final TvShowLibraryType mLibraryType;

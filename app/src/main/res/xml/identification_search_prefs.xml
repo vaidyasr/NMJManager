@@ -90,7 +90,7 @@
             android:title="@string/sourceForShowRatings" />
         <CheckBoxPreference
             android:defaultValue="false"
-            android:icon="@drawable/ic_sort_white_24dp"
+            android:icon="@drawable/ic_sort_desc_white_24dp"
             android:key="prefsDvdOrdering"
             android:summary="@string/use_dvd_order_description"
             android:title="@string/use_dvd_order" />

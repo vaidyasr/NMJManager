@@ -77,11 +77,11 @@ public class MovieLoader {
             COLLECTION_TITLE = 7;
 
     // For saving the sorting type preference
-    public static final String SORT_TITLE = "sortTitle",
-            SORT_RELEASE = "sortRelease",
-            SORT_RATING = "sortRating",
-            SORT_DATE_ADDED = "sortAdded",
-            SORT_DURATION = "sortDuration";
+    public static final String SORT_TITLE = "title",
+            SORT_RELEASE = "release",
+            SORT_RATING = "rating",
+            SORT_DATE_ADDED = "date",
+            SORT_DURATION = "duration";
 
     private final Context mContext;
     private final MovieLibraryType mLibraryType;
@@ -172,6 +172,9 @@ public class MovieLoader {
                 editor.apply();
             }
         }
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(mContext).edit();
+        editor.putString(PreferenceKeys.SORT_TYPE, getSortType().getSortOrder());
+        editor.apply();
     }
 
     /**
@@ -259,6 +262,9 @@ public class MovieLoader {
         mAsyncTask.execute();
     }
 
+    public void clearAll(){
+        mResults.clear();
+    }
 
     /**
      * Get the results of the most recently loaded movies.
@@ -422,12 +428,6 @@ public class MovieLoader {
             setSortType(MovieSortType.TITLE);
         }
     }
-
-    public void loadMoreData(Integer Count){
-        //mAsyncTask = new MovieLoaderAsyncTask(Count);
-        mAsyncTask.execute();
-    }
-
 
     /**
      * Handles everything related to loading, filtering, sorting

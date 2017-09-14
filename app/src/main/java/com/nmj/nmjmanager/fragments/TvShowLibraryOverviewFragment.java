@@ -98,6 +98,7 @@ public class TvShowLibraryOverviewFragment extends Fragment {
         for (int i=0; i<list.size();i++){
             mAdapter.addTab(TITLES.get(Integer.parseInt(list.get(i))));
         }
+        mViewPager.setOffscreenPageLimit(mViewPager.getAdapter().getCount());
 
         if (NMJLib.hasLollipop())
             mTabs.setElevation(1f);

@@ -53,7 +53,7 @@
             android:dialogTitle="@string/tvShowEpisodesOrderType"
             android:entries="@array/episodesOrder"
             android:entryValues="@array/episodesOrder"
-            android:icon="@drawable/ic_sort_white_24dp"
+            android:icon="@drawable/ic_sort_desc_white_24dp"
             android:key="prefsEpisodesOrder"
             android:summary="@string/tvShowEpisodesOrderTypeDescription"
             android:title="@string/tvShowEpisodesOrderType" />
@@ -63,7 +63,7 @@
             android:dialogTitle="@string/tvShowSeasonsOrderType"
             android:entries="@array/episodesOrder"
             android:entryValues="@array/episodesOrder"
-            android:icon="@drawable/ic_sort_white_24dp"
+            android:icon="@drawable/ic_sort_desc_white_24dp"
             android:key="prefsSeasonsOrder"
             android:summary="@string/tvShowSeasonsOrderTypeDescription"
             android:title="@string/tvShowSeasonsOrderType" />
