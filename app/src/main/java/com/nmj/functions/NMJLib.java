@@ -186,7 +186,7 @@ public class NMJLib {
     private static int mRuntimeInMinutes;
     private static String[] mAdultKeywords = new String[]{"adult", "sex", "porn", "explicit", "penis", "vagina", "asshole",
             "blowjob", "cock", "fuck", "dildo", "kamasutra", "masturbat", "squirt", "slutty", "cum", "cunt"};
-    private String showId, tmdbId, nmjdata, tmdbdata;
+    private static String mMachineType = "";
 
     private NMJLib() {
     } // No instantiation
@@ -214,13 +214,25 @@ public class NMJLib {
         PORT = port;
     }
 
+    public static String getMachineType() {
+        return mMachineType;
+    }
+
+    public static void setMachineType(String machineType) {
+        mMachineType = machineType;
+    }
+
     public static String getNMJServerURL() {
-        return (!getNMJPort().equals("")) ? "http://" + getNMJServer() + ":" + getNMJPort() : "http://" + getNMJServer() + "/";
+        return (!getNMJPort().equals("")) ? "http://" + getNMJServer() + ":" + getNMJPort() + "/" : "http://" + getNMJServer() + "/";
+    }
+
+    public static String getNMJServerPHPURL() {
+        return getNMJServerURL() + "NMJManagerTablet_web/getData.php?";
     }
 
     public static String getNMJImageURL() {
         if (!getNMJServerURL().equals("") && !getDrivePath().equals(""))
-            return getNMJServerURL() + "NMJManagerTablet_web/" + getDrivePath() + "/";
+            return getNMJServerURL() + getDrivePath() + "/";
         else
             return "";
     }
@@ -413,8 +425,8 @@ public class NMJLib {
     public static boolean isPortrait(Context c) {
         return c != null && (c.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
     }
-
     /**
+
      * Determines if the device is currently connected to a network
      *
      * @param c - Context of the application
@@ -2448,8 +2460,7 @@ public class NMJLib {
     public static void setLibrary(Context context, NMJAdapter mDatabase) {
         if (!NMJLib.getNMJServerURL().equals("")) {
             ArrayList<Library> list = new ArrayList<>();
-            String url = NMJLib.getNMJServerURL() +
-                    "NMJManagerTablet_web/getData.php?action=getCount&drivepath=" +
+            String url = NMJLib.getNMJServerPHPURL() + "action=getCount&drivepath=" +
                     NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath();
 
             JSONObject jObject;
@@ -2650,8 +2661,7 @@ public class NMJLib {
                 mode = "add";
             else
                 mode = "remove";
-            String url = getNMJServerURL()
-                    + "NMJManagerTablet_web/getData.php?action=editWatched&drivepath=" +
+            String url = getNMJServerPHPURL() + "action=editWatched&drivepath=" +
                     NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDrivePath() + "&TTYPE=1&mode=" +
                     mode + "&showid=" + StringUtils.join(showIds, ",");
             JSONArray array = new JSONArray();
@@ -2681,8 +2691,7 @@ public class NMJLib {
             mode = "add";
         else
             mode = "remove";
-        final String url = getNMJServerURL() +
-                "NMJManagerTablet_web/getData.php?action=editFavorite&drivepath=" +
+        final String url = getNMJServerPHPURL() + "action=editFavorite&drivepath=" +
                 NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&TTYPE=1&mode=" +
                 mode + "&showid=" + StringUtils.join(showIds, ",");
         new AsyncTask<Void, Void, Void>() {
@@ -2770,12 +2779,10 @@ public class NMJLib {
         System.out.println("LoadType: " + loadType);
         if (!NMJLib.getNMJServerURL().equals("")) {
             if (id != null && loadType.equals("list"))
-                url = NMJLib.getNMJServerURL() +
-                        "NMJManagerTablet_web/getData.php?action=getLists&drivepath=" +
+                url = NMJLib.getNMJServerPHPURL() + "action=getLists&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id;
             else if (id != null && loadType.equals("collection"))
-                url = NMJLib.getNMJServerURL() +
-                        "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=" +
+                url = NMJLib.getNMJServerPHPURL() + "action=getCollections&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id ;
             else if (videoType.equals("tv")) {
                 url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" +
@@ -2784,8 +2791,7 @@ public class NMJLib {
                         loadType.equals("on_the_air") || loadType.equals("airing_today"))
                     url += "&page=" + count;
             } else {
-                url = NMJLib.getNMJServerURL()
-                        + "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=" +
+                url = NMJLib.getNMJServerPHPURL() + "action=getVideos&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() +
                         "&orderby=" + NMJLib.getSortOrder() + "&filterby=All" + "&sortby=" + NMJLib.getSortType() + "&load=" +
                         loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
@@ -2879,12 +2885,10 @@ public class NMJLib {
         System.out.println("LoadType: " + loadType);
         if (!NMJLib.getNMJServerURL().equals("")) {
             if (id != null && loadType.equals("list"))
-                url = NMJLib.getNMJServerURL() +
-                        "NMJManagerTablet_web/getData.php?action=getLists&drivepath=" +
+                url = NMJLib.getNMJServerPHPURL() + "action=getLists&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id;
             else if (id != null && loadType.equals("collection"))
-                url = NMJLib.getNMJServerURL() +
-                        "NMJManagerTablet_web/getData.php?action=getCollections&drivepath=" +
+                url = NMJLib.getNMJServerPHPURL() + "action=getCollections&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id;
             else if (videoType.equals("movie")) {
                 url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" +
@@ -2893,8 +2897,7 @@ public class NMJLib {
                         loadType.equals("now_playing") || loadType.equals("upcoming"))
                     url += "&page=" + count;
             } else {
-                url = NMJLib.getNMJServerURL() +
-                        "NMJManagerTablet_web/getData.php?action=getVideos&drivepath=" +
+                url = NMJLib.getNMJServerPHPURL() + "action=getVideos&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() +
                         "&orderby=" + NMJLib.getSortOrder() + "&filterby=";
                 if (searchText.equals(""))
