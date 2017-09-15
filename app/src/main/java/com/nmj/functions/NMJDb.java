@@ -20,7 +20,7 @@ import android.content.Context;
 
 public class NMJDb {
 
-	private String mName, mDbPath, mDrivePath, mNMJType, mWritable, mImage, mJukebox;
+	private String mName, mDbPath, mDrivePath, mNMJType, mWritable, mImage, mJukebox, mMachineType;
 
 	public NMJDb(Context context, String name, String dbpath, String drivepath) {
 

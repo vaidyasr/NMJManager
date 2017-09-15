@@ -63,6 +63,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -111,6 +112,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 
+import info.hoang8f.android.segmented.SegmentedGroup;
+
 import static com.nmj.functions.PreferenceKeys.CONFIRM_BACK_PRESS;
 import static com.nmj.functions.PreferenceKeys.LOAD_LAST_DATABASE;
 import static com.nmj.functions.PreferenceKeys.STARTUP_SELECTION;
@@ -123,6 +126,7 @@ public class Main extends NMJActivity {
     public static final int MOVIES = 1, SHOWS = 2, MUSIC = 3, SELECT = 4, SOURCE = 5;
     protected ListView mDrawerList;
     AlertDialog alertDialog;
+    ArrayList<NMJDb> nmjdb = new ArrayList<>();
     private ArrayList<NMJSource> nmjsource;
     private EditText ip_address, port, display_name;
     private int mNumMovies, mNumShows, selectedIndex, mStartup, mNumMusic;
@@ -137,7 +141,6 @@ public class Main extends NMJActivity {
     private List<ApplicationInfo> mApplicationList;
     private Picasso mPicasso;
     private Context mContext;
-
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -194,7 +197,7 @@ public class Main extends NMJActivity {
         //
         //PreferenceManager.getDefaultSharedPreferences(this).edit().putString(STORED_DB, "").apply();
 
-        if(PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(LOAD_LAST_DATABASE, true)){
+        if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(LOAD_LAST_DATABASE, true)) {
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
             String last_db = sharedPref.getString("LAST_DB", "");
             //SharedPreferences.Editor editor = sharedPref.edit();
@@ -207,8 +210,8 @@ public class Main extends NMJActivity {
                 NMJLib.setDrivePath(NMJLib.getStringFromJSONObject(jObject, "DRIVE_PATH", ""));
                 NMJLib.setNMJPort(NMJLib.getStringFromJSONObject(jObject, "PORT", ""));
                 NMJLib.setNMJServer(NMJLib.getStringFromJSONObject(jObject, "IP_ADDRESS", ""));
-                LoadDatabase();
-            } catch (Exception e){
+                LoadDatabase(null);
+            } catch (Exception e) {
 
             }
         }
@@ -299,7 +302,7 @@ public class Main extends NMJActivity {
                     ft.replace(R.id.content_frame, MovieDiscoveryViewPagerFragment.newInstance(), "frag" + type);
                     break;
                 case SELECT:
-                    getNMJDatabase();
+                    getNMJServer();
                     break;
                 case SOURCE:
                     System.out.println("Selected: " + nmjsource.get(index - 7).getMachine());
@@ -330,7 +333,7 @@ public class Main extends NMJActivity {
             mDrawerLayout.closeDrawers();
     }
 
-    protected void getNMJDatabase() {
+    protected void getNMJServer() {
         Context context = this;
         // get prompts.xml view
         LayoutInflater li = LayoutInflater.from(context);
@@ -351,6 +354,59 @@ public class Main extends NMJActivity {
 
         // show it
         alertDialog.show();
+    }
+
+    protected void getNMJDatabase() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle("Select a NMJ database");
+        if (mNMJItems.size() != 0) {
+            LayoutInflater li = LayoutInflater.from(mContext);
+            View promptsView = li.inflate(R.layout.nmjdb_select, null);
+
+            RelativeLayout relativeLayout = (RelativeLayout) promptsView.findViewById(R.id.segmented_layout);
+
+            ListView listView = (ListView) promptsView.findViewById(R.id.nmjlist);
+            System.out.println("Machine Type: " + NMJLib.getMachineType());
+            if (NMJLib.getMachineType().equals(""))
+                relativeLayout.setVisibility(View.GONE);
+
+            // set prompts.xml to alertdialog builder
+            alertDialogBuilder.setView(promptsView);
+            final AlertDialog dialog = alertDialogBuilder.create();
+
+            listView.setAdapter(new ListAdapter());
+            listView.setOnItemClickListener(new OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
+                    if (!nmjdb.get(pos).getJukebox().equals("0")) {
+                        NMJLib.setDbPath(nmjdb.get(pos).getDbPath());
+                        NMJLib.setDrivePath(nmjdb.get(pos).getDrivePath());
+                        try {
+                            JSONObject tobj = new JSONObject();
+                            tobj.put("IP_ADDRESS", NMJLib.getNMJServer());
+                            tobj.put("PORT", NMJLib.getNMJPort());
+                            tobj.put("DB_PATH", nmjdb.get(pos).getDbPath());
+                            tobj.put("DRIVE_PATH", nmjdb.get(pos).getDrivePath());
+                            tobj.put("JUKEBOX", nmjdb.get(pos).getJukebox());
+                            tobj.put("NMJ_TYPE", nmjdb.get(pos).getNMJType());
+                            System.out.println("To cache : " + tobj.toString());
+                            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPref.edit();
+                            editor.putString("LAST_DB", tobj.toString());
+                            editor.apply();
+                            //PreferenceManager.getDefaultSharedPreferences(mContext).edit().putString(LAST_DB, tobj.toString()).apply();
+                        } catch (Exception e) {
+                            System.out.println("Exception Occured while saving DB" + e.toString());
+                        }
+                        LoadDatabase(dialog);
+
+                    } else {
+                        showMessage();
+                    }
+                }
+            });
+            dialog.show();
+        }
     }
 
     public void cancel(View v) {
@@ -400,7 +456,7 @@ public class Main extends NMJActivity {
         alertDialog.dismiss();
     }
 
-    public void LoadDatabase(){
+    public void LoadDatabase(AlertDialog dialog) {
         System.out.println("DBPath : " + NMJLib.getDbPath());
         System.out.println("Drivepath : " + NMJLib.getDrivePath());
         if (mStartup == 1)
@@ -414,22 +470,22 @@ public class Main extends NMJActivity {
                 LocalBroadcastUtils.updateLibraryCount(NMJManagerApplication.getContext());
             }
         }.start();
+        if (dialog != null)
+            dialog.dismiss();
     }
 
     public void showMessageAsync() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select a NMJ database");
-
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
             JSONObject jObject;
             JSONArray jArray;
-            ArrayList<NMJDb> nmjdb = new ArrayList<>();
             String error;
 
             protected Void doInBackground(Void... params) {
+                nmjdb.clear();
                 try {
-                    jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerURL() +
-                            "NMJManagerTablet_web/getData.php?action=getDrives&type=local");
+                    jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerPHPURL() +
+                            "action=getDrives&type=local");
+                    NMJLib.setMachineType(NMJLib.getStringFromJSONObject(jObject, "machine", ""));
                     jArray = jObject.getJSONArray("data");
                     for (int i = 0; i < jArray.length(); i++) {
                         JSONObject dObject = jArray.getJSONObject(i);
@@ -448,13 +504,14 @@ public class Main extends NMJActivity {
             }
 
             protected void onPostExecute(Void result) {
+                mNMJItems.clear();
                 if (nmjdb.size() != 0) {
                     //String[] folders = new String[nmjdb.size()];
-                    mNMJItems.clear();
                     for (int i = 0; i < nmjdb.size(); i++) {
                         mNMJItems.add(new MenuItem(nmjdb.get(i).getName(), MenuItem.SECTION, nmjdb.get(i).getJukebox().equals("0") ? R.drawable.ic_selectsource_icon_harddisk_24dp : R.drawable.ic_selectsource_icon_harddisk_jukebox_24dp));
                     }
-                    builder.setAdapter(new ListAdapter(), new DialogInterface.OnClickListener() {
+                    getNMJDatabase();
+/*                    alertDialogBuilder.setAdapter(new ListAdapter(), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             if (!nmjdb.get(which).getJukebox().equals("0")) {
@@ -483,30 +540,8 @@ System.out.println("Exception Occured while saving DB" + e.toString());
                             }
                         }
 
-                    });
-/*                    builder.setItems(folders, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            NMJLib.setDbPath(nmjdb.get(which).getDbPath());
-                            NMJLib.setDrivePath(nmjdb.get(which).getDrivePath());
-                            System.out.println("DBPath : " + NMJLib.getDbPath());
-                            System.out.println("Drivepath : " + NMJLib.getDrivePath());
-
-                            if (mStartup == 1)
-                                LocalBroadcastUtils.loadMovieLibrary(NMJManagerApplication.getContext());
-                            else if (mStartup == 2)
-                                LocalBroadcastUtils.loadTvShowLibrary(NMJManagerApplication.getContext());
-                            new Thread() {
-                                @Override
-                                public void run() {
-                                    NMJLib.setLibrary(NMJManagerApplication.getContext(), mDbHelper);
-                                    LocalBroadcastUtils.updateLibraryCount(NMJManagerApplication.getContext());
-                                }
-                            }.start();
-                        }
                     });*/
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
+
                 } else {
                     Toast.makeText(NMJManagerApplication.getContext(), error, Toast.LENGTH_SHORT).show();
                 }
@@ -633,10 +668,11 @@ System.out.println("Exception Occured while saving DB" + e.toString());
         mMenuItems.add(new MenuItem(getString(R.string.menuAboutContact), MenuItem.SETTINGS_AREA, R.drawable.ic_help_grey600_24dp));
     }
 
-    private void getDeleteConfirmation(final int position){
+    private void getDeleteConfirmation(final int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.remove_selected_entry);
         builder.setMessage(R.string.areYouSure);
+
         builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap.Config;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -57,6 +58,7 @@ import com.github.ksoichiro.android.observablescrollview.ObservableGridView;
 import com.nmj.functions.CoverItem;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.NMJMovie;
+import com.nmj.functions.PreferenceKeys;
 import com.nmj.loader.MovieLoader;
 import com.nmj.loader.MovieLibraryType;
 import com.nmj.loader.MovieSortType;
@@ -86,6 +88,11 @@ import static com.nmj.loader.MovieLibraryType.NOW_PLAYING;
 import static com.nmj.loader.MovieLibraryType.POPULAR;
 import static com.nmj.loader.MovieLibraryType.TOP_RATED;
 import static com.nmj.loader.MovieLibraryType.UPCOMING;
+import static com.nmj.loader.MovieLoader.SORT_DATE_ADDED;
+import static com.nmj.loader.MovieLoader.SORT_DURATION;
+import static com.nmj.loader.MovieLoader.SORT_RATING;
+import static com.nmj.loader.MovieLoader.SORT_RELEASE;
+import static com.nmj.loader.MovieLoader.SORT_TITLE;
 
 public class MovieLibraryFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -104,16 +111,13 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     private SearchView mSearchView;
     private View mEmptyLibraryLayout;
     private TextView mEmptyLibraryTitle, mEmptyLibraryDescription;
+    private MenuItem sortMenu;
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (mMovieLoader != null) {
                 if (intent.filterEquals(new Intent("NMJManager-movie-actor-search"))) {
                     mMovieLoader.search("actor: " + intent.getStringExtra("intent_extra_data_key"));
-                } else if (intent.filterEquals(new Intent("NMJManager-movies-load"))) {
-                    hideEmptyView();
-                    mMovieLoader.clearAll();
-                    mMovieLoader.load();
                 } else {
                     hideEmptyView();
                     mMovieLoader.load();
@@ -290,7 +294,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         mMovieLoader.load();
         showProgressBar();
 
-
         return v;
     }
 
@@ -333,6 +336,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     }
 
     private void onSearchViewCollapsed() {
+        mMovieLoader.clearAll();
         mMovieLoader.load();
         showProgressBar();
     }
@@ -341,10 +345,30 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu, menu);
 
-        if (NMJLib.getSortType().equals("asc"))
+        System.out.println("Sort Order: " + NMJLib.getSortOrder());
+
+        if (NMJLib.getSortOrder().equals("asc"))
             menu.findItem(R.id.sort).setIcon(R.drawable.ic_sort_asc_white_24dp);
         else
             menu.findItem(R.id.sort).setIcon(R.drawable.ic_sort_desc_white_24dp);
+
+        switch (NMJLib.getSortType()) {
+            case SORT_TITLE:
+                menu.findItem(R.id.menuSortTitle).setChecked(true);
+                break;
+            case SORT_RELEASE:
+                menu.findItem(R.id.menuSortRelease).setChecked(true);
+                break;
+            case SORT_RATING:
+                menu.findItem(R.id.menuSortRating).setChecked(true);
+                break;
+            case SORT_DATE_ADDED:
+                menu.findItem(R.id.menuSortAdded).setChecked(true);
+                break;
+            case SORT_DURATION:
+                menu.findItem(R.id.menuSortDuration).setChecked(true);
+                break;
+        }
 
         menu.findItem(R.id.random).setVisible(mMovieLoader.getType() != MovieLibraryType.COLLECTIONS &&
                 mMovieLoader.getType() != MovieLibraryType.LISTS);
@@ -483,6 +507,16 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 startActivity(new Intent(mContext, UnidentifiedMovies.class));
                 break;
         }
+        if (item.getTitle().equals("Sort"))
+            sortMenu = item;
+        else
+            item.setChecked(true);
+        if (sortMenu != null) {
+            if (NMJLib.getSortOrder().equals("asc"))
+                sortMenu.setIcon(R.drawable.ic_sort_asc_white_24dp);
+            else
+                sortMenu.setIcon(R.drawable.ic_sort_desc_white_24dp);
+        }
 
         return true;
     }
@@ -574,11 +608,17 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     }
 
     public class EndlessScrollListener implements OnScrollListener {
-
+        // The minimum number of items to have below your current scroll position
+        // before loading more.
         private int visibleThreshold = 5;
+        // The current offset index of data you have loaded
         private int currentPage = 0;
-        private int previousTotal = 0;
+        // The total number of items in the dataset after the last load
+        private int previousTotalItemCount = 0;
+        // True if we are still waiting for the last set of data to load.
         private boolean loading = true;
+        // Sets the starting page index
+        private int startingPageIndex = 0;
 
         public EndlessScrollListener() {
         }
@@ -587,20 +627,38 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             this.visibleThreshold = visibleThreshold;
         }
 
+        public EndlessScrollListener(int visibleThreshold, int startPage) {
+            this.visibleThreshold = visibleThreshold;
+            this.startingPageIndex = startPage;
+            this.currentPage = startPage;
+        }
+
         @Override
         public void onScroll(AbsListView view, int firstVisibleItem,
                              int visibleItemCount, int totalItemCount) {
-            if (loading) {
-                if (totalItemCount > previousTotal) {
-                    loading = false;
-                    previousTotal = totalItemCount;
-                    currentPage++;
+            // If the total item count is zero and the previous isn't, assume the
+            // list is invalidated and should be reset back to initial state
+            if (totalItemCount < previousTotalItemCount) {
+                this.currentPage = this.startingPageIndex;
+                this.previousTotalItemCount = totalItemCount;
+                if (totalItemCount == 0) {
+                    this.loading = true;
                 }
             }
-            if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
-                // I load the next page of gigs using a background task,
-                // but you can call any function here.
-                System.out.println("Current Page: " + currentPage);
+
+            // If it's still loading, we check to see if the dataset count has
+            // changed, if so we conclude it has finished loading and update the current page
+            // number and total item count.
+            if (loading && (totalItemCount > previousTotalItemCount)) {
+                loading = false;
+                previousTotalItemCount = totalItemCount;
+                currentPage++;
+            }
+
+            // If it isn't currently loading, we check to see if we have breached
+            // the visibleThreshold and need to reload more data.
+            // If we do need to reload some more data, we execute onLoadMore to fetch the data.
+            if (!loading && (firstVisibleItem + visibleItemCount + visibleThreshold) >= totalItemCount) {
                 if (MovieLibraryType.fromInt(getArguments().getInt("type")) == UPCOMING ||
                         MovieLibraryType.fromInt(getArguments().getInt("type")) == POPULAR ||
                         MovieLibraryType.fromInt(getArguments().getInt("type")) == NOW_PLAYING ||
@@ -608,7 +666,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                     mMovieLoader.loadMore(totalItemCount, currentPage + 1);
                 else
                     mMovieLoader.loadMore(totalItemCount, 25);
-
                 mAdapter.notifyDataSetChanged();
                 System.out.println("Loading...");
                 loading = true;

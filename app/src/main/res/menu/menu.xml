@@ -2,17 +2,18 @@
 
     <item
         android:id="@+id/search_textbox"
-        app:actionViewClass="android.support.v7.widget.SearchView"
         android:icon="@drawable/ic_search_white_24dp"
-        app:showAsAction="always|collapseActionView"
-        android:title="@string/stringSearch">
+        android:title="@string/stringSearch"
+        app:actionViewClass="android.support.v7.widget.SearchView"
+        app:showAsAction="always|collapseActionView">
     </item>
     <item
         android:id="@+id/sort"
         android:icon="@drawable/ic_sort_desc_white_24dp"
-        app:showAsAction="ifRoom"
-        android:title="@string/stringSort">
+        android:title="@string/stringSort"
+        app:showAsAction="ifRoom">
         <menu>
+            <group android:checkableBehavior="single">
             <item
                 android:id="@+id/menuSortTitle"
                 android:title="@string/sortTitle"/>
@@ -28,13 +29,14 @@
             <item
                 android:id="@+id/menuSortAdded"
                 android:title="@string/sortAdded"/>
+            </group>
         </menu>
     </item>
     <item
         android:id="@+id/filters"
         android:icon="@drawable/ic_filter_list_white_24dp"
-        app:showAsAction="ifRoom"
-        android:title="@string/filters">
+        android:title="@string/filters"
+        app:showAsAction="ifRoom">
         <menu>
             <item
                 android:id="@+id/index"
@@ -73,8 +75,8 @@
     <item
         android:id="@+id/update"
         android:icon="@drawable/ic_sync_white_24dp"
-        app:showAsAction="ifRoom"
-        android:title="@string/menuUpdateTitle">
+        android:title="@string/menuUpdateTitle"
+        app:showAsAction="ifRoom">
     </item>
 
     <group android:id="@+id/group1" >
