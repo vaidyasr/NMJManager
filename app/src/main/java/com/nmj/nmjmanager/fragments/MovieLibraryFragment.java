@@ -110,6 +110,10 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             if (mMovieLoader != null) {
                 if (intent.filterEquals(new Intent("NMJManager-movie-actor-search"))) {
                     mMovieLoader.search("actor: " + intent.getStringExtra("intent_extra_data_key"));
+                } else if (intent.filterEquals(new Intent("NMJManager-movies-load"))) {
+                    hideEmptyView();
+                    mMovieLoader.clearAll();
+                    mMovieLoader.load();
                 } else {
                     hideEmptyView();
                     mMovieLoader.load();
@@ -337,7 +341,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu, menu);
 
-        if(NMJLib.getSortType().equals("asc"))
+        if (NMJLib.getSortType().equals("asc"))
             menu.findItem(R.id.sort).setIcon(R.drawable.ic_sort_asc_white_24dp);
         else
             menu.findItem(R.id.sort).setIcon(R.drawable.ic_sort_desc_white_24dp);

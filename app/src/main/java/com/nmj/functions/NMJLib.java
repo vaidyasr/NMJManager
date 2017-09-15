@@ -215,7 +215,7 @@ public class NMJLib {
     }
 
     public static String getNMJServerURL() {
-        return (!getNMJPort().equals("")) ? "http://" + getNMJServer() + ":" + getNMJPort() : "http://" + getNMJServer() + "/";
+        return (!getNMJPort().equals("")) ? "http://" + getNMJServer() + ":" + getNMJPort() + "/" : "http://" + getNMJServer() + "/";
     }
 
     public static String getNMJImageURL() {
