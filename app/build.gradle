@@ -64,6 +64,7 @@ dependencies {
     compile 'com.iainconnor:objectcache:0.0.19-SNAPSHOT'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'org.slf4j:slf4j-api:1.7.7'
+    compile 'info.hoang8f:android-segmented:1.0.6'
     compile ('com.omertron:thetvdbapi:1.9') {
         exclude group: 'org.apache.httpcomponents', module: 'httpclient'
         exclude module: 'junit'

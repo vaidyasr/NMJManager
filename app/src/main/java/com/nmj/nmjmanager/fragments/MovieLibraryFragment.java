@@ -118,6 +118,11 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             if (mMovieLoader != null) {
                 if (intent.filterEquals(new Intent("NMJManager-movie-actor-search"))) {
                     mMovieLoader.search("actor: " + intent.getStringExtra("intent_extra_data_key"));
+                } else if (intent.filterEquals(new Intent("NMJManager-movies-load"))) {
+                    hideEmptyView();
+                    mMovieLoader.clearAll();
+                    mGridView.scrollTo(0,0);
+                    mMovieLoader.load();
                 } else {
                     hideEmptyView();
                     mMovieLoader.load();
@@ -406,6 +411,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (newText.length() > 0) {
+                    mMovieLoader.clearAll();
                     mMovieLoader.search(newText);
                     showProgressBar();
                 } else {

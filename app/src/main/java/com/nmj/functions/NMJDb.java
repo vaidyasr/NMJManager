@@ -20,7 +20,7 @@ import android.content.Context;
 
 public class NMJDb {
 
-	private String mName, mDbPath, mDrivePath, mNMJType, mWritable, mImage, mJukebox, mMachineType;
+	private String mName, mDbPath, mDrivePath, mNMJType, mWritable, mImage, mJukebox, mMachineType, mDeviceType, mPath;
 
 	public NMJDb(Context context, String name, String dbpath, String drivepath) {
 
@@ -68,6 +68,22 @@ public class NMJDb {
 
 	public void setJukebox(String jukebox) {
 		mJukebox = jukebox;
+	}
+
+	public void setPath(String path) {
+		mPath = path;
+	}
+
+	public void setDeviceType(String deviceType) {
+		mDeviceType = deviceType;
+	}
+
+	public String getPath(){
+		return mPath;
+	}
+
+	public String getDeviceType(){
+		return mDeviceType;
 	}
 
 	public String getWritable() {

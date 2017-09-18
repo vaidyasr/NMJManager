@@ -38,6 +38,7 @@ import android.media.Image;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -63,6 +64,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -141,6 +143,9 @@ public class Main extends NMJActivity {
     private List<ApplicationInfo> mApplicationList;
     private Picasso mPicasso;
     private Context mContext;
+    private String mDriveType = "local";
+    AlertDialog.Builder alertDialogBuilder;
+
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -212,7 +217,7 @@ public class Main extends NMJActivity {
                 NMJLib.setNMJServer(NMJLib.getStringFromJSONObject(jObject, "IP_ADDRESS", ""));
                 LoadDatabase(null);
             } catch (Exception e) {
-
+                Toast.makeText(this, "Exception Occurred: " + e.toString(), Toast.LENGTH_LONG).show();
             }
         }
 
@@ -308,7 +313,7 @@ public class Main extends NMJActivity {
                     System.out.println("Selected: " + nmjsource.get(index - 7).getMachine());
                     NMJLib.setNMJPort(nmjsource.get(index - 7).getPort());
                     NMJLib.setNMJServer(nmjsource.get(index - 7).getMachine());
-                    showMessageAsync();
+                    loadDriveData(mDriveType);
                     //ft.replace(R.id.content_frame, MovieLibraryOverviewFragment.newInstance(), "frag" + type);
                     break;
             }
@@ -356,57 +361,75 @@ public class Main extends NMJActivity {
         alertDialog.show();
     }
 
-    protected void getNMJDatabase() {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setTitle("Select a NMJ database");
-        if (mNMJItems.size() != 0) {
-            LayoutInflater li = LayoutInflater.from(mContext);
-            View promptsView = li.inflate(R.layout.nmjdb_select, null);
-
-            RelativeLayout relativeLayout = (RelativeLayout) promptsView.findViewById(R.id.segmented_layout);
-
-            ListView listView = (ListView) promptsView.findViewById(R.id.nmjlist);
-            System.out.println("Machine Type: " + NMJLib.getMachineType());
-            if (NMJLib.getMachineType().equals(""))
-                relativeLayout.setVisibility(View.GONE);
-
-            // set prompts.xml to alertdialog builder
-            alertDialogBuilder.setView(promptsView);
-            final AlertDialog dialog = alertDialogBuilder.create();
-
-            listView.setAdapter(new ListAdapter());
-            listView.setOnItemClickListener(new OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
-                    if (!nmjdb.get(pos).getJukebox().equals("0")) {
-                        NMJLib.setDbPath(nmjdb.get(pos).getDbPath());
-                        NMJLib.setDrivePath(nmjdb.get(pos).getDrivePath());
-                        try {
-                            JSONObject tobj = new JSONObject();
-                            tobj.put("IP_ADDRESS", NMJLib.getNMJServer());
-                            tobj.put("PORT", NMJLib.getNMJPort());
-                            tobj.put("DB_PATH", nmjdb.get(pos).getDbPath());
-                            tobj.put("DRIVE_PATH", nmjdb.get(pos).getDrivePath());
-                            tobj.put("JUKEBOX", nmjdb.get(pos).getJukebox());
-                            tobj.put("NMJ_TYPE", nmjdb.get(pos).getNMJType());
-                            System.out.println("To cache : " + tobj.toString());
-                            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-                            SharedPreferences.Editor editor = sharedPref.edit();
-                            editor.putString("LAST_DB", tobj.toString());
-                            editor.apply();
-                            //PreferenceManager.getDefaultSharedPreferences(mContext).edit().putString(LAST_DB, tobj.toString()).apply();
-                        } catch (Exception e) {
-                            System.out.println("Exception Occured while saving DB" + e.toString());
-                        }
-                        LoadDatabase(dialog);
-
-                    } else {
-                        showMessage();
-                    }
-                }
-            });
-            dialog.show();
+    public void setLastDBValue(int pos) {
+        try {
+            JSONObject tobj = new JSONObject();
+            tobj.put("IP_ADDRESS", NMJLib.getNMJServer());
+            tobj.put("PORT", NMJLib.getNMJPort());
+            tobj.put("DB_PATH", nmjdb.get(pos).getDbPath());
+            tobj.put("DRIVE_PATH", nmjdb.get(pos).getDrivePath());
+            tobj.put("JUKEBOX", nmjdb.get(pos).getJukebox());
+            tobj.put("NMJ_TYPE", nmjdb.get(pos).getNMJType());
+            System.out.println("To cache : " + tobj.toString());
+            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString("LAST_DB", tobj.toString());
+            editor.apply();
+        } catch (Exception e) {
+            Toast.makeText(this, "Exception Occurred: " + e.toString(), Toast.LENGTH_LONG).show();
         }
+    }
+
+    protected void getNMJDatabase() {
+        final AlertDialog dialog;
+        LayoutInflater li = LayoutInflater.from(mContext);
+        View promptsView = li.inflate(R.layout.nmjdb_select, null);
+        alertDialogBuilder.setView(promptsView);
+        dialog = alertDialogBuilder.create();
+        RelativeLayout relativeLayout = (RelativeLayout) promptsView.findViewById(R.id.segmented_layout);
+
+        ListView listView = (ListView) promptsView.findViewById(R.id.nmjlist);
+        System.out.println("Machine Type: " + NMJLib.getMachineType());
+        if (NMJLib.getMachineType().equals(""))
+            relativeLayout.setVisibility(View.GONE);
+        RadioGroup radioGroup = (RadioGroup) promptsView.findViewById(R.id.segmented_group);
+        if (mDriveType.equals("local"))
+            radioGroup.check(R.id.local_button);
+        else
+            radioGroup.check(R.id.network_button);
+
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
+                switch (checkedId) {
+                    case R.id.local_button:
+                        loadDriveData("local");
+                        dialog.dismiss();
+                        break;
+                    case R.id.network_button:
+                        loadDriveData("network");
+                        dialog.dismiss();
+                        break;
+                }
+            }
+        });
+        listView.setAdapter(new ListAdapter());
+        listView.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
+                if (!nmjdb.get(pos).getJukebox().equals("0") && nmjdb.get(pos).getNMJType().equals("local")) {
+                    NMJLib.setDbPath(nmjdb.get(pos).getDbPath());
+                    NMJLib.setDrivePath(nmjdb.get(pos).getDrivePath());
+                    setLastDBValue(pos);
+                    LoadDatabase(dialog);
+                } else if (nmjdb.get(pos).getNMJType().equals("network")) {
+                    loadDriveDetails(nmjdb.get(pos).getPath(), nmjdb.get(pos).getDeviceType(), dialog);
+                } else {
+                    showNoJukeBoxMessage();
+                }
+            }
+        });
+        dialog.show();
     }
 
     public void cancel(View v) {
@@ -445,10 +468,9 @@ public class Main extends NMJActivity {
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putString("STORED_DB", jobj1.toString());
             editor.apply();
-            //PreferenceManager.getDefaultSharedPreferences(mContext).edit().putString(STORED_DB, ).apply();
             System.out.println("Saved Settings: " + jobj1.toString());
         } catch (Exception e) {
-
+            showDatabaseLoadError("Error saving database", e.toString());
         }
         Toast.makeText(this, ip_address.getText().toString() + " added", Toast.LENGTH_LONG).show();
         setupMenuItems(false);
@@ -470,21 +492,24 @@ public class Main extends NMJActivity {
                 LocalBroadcastUtils.updateLibraryCount(NMJManagerApplication.getContext());
             }
         }.start();
-        if (dialog != null)
+        if(dialog != null)
             dialog.dismiss();
     }
 
-    public void showMessageAsync() {
+    public void loadDriveData(String driveType) {
+        alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle("Select a NMJ database");
+        mDriveType = driveType;
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
             JSONObject jObject;
             JSONArray jArray;
-            String error;
+            String error, jString;
 
             protected Void doInBackground(Void... params) {
                 nmjdb.clear();
                 try {
                     jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerPHPURL() +
-                            "action=getDrives&type=local");
+                            "action=getDrives&type=" + mDriveType);
                     NMJLib.setMachineType(NMJLib.getStringFromJSONObject(jObject, "machine", ""));
                     jArray = jObject.getJSONArray("data");
                     for (int i = 0; i < jArray.length(); i++) {
@@ -495,6 +520,8 @@ public class Main extends NMJActivity {
                                 NMJLib.getStringFromJSONObject(dObject, "drivepath", ""));
                         nmjdb.add(i, tmpdb);
                         nmjdb.get(i).setJukebox(NMJLib.getStringFromJSONObject(dObject, "jukebox", "0"));
+                        nmjdb.get(i).setPath(NMJLib.getStringFromJSONObject(dObject, "path", ""));
+                        nmjdb.get(i).setDeviceType(NMJLib.getStringFromJSONObject(dObject, "device_type", ""));
                         nmjdb.get(i).setNMJType(NMJLib.getStringFromJSONObject(dObject, "type", "local"));
                     }
                 } catch (Exception e) {
@@ -506,44 +533,61 @@ public class Main extends NMJActivity {
             protected void onPostExecute(Void result) {
                 mNMJItems.clear();
                 if (nmjdb.size() != 0) {
-                    //String[] folders = new String[nmjdb.size()];
                     for (int i = 0; i < nmjdb.size(); i++) {
                         mNMJItems.add(new MenuItem(nmjdb.get(i).getName(), MenuItem.SECTION, nmjdb.get(i).getJukebox().equals("0") ? R.drawable.ic_selectsource_icon_harddisk_24dp : R.drawable.ic_selectsource_icon_harddisk_jukebox_24dp));
                     }
-                    getNMJDatabase();
-/*                    alertDialogBuilder.setAdapter(new ListAdapter(), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            if (!nmjdb.get(which).getJukebox().equals("0")) {
-                                NMJLib.setDbPath(nmjdb.get(which).getDbPath());
-                                NMJLib.setDrivePath(nmjdb.get(which).getDrivePath());
-                                try {
-                                    JSONObject tobj = new JSONObject();
-                                    tobj.put("IP_ADDRESS", NMJLib.getNMJServer());
-                                    tobj.put("PORT", NMJLib.getNMJPort());
-                                    tobj.put("DB_PATH", nmjdb.get(which).getDbPath());
-                                    tobj.put("DRIVE_PATH", nmjdb.get(which).getDrivePath());
-                                    tobj.put("JUKEBOX", nmjdb.get(which).getJukebox());
-                                    tobj.put("NMJ_TYPE", nmjdb.get(which).getNMJType());
-                                    System.out.println("To cache : " + tobj.toString());
-                                    SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-                                    SharedPreferences.Editor editor = sharedPref.edit();
-                                    editor.putString("LAST_DB", tobj.toString());
-                                    editor.apply();
-                                    //PreferenceManager.getDefaultSharedPreferences(mContext).edit().putString(LAST_DB, tobj.toString()).apply();
-                                } catch ( Exception e){
-System.out.println("Exception Occured while saving DB" + e.toString());
-                                }
-                                LoadDatabase();
-                            } else {
-                                showMessage();
-                            }
-                        }
+                    if (mNMJItems.size() != 0)
+                        getNMJDatabase();
+                } else
+                    showDatabaseLoadError("Error loading database", error);
+            }
+        };
+        task.execute();
+    }
 
-                    });*/
+    public void loadDriveDetails(final String path, final String deviceType, final AlertDialog dialog) {
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+            JSONObject jObject;
+            JSONArray jArray;
+            String error, status, message;
+            ArrayList<NMJDb> nmdb = new ArrayList<>();
 
+            protected Void doInBackground(Void... params) {
+                try {
+                    JSONObject obj = new JSONObject();
+                    obj.put("path", path);
+                    obj.put("device_type", deviceType);
+
+                    jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerPHPURL() +
+                            "action=getDriveDetails&DATA=" + obj.toString());
+                    System.out.println("Output: " + jObject.toString());
+                    NMJDb tmpdb = new NMJDb(NMJManagerApplication.getContext(),
+                            NMJLib.getStringFromJSONObject(jObject, "name", ""),
+                            NMJLib.getStringFromJSONObject(jObject, "dbpath", ""),
+                            NMJLib.getStringFromJSONObject(jObject, "drivepath", ""));
+                    nmdb.add(0, tmpdb);
+                    nmdb.get(0).setJukebox(NMJLib.getStringFromJSONObject(jObject, "jukebox", "0"));
+                    status = NMJLib.getStringFromJSONObject(jObject, "status", "success");
+                    message = NMJLib.getStringFromJSONObject(jObject, "message", "");
+
+                } catch (Exception e) {
+                    error = e.toString();
+                    System.out.println("Exception: " + error);
+                }
+                return null;
+            }
+
+            protected void onPostExecute(Void result) {
+                if(status.equals("success")){
+                    if (!nmdb.get(0).getJukebox().equals("0")) {
+                        NMJLib.setDbPath(nmdb.get(0).getDbPath());
+                        NMJLib.setDrivePath(nmdb.get(0).getDrivePath());
+                        LoadDatabase(dialog);
+                    } else {
+                        showNoJukeBoxMessage();
+                    }
                 } else {
-                    Toast.makeText(NMJManagerApplication.getContext(), error, Toast.LENGTH_SHORT).show();
+                    showDatabaseLoadError("Error loading database", message);
                 }
             }
         };
@@ -573,33 +617,6 @@ System.out.println("Exception Occured while saving DB" + e.toString());
 
     private void showUserDialog(final CharSequence[] items, final int which) {
 
-    }
-
-
-    private void getNMJDatabase1(int title) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(title);
-// Set up the input
-        final EditText input = new EditText(this);
-// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        builder.setView(input);
-
-// Set up the buttons
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String mText = input.getText().toString();
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-
-        builder.show();
     }
 
     @Override
@@ -660,7 +677,7 @@ System.out.println("Exception Occured while saving DB" + e.toString());
                 }
             }
         } catch (Exception e) {
-            System.out.println("Exception Occured : " + e.toString());
+            Toast.makeText(this, "Exception Occurred: " + e.toString(), Toast.LENGTH_LONG).show();
         }
         mMenuItems.add(new MenuItem(MenuItem.SEPARATOR_EXTRA_PADDING));
 
@@ -707,7 +724,7 @@ System.out.println("Exception Occured while saving DB" + e.toString());
                 setupMenuItems(false);
                 ((BaseAdapter) mDrawerList.getAdapter()).notifyDataSetChanged();
             } catch (Exception e) {
-
+                showDatabaseLoadError("Error deleting database", nmjsource.get(position - 7).getMachine() + ":" + e.toString());
             }
         }
     }
@@ -814,7 +831,30 @@ System.out.println("Exception Occured while saving DB" + e.toString());
         }
     }
 
-    private void showMessage() {
+    private void showDatabaseLoadError(String title, String error) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        // Setting Dialog Title
+        builder.setTitle(title);
+
+        // Setting Dialog Message
+        builder.setMessage(error);
+
+        // Setting OK Button
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // Write your code here to execute after dialog closed
+                //Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
+        Button nbutton = alert.getButton(DialogInterface.BUTTON_POSITIVE);
+        nbutton.setTextColor(Color.WHITE);
+        // Showing Alert Message
+    }
+
+    private void showNoJukeBoxMessage() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         // Setting Dialog Title
@@ -830,9 +870,10 @@ System.out.println("Exception Occured while saving DB" + e.toString());
                 //Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
             }
         });
-
-        // Showing Alert Message
-        builder.show();
+        AlertDialog alert = builder.create();
+        alert.show();
+        Button nbutton = alert.getButton(DialogInterface.BUTTON_POSITIVE);
+        nbutton.setTextColor(Color.WHITE);
     }
 
     public class ListAdapter extends BaseAdapter {

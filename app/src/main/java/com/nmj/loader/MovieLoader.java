@@ -94,6 +94,7 @@ public class MovieLoader {
     private MovieLoaderAsyncTask mAsyncTask;
     private boolean mShowingSearchResults = false;
     private String mListId, mListTmdbId, mCollectionId, mCollectionTmdbId;
+    private String mQuery;
 
     public MovieLoader(Context context, MovieLibraryType libraryType, Intent intent, OnLoadCompletedCallback callback) {
         //System.out.println("Entering MovieLoader");
@@ -246,14 +247,15 @@ public class MovieLoader {
         if (mAsyncTask != null) {
             mAsyncTask.cancel(true);
         }
+        mQuery = query;
 
         mShowingSearchResults = !TextUtils.isEmpty(query);
         //System.out.println("Executing MovieLoader");
         if (mLibraryType == MovieLibraryType.TOP_RATED || mLibraryType == MovieLibraryType.POPULAR ||
                 mLibraryType == MovieLibraryType.NOW_PLAYING || mLibraryType == MovieLibraryType.UPCOMING)
-            mAsyncTask = new MovieLoaderAsyncTask(query, 0, 1);
+            mAsyncTask = new MovieLoaderAsyncTask(mQuery, 0, 1);
         else
-            mAsyncTask = new MovieLoaderAsyncTask(query, 0, 25);
+            mAsyncTask = new MovieLoaderAsyncTask(mQuery, 0, 25);
         mAsyncTask.execute();
     }
 
@@ -261,7 +263,7 @@ public class MovieLoader {
         if (mAsyncTask != null) {
             mAsyncTask.cancel(true);
         }
-        mAsyncTask = new MovieLoaderAsyncTask("", start, count);
+        mAsyncTask = new MovieLoaderAsyncTask(mQuery, start, count);
         mAsyncTask.execute();
     }
 
