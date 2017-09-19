@@ -232,7 +232,7 @@ public class NMJLib {
 
     public static String getNMJImageURL() {
         if (!getNMJServerURL().equals("") && !getDrivePath().equals(""))
-            return getNMJServerURL() + "NMJManagerTablet_web/" + getDrivePath() + "/";
+            return getNMJServerURL() + "NMJManagerTablet_web/";
         else
             return "";
     }

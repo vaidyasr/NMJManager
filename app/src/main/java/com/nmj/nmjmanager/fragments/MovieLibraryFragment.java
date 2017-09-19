@@ -790,6 +790,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 mURL = baseUrl + imageSizeUrl;
             else
                 mURL = NMJLib.getNMJImageURL();
+            System.out.println("getNMJ: " + movie.getNMJThumbnail());
             mPicasso.load(mURL + movie.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
             if (mChecked.contains(position)) {
                 holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));
