@@ -66,20 +66,23 @@
         </menu>
     </item>
     <item
-        android:id="@+id/edit_button_2"
+        android:id="@+id/edit_menu"
         android:icon="@drawable/ic_edit_white_24dp"
         android:title="@string/editVideo"
         app:showAsAction="ifRoom">
         <menu>
             <item
                 android:id="@+id/update_from_tmdb"
-                android:title="@string/updateData"></item>
+                android:title="@string/updateData">
+            </item>
             <item
                 android:id="@+id/update_images"
-                android:title="@string/updateImages"></item>
+                android:title="@string/updateImages">
+            </item>
             <item
                 android:id="@+id/update_mediainfo"
-                android:title="@string/updateMediaInfo"></item>
+                android:title="@string/updateMediaInfo">
+            </item>
         </menu>
     </item>
     <item

@@ -481,6 +481,7 @@ public class Main extends NMJActivity {
     public void LoadDatabase(AlertDialog dialog) {
         System.out.println("DBPath : " + NMJLib.getDbPath());
         System.out.println("Drivepath : " + NMJLib.getDrivePath());
+        updatePHPScript();
         if (mStartup == 1)
             LocalBroadcastUtils.loadMovieLibrary(NMJManagerApplication.getContext());
         else if (mStartup == 2)
@@ -543,6 +544,50 @@ public class Main extends NMJActivity {
             }
         };
         task.execute();
+    }
+
+    public void updatePHPScript(){
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+            JSONObject jObject;
+            JSONArray jArray;
+            String error, status = "", message;
+            ArrayList<NMJDb> nmdb = new ArrayList<>();
+
+            protected Void doInBackground(Void... params) {
+                try {
+                    String serverURL = "http://www.pchvten.xyz/NMJManagerTablet/getData.php?action=getMD5sum";
+                    String clientURL = NMJLib.getNMJServerPHPURL() + "action=getMD5sum";
+                    jObject = NMJLib.getJSONObject(mContext, serverURL);
+                    String serverMD5 = NMJLib.getStringFromJSONObject(jObject, "md5sum", "");
+                    jObject = NMJLib.getJSONObject(mContext, clientURL);
+                    String clientMD5 = NMJLib.getStringFromJSONObject(jObject, "md5sum", "");
+                    if (!serverMD5.equals(clientMD5)){
+                        String updateURL = NMJLib.getNMJServerPHPURL() + "action=updateProgram";
+                        jObject = NMJLib.getJSONObject(mContext, updateURL);
+                        status = NMJLib.getStringFromJSONObject(jObject, "status", "");
+                        if (!status.equals("success"))
+                            error = NMJLib.getStringFromJSONObject(jObject, "error", "");
+                    }
+
+                } catch (Exception e) {
+                    error = e.toString();
+                    System.out.println("Exception: " + error);
+                }
+                return null;
+            }
+
+            protected void onPostExecute(Void result) {
+                if(!status.equals("success") && !status.equals("")){
+                } else if(status.equals("success")) {
+                    showToast("Updated successfully...", Toast.LENGTH_LONG);
+                }
+            }
+        };
+        task.execute();
+    }
+
+    public void showToast(String message, int messg_length){
+        Toast.makeText(this, message, messg_length).show();
     }
 
     public void loadDriveDetails(final String path, final String deviceType, final AlertDialog dialog) {

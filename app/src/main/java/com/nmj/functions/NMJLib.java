@@ -232,7 +232,7 @@ public class NMJLib {
 
     public static String getNMJImageURL() {
         if (!getNMJServerURL().equals("") && !getDrivePath().equals(""))
-            return getNMJServerURL() + "NMJManagerTablet_web/" + getDrivePath() + "/";
+            return getNMJServerURL() + "NMJManagerTablet_web/" ;
         else
             return "";
     }
@@ -2722,22 +2722,42 @@ public class NMJLib {
     public static void setMoviesWatched(final Context context,
                                         final List<String> showIds,
                                         final boolean watched) {
-        if (watched) {
-            Toast.makeText(context, context.getString(R.string.markedAsWatched), Toast.LENGTH_SHORT).show();
+        String mode;
+        if (watched)
+            mode = "add";
+        else
+            mode = "remove";
+        final String url = getNMJServerPHPURL() + "action=editWatched&drivepath=" +
+                NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&TTYPE=1&mode=" +
+                mode + "&showid=" + StringUtils.join(showIds, ",");
+        new AsyncTask<Void, Void, Void>() {
+            JSONObject jObject;
+            JSONArray jArray;
 
-            if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean(REMOVE_MOVIES_FROM_WATCHLIST, true))
-                setMoviesWatchlist(context, showIds, false); // False to remove from watchlist
-        } else
-            Toast.makeText(context, context.getString(R.string.markedAsUnwatched), Toast.LENGTH_SHORT).show();
+            protected Void doInBackground(Void... params) {
+                try {
+                    jObject = NMJLib.getJSONObject(context, url);
+                    jArray = jObject.getJSONArray("data");
+                    System.out.println("Output: " + jArray.toString());
+                } catch (Exception e) {
+                    System.out.println("Exception occurred : " + e.toString());
+                }
+                return null;
+            }
+
+            protected void onPostExecute(Void result) {
+                if (watched) {
+                    Toast.makeText(context, context.getString(R.string.markedAsWatched), Toast.LENGTH_SHORT).show();
+                    if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean(REMOVE_MOVIES_FROM_WATCHLIST, true))
+                        setMoviesWatchlist(context, showIds, false); // False to remove from watchlist
+                }
+                else
+                    Toast.makeText(context, context.getString(R.string.markedAsUnwatched), Toast.LENGTH_SHORT).show();
+            }
+        }.execute();
 
         Toast.makeText(context, context.getString(R.string.errorOccured), Toast.LENGTH_SHORT).show();
 
-        new Thread() {
-            @Override
-            public void run() {
-                setNMJMovieWatched(showIds, watched);
-            }
-        }.start();
     }
 
     public static void setMoviesWatchlist(final Context context,

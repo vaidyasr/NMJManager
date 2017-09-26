@@ -278,7 +278,8 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                     if (!(id == R.id.watched_menu ||
                             id == R.id.watchlist_menu ||
                             id == R.id.favorite_menu ||
-                            id == R.id.add_list_menu)) {
+                            id == R.id.add_list_menu ||
+                            id == R.id.edit_menu)) {
                         mode.finish();
 
                         LocalBroadcastUtils.updateMovieLibrary(mContext);
@@ -790,6 +791,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 mURL = baseUrl + imageSizeUrl;
             else
                 mURL = NMJLib.getNMJImageURL();
+
             mPicasso.load(mURL + movie.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
             if (mChecked.contains(position)) {
                 holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));

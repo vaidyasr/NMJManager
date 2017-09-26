@@ -255,7 +255,8 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
                 if (!(id == R.id.watched_menu ||
                         id == R.id.watchlist_menu ||
                         id == R.id.favorite_menu ||
-                        id == R.id.add_list_menu)) {
+                        id == R.id.add_list_menu ||
+                        id == R.id.edit_menu)) {
                     mode.finish();
 
                     LocalBroadcastUtils.updateMovieLibrary(mContext);
