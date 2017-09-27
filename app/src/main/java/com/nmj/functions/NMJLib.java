@@ -71,6 +71,7 @@ import com.nmj.loader.MovieSortType;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.nmjmanager.TvShow;
+import com.nmj.nmjmanager.fragments.MovieLibraryFragment;
 import com.nmj.nmjmanager.fragments.ScheduledUpdatesFragment;
 import com.nmj.service.MakeAvailableOffline;
 import com.nmj.service.MovieLibraryUpdate;
@@ -178,6 +179,7 @@ public class NMJLib {
     public static String mDbPath = "";
     public static String mDrivePath = "";
     public static int COVER = 1, BACKDROP = 2;
+    public static String WRITABLE = "";
     public static String[] subtitleFormats = new String[]{".srt", ".sub", ".ssa", ".ssf", ".smi", ".txt", ".usf", ".ass", ".stp", ".idx", ".aqt", ".cvd", ".dks", ".jss", ".mpl", ".pjs", ".psb", ".rt", ".svcd", ".usf"};
     private static String[] MEDIA_APPS = new String[]{"com.imdb.mobile", "com.google.android.youtube", "com.ted.android", "com.google.android.videos", "se.mtg.freetv.tv3_dk", "tv.twitch.android.viewer",
             "com.netflix.mediaclient", "com.gotv.crackle.handset", "net.flixster.android", "com.google.tv.alf", "com.viki.android", "com.mobitv.client.mobitv", "com.hulu.plus.jp", "com.hulu.plus",
@@ -212,6 +214,17 @@ public class NMJLib {
 
     public static void setNMJPort(String port) {
         PORT = port;
+    }
+
+    public static boolean isNMJDbWritable() {
+        if (WRITABLE.equals("yes"))
+            return true;
+        else
+            return false;
+    }
+
+    public static void setNMJDbWritable(String status) {
+        WRITABLE = status;
     }
 
     public static String getMachineType() {
@@ -2469,6 +2482,7 @@ public class NMJLib {
                 mDatabase.setMovieCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("movies")));
                 mDatabase.setShowCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("shows")));
                 mDatabase.setMusicCount(Integer.parseInt(jObject.getJSONObject("data").getJSONObject("count").getString("music")));
+                NMJLib.setNMJDbWritable(jObject.getJSONObject("data").getJSONObject("writable").toString());
                 JSONArray jArray = jObject.getJSONObject("data").getJSONArray("library");
 
                 for (int i = 0; i < jArray.length(); i++) {
@@ -2685,7 +2699,9 @@ public class NMJLib {
         }
     }
 
-    public static void setMoviesFavourite(final Context mContext, List<String> showIds, final boolean favorite) {
+    public static void setMoviesFavourite(final Context mContext, final List<String> showIds,
+                                          final List<NMJMovie> nmjMovies,
+                                          final boolean favorite) {
         String mode;
         if (favorite)
             mode = "add";
@@ -2715,14 +2731,22 @@ public class NMJLib {
                     Toast.makeText(mContext, mContext.getString(R.string.addedToFavs), Toast.LENGTH_SHORT).show();
                 else
                     Toast.makeText(mContext, mContext.getString(R.string.removedFromFavs), Toast.LENGTH_SHORT).show();
+                for (int i = 0; i < nmjMovies.size(); i++) {
+                    System.out.println(nmjMovies.get(i).getTitle());
+                }
+                for (int i = 0; i < nmjMovies.size(); i++) {
+                    nmjMovies.get(i).setFavourite(favorite);
+                }
             }
         }.execute();
     }
 
     public static void setMoviesWatched(final Context context,
                                         final List<String> showIds,
+                                        final List<NMJMovie> nmjMovies,
                                         final boolean watched) {
         String mode;
+
         if (watched)
             mode = "add";
         else
@@ -2731,16 +2755,17 @@ public class NMJLib {
                 NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&TTYPE=1&mode=" +
                 mode + "&showid=" + StringUtils.join(showIds, ",");
         new AsyncTask<Void, Void, Void>() {
-            JSONObject jObject;
+            JSONObject jObject, dObject;
             JSONArray jArray;
+            String error = "";
 
             protected Void doInBackground(Void... params) {
                 try {
                     jObject = NMJLib.getJSONObject(context, url);
-                    jArray = jObject.getJSONArray("data");
-                    System.out.println("Output: " + jArray.toString());
+                    dObject = jObject.getJSONObject("data").getJSONObject("status");
+                    System.out.println("Output: " + dObject.toString());
                 } catch (Exception e) {
-                    System.out.println("Exception occurred : " + e.toString());
+                    error = e.toString();
                 }
                 return null;
             }
@@ -2753,11 +2778,17 @@ public class NMJLib {
                 }
                 else
                     Toast.makeText(context, context.getString(R.string.markedAsUnwatched), Toast.LENGTH_SHORT).show();
+                for (int i = 0; i < nmjMovies.size(); i++) {
+                    System.out.println(nmjMovies.get(i).getTitle() + " : " + nmjMovies.get(i).getHasWatched());
+                }
+                for (int i = 0; i < nmjMovies.size(); i++) {
+                    nmjMovies.get(i).setHasWatched(watched);
+                }
+                for (int i = 0; i < nmjMovies.size(); i++) {
+                    System.out.println(nmjMovies.get(i).getTitle() + " : " + nmjMovies.get(i).getHasWatched());
+                }
             }
         }.execute();
-
-        Toast.makeText(context, context.getString(R.string.errorOccured), Toast.LENGTH_SHORT).show();
-
     }
 
     public static void setMoviesWatchlist(final Context context,

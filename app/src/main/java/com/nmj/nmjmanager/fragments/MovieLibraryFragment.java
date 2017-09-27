@@ -118,16 +118,19 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             if (mMovieLoader != null) {
                 if (intent.filterEquals(new Intent("NMJManager-movie-actor-search"))) {
                     mMovieLoader.search("actor: " + intent.getStringExtra("intent_extra_data_key"));
+                    showProgressBar();
                 } else if (intent.filterEquals(new Intent("NMJManager-movies-load"))) {
                     hideEmptyView();
                     mMovieLoader.clearAll();
-                    mGridView.scrollTo(0,0);
                     mMovieLoader.load();
+                    showProgressBar();
+                } else if (intent.filterEquals(new Intent("NMJManager-movies-update"))) {
+                    mAdapter.notifyDataSetChanged();
                 } else {
                     hideEmptyView();
                     mMovieLoader.load();
+                    showProgressBar();
                 }
-                showProgressBar();
             }
         }
     };
@@ -221,7 +224,13 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         mGridView.setOnScrollListener(new EndlessScrollListener());
 
         // We only want to display the contextual menu if we're showing movies, not collections
-        if (getArguments().getInt("type") != MovieLoader.COLLECTIONS) {
+        if (getArguments().getInt("type") != MovieLoader.COLLECTIONS &&
+                getArguments().getInt("type") != MovieLoader.LISTS &&
+                getArguments().getInt("type") != MovieLoader.TOP_RATED &&
+                getArguments().getInt("type") != MovieLoader.POPULAR &&
+                getArguments().getInt("type") != MovieLoader.NOW_PLAYING &&
+                getArguments().getInt("type") != MovieLoader.UPCOMING &&
+                !NMJLib.isNMJDbWritable()) {
             mGridView.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE_MODAL);
             mGridView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
                 @Override
@@ -250,16 +259,16 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
 
                     switch (id) {
                         case R.id.movie_add_fav:
-                            NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedMovies(), true);
+                            NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedMovies(), mAdapter.getCheckedItems(), true);
                             break;
                         case R.id.movie_remove_fav:
-                            NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedMovies(), false);
+                            NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedMovies(), mAdapter.getCheckedItems(), false);
                             break;
                         case R.id.movie_watched:
-                            NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedMovies(), true);
+                            NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedMovies(), mAdapter.getCheckedItems(), true);
                             break;
                         case R.id.movie_unwatched:
-                            NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedMovies(), false);
+                            NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedMovies(), mAdapter.getCheckedItems(), false);
                             break;
                         case R.id.add_to_watchlist:
                             NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedMovies(), true);
@@ -284,7 +293,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
 
                         LocalBroadcastUtils.updateMovieLibrary(mContext);
                     }
-
                     return true;
                 }
 
@@ -722,6 +730,13 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             return movies;
         }
 
+        public List<NMJMovie> getCheckedItems() {
+            List<NMJMovie> movies = new ArrayList<>(mChecked.size());
+            for (Integer i : mChecked)
+                movies.add(getItem(i));
+            return movies;
+        }
+
         @Override
         public boolean isEmpty() {
             return getCount() == 0 && !mLoading;
@@ -799,6 +814,8 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 holder.cardview.setForeground(null);
             }
             holder.hasWatched.setVisibility(View.GONE);
+
+            System.out.println("Watched: " + movie.getTitle() + ":" + hasWatched(position));
 
             if (hasWatched(position))
                 holder.hasWatched.setVisibility(View.VISIBLE);

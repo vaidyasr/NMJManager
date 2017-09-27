@@ -43,9 +43,9 @@ import static com.nmj.functions.PreferenceKeys.SHOWS_TAB_SELECTED;
 
 public class TvShowLibraryOverviewFragment extends Fragment {
 
+    List<String> TITLES = new ArrayList<>();
     private ViewPager mViewPager;
     private PagerSlidingTabStrip mTabs;
-    List<String> TITLES = new ArrayList<>();
 
     public TvShowLibraryOverviewFragment() {} // Empty constructor
 
@@ -95,6 +95,7 @@ public class TvShowLibraryOverviewFragment extends Fragment {
                 return val1.compareTo(val2);
             }
         });
+
         for (int i=0; i<list.size();i++){
             mAdapter.addTab(TITLES.get(Integer.parseInt(list.get(i))));
         }

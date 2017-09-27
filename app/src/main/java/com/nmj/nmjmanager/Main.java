@@ -129,6 +129,7 @@ public class Main extends NMJActivity {
     protected ListView mDrawerList;
     AlertDialog alertDialog;
     ArrayList<NMJDb> nmjdb = new ArrayList<>();
+    AlertDialog.Builder alertDialogBuilder;
     private ArrayList<NMJSource> nmjsource;
     private EditText ip_address, port, display_name;
     private int mNumMovies, mNumShows, selectedIndex, mStartup, mNumMusic;
@@ -144,8 +145,6 @@ public class Main extends NMJActivity {
     private Picasso mPicasso;
     private Context mContext;
     private String mDriveType = "local";
-    AlertDialog.Builder alertDialogBuilder;
-
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -555,12 +554,13 @@ public class Main extends NMJActivity {
 
             protected Void doInBackground(Void... params) {
                 try {
-                    String serverURL = "http://www.pchvten.xyz/NMJManagerTablet/getData.php?action=getMD5sum";
+                    String serverURL = "http://www.pchportal.duckdns.org/NMJManagerTablet/getData.php?action=getMD5sum";
                     String clientURL = NMJLib.getNMJServerPHPURL() + "action=getMD5sum";
                     jObject = NMJLib.getJSONObject(mContext, serverURL);
                     String serverMD5 = NMJLib.getStringFromJSONObject(jObject, "md5sum", "");
                     jObject = NMJLib.getJSONObject(mContext, clientURL);
                     String clientMD5 = NMJLib.getStringFromJSONObject(jObject, "md5sum", "");
+
                     if (!serverMD5.equals(clientMD5)){
                         String updateURL = NMJLib.getNMJServerPHPURL() + "action=updateProgram";
                         jObject = NMJLib.getJSONObject(mContext, updateURL);

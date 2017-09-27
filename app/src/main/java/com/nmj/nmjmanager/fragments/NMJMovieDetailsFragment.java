@@ -689,13 +689,13 @@ public class NMJMovieDetailsFragment extends Fragment {
     public void shareMovie() {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_TEXT, "http://www.themoviedb.org/movie/" + mMovie.getTmdbId());
+        intent.putExtra(Intent.EXTRA_TEXT, "http://www.themoviedb.org/movie/" + mMovie.getTmdbId().replace("tmdb", ""));
         startActivity(Intent.createChooser(intent, getString(R.string.shareWith)));
     }
 
     public void openInBrowser() {
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse("http://www.themoviedb.org/movie/" + mMovie.getTmdbId()));
+        intent.setData(Uri.parse("http://www.themoviedb.org/movie/" + mMovie.getTmdbId().replace("tmdb", "")));
         startActivity(Intent.createChooser(intent, getString(R.string.openWith)));
     }
 

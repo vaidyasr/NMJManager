@@ -45,9 +45,9 @@ import static com.nmj.functions.PreferenceKeys.MOVIES_TABS_SELECTED;
 
 public class MovieLibraryOverviewFragment extends Fragment {
 
+    List<String> TITLES = new ArrayList<>();
     private ViewPager mViewPager;
     private PagerSlidingTabStrip mTabs;
-    List<String> TITLES = new ArrayList<>();
 
     public MovieLibraryOverviewFragment() {
     } // Empty constructor
@@ -120,6 +120,12 @@ public class MovieLibraryOverviewFragment extends Fragment {
             mTabs.notifyDataSetChanged();
         }
 
+        public void removeTab(int position) {
+            tabs.remove(position);
+            notifyDataSetChanged();
+            mTabs.notifyDataSetChanged();
+        }
+
         @Override
         public CharSequence getPageTitle(int position) {
             return tabs.get(position);
@@ -127,6 +133,7 @@ public class MovieLibraryOverviewFragment extends Fragment {
 
         @Override
         public Fragment getItem(int index) {
+            System.out.println("Index: " + TITLES.indexOf(getPageTitle(index)));
             switch (TITLES.indexOf(getPageTitle(index))) {
                 case 0:
                     return MovieLibraryFragment.newInstance(MovieLoader.ALL_MOVIES);

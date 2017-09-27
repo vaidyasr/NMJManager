@@ -227,16 +227,16 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
 
                     switch (id) {
                         case R.id.movie_add_fav:
-                            NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedMovies(), true);
+                            NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedMovies(), mAdapter.getCheckedItems(), true);
                             break;
                         case R.id.movie_remove_fav:
-                            NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedMovies(), false);
+                            NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedMovies(), mAdapter.getCheckedItems(), false);
                             break;
                         case R.id.movie_watched:
-                            NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedMovies(), true);
+                            NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedMovies(), mAdapter.getCheckedItems(), true);
                             break;
                         case R.id.movie_unwatched:
-                            NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedMovies(), false);
+                            NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedMovies(), mAdapter.getCheckedItems(), false);
                             break;
                         case R.id.add_to_watchlist:
                             NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedMovies(), true);
@@ -511,6 +511,13 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
             List<String> movies = new ArrayList<>(mChecked.size());
             for (Integer i : mChecked)
                 movies.add(getItem(i).getShowId());
+            return movies;
+        }
+
+        public List<NMJMovie> getCheckedItems() {
+            List<NMJMovie> movies = new ArrayList<>(mChecked.size());
+            for (Integer i : mChecked)
+                movies.add(getItem(i));
             return movies;
         }
 
