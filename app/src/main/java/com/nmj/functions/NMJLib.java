@@ -77,6 +77,7 @@ import com.nmj.service.MakeAvailableOffline;
 import com.nmj.service.MovieLibraryUpdate;
 import com.nmj.service.TvShowsLibraryUpdate;
 import com.nmj.utils.FileUtils;
+import com.nmj.utils.LocalBroadcastUtils;
 import com.nmj.utils.ViewUtils;
 
 import okhttp3.FormBody;
@@ -240,12 +241,12 @@ public class NMJLib {
     }
 
     public static String getNMJServerPHPURL() {
-        return getNMJServerURL() + "NMJManagerTablet_web/getData.php?";
+        return getNMJServerURL() + "getData.php?";
     }
 
     public static String getNMJImageURL() {
         if (!getNMJServerURL().equals("") && !getDrivePath().equals(""))
-            return getNMJServerURL() + "NMJManagerTablet_web/" ;
+            return getNMJServerURL() + "/" ;
         else
             return "";
     }
@@ -2737,11 +2738,12 @@ public class NMJLib {
                 for (int i = 0; i < nmjMovies.size(); i++) {
                     nmjMovies.get(i).setFavourite(favorite);
                 }
+                LocalBroadcastUtils.updateMovieLibrary(mContext);
             }
         }.execute();
     }
 
-    public static void setMoviesWatched(final Context context,
+    public static void setMoviesWatched(final Context mContext,
                                         final List<String> showIds,
                                         final List<NMJMovie> nmjMovies,
                                         final boolean watched) {
@@ -2761,7 +2763,7 @@ public class NMJLib {
 
             protected Void doInBackground(Void... params) {
                 try {
-                    jObject = NMJLib.getJSONObject(context, url);
+                    jObject = NMJLib.getJSONObject(mContext, url);
                     dObject = jObject.getJSONObject("data").getJSONObject("status");
                     System.out.println("Output: " + dObject.toString());
                 } catch (Exception e) {
@@ -2772,12 +2774,12 @@ public class NMJLib {
 
             protected void onPostExecute(Void result) {
                 if (watched) {
-                    Toast.makeText(context, context.getString(R.string.markedAsWatched), Toast.LENGTH_SHORT).show();
-                    if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean(REMOVE_MOVIES_FROM_WATCHLIST, true))
-                        setMoviesWatchlist(context, showIds, false); // False to remove from watchlist
+                    Toast.makeText(mContext, mContext.getString(R.string.markedAsWatched), Toast.LENGTH_SHORT).show();
+                    if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(REMOVE_MOVIES_FROM_WATCHLIST, true))
+                        setMoviesWatchlist(mContext, showIds, false); // False to remove from watchlist
                 }
                 else
-                    Toast.makeText(context, context.getString(R.string.markedAsUnwatched), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mContext, mContext.getString(R.string.markedAsUnwatched), Toast.LENGTH_SHORT).show();
                 for (int i = 0; i < nmjMovies.size(); i++) {
                     System.out.println(nmjMovies.get(i).getTitle() + " : " + nmjMovies.get(i).getHasWatched());
                 }
@@ -2785,8 +2787,9 @@ public class NMJLib {
                     nmjMovies.get(i).setHasWatched(watched);
                 }
                 for (int i = 0; i < nmjMovies.size(); i++) {
-                    System.out.println(nmjMovies.get(i).getTitle() + " : " + nmjMovies.get(i).getHasWatched());
+                    System.out.println("Updated Watched " + nmjMovies.get(i).getTitle() + " : " + nmjMovies.get(i).getHasWatched());
                 }
+                LocalBroadcastUtils.updateMovieLibrary(mContext);
             }
         }.execute();
     }

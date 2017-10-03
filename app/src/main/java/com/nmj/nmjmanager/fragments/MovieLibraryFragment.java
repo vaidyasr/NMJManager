@@ -125,7 +125,14 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                     mMovieLoader.load();
                     showProgressBar();
                 } else if (intent.filterEquals(new Intent("NMJManager-movies-update"))) {
-                    mAdapter.notifyDataSetChanged();
+                    if (mMovieLoader.getType() == MovieLibraryType.WATCHED ||
+                            mMovieLoader.getType() == MovieLibraryType.UNWATCHED) {
+                        hideEmptyView();
+                        mMovieLoader.clearAll();
+                        mMovieLoader.load();
+                        showProgressBar();
+                    } else
+                        mAdapter.notifyDataSetChanged();
                 } else {
                     hideEmptyView();
                     mMovieLoader.load();
@@ -815,15 +822,15 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             }
             holder.hasWatched.setVisibility(View.GONE);
 
-            System.out.println("Watched: " + movie.getTitle() + ":" + hasWatched(position));
+            //System.out.println("Watched: " + movie.getTitle() + ":" + movie.hasWatched());
 
-            if (hasWatched(position))
+            if (movie.hasWatched())
                 holder.hasWatched.setVisibility(View.VISIBLE);
 
             holder.inLibrary.setVisibility(View.GONE);
 
             if (movie.getTitleType() == "tmdb" && NMJManagerApplication.getNMJAdapter().movieExistsbyId("tmdb" + movie.getTmdbId())) {
-                System.out.println("Movie Exists:");
+                //System.out.println("Movie Exists:");
                 holder.inLibrary.setVisibility(View.VISIBLE);
                 if (NMJManagerApplication.getNMJAdapter().hasWatched(movie.getTmdbId()))
                     holder.hasWatched.setVisibility(View.VISIBLE);

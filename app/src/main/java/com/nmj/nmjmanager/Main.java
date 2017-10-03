@@ -554,7 +554,7 @@ public class Main extends NMJActivity {
 
             protected Void doInBackground(Void... params) {
                 try {
-                    String serverURL = "http://www.pchportal.duckdns.org/NMJManagerTablet/getData.php?action=getMD5sum";
+                    String serverURL = "http://www.pchportal.duckdns.org/NMJManager/getData.php?action=getMD5sum";
                     String clientURL = NMJLib.getNMJServerPHPURL() + "action=getMD5sum";
                     jObject = NMJLib.getJSONObject(mContext, serverURL);
                     String serverMD5 = NMJLib.getStringFromJSONObject(jObject, "md5sum", "");

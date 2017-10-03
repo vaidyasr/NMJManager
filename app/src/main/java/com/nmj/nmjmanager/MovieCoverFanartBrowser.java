@@ -28,6 +28,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.astuetz.PagerSlidingTabStrip;
+import com.iainconnor.objectcache.CacheManager;
 import com.nmj.base.NMJActivity;
 import com.nmj.functions.IntentKeys;
 import com.nmj.functions.NMJLib;
@@ -35,6 +36,9 @@ import com.nmj.nmjmanager.fragments.CollectionCoverSearchFragment;
 import com.nmj.nmjmanager.fragments.CoverSearchFragment;
 import com.nmj.nmjmanager.fragments.FanartSearchFragment;
 import com.nmj.utils.ViewUtils;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class MovieCoverFanartBrowser extends NMJActivity  {
 
@@ -146,15 +150,31 @@ public class MovieCoverFanartBrowser extends NMJActivity  {
 		}
 		
 		@Override
-		protected String doInBackground(Object... params) {			
+		protected String doInBackground(Object... params) {
+			String URL, CacheId;
+			CacheId = "movie_" + params[0];
 			try {
-                mBaseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
-
-                mJson = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + params[0] + "/images?api_key=" + mTmdbApiKey).toString();
-
-				if (NMJLib.isValidTmdbId(mCollectionId)) {
-                    mCollection = NMJLib.getJSONObject(mContext, mTmdbApiURL + "collection/" + params[1] + "/images?api_key=" + mTmdbApiKey).toString();
+				JSONObject jObject;
+				CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
+				URL = NMJLib.getTmdbApiURL(mContext) + "movie/" + params[0] + "?api_key=" +
+						NMJLib.getTmdbApiKey(mContext) + "&language=en";
+				URL += "&append_to_response=recommendations,releases,trailers,credits,images,similar";
+				if (!cacheManager.exists(CacheId)) {
+					System.out.println("Putting Cache in " + CacheId);
+					jObject = NMJLib.getJSONObject(mContext, URL);
+					NMJLib.putCache(cacheManager, CacheId, jObject.toString());
 				}
+				System.out.println("Getting Cache from " + CacheId);
+				mJson = new JSONObject(NMJLib.getCache(cacheManager, CacheId)).getJSONObject("images").toString();
+				//JSONArray jArray = jObject.getJSONObject("images").getJSONArray("cast");
+
+				//mBaseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
+
+                //mJson = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + params[0] + "/images?api_key=" + mTmdbApiKey).toString();
+
+/*				if (NMJLib.isValidTmdbId(mCollectionId)) {
+                    mCollection = NMJLib.getJSONObject(mContext, mTmdbApiURL + "collection/" + params[1] + "/images?api_key=" + mTmdbApiKey).toString();
+				}*/
 
 				return mJson;
 			} catch (Exception e) {} // If the fragment is no longer attached to the Activity

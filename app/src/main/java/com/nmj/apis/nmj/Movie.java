@@ -41,6 +41,7 @@ public class Movie {
     private List<WebMovie> mSimilarMovies = new ArrayList<WebMovie>();
     private List<WebMovie> mRecommendedMovies = new ArrayList<WebMovie>();
     private String mFilepaths = filepath;
+    private String TO_WATCH = "0", FAVOURITE = "0", HAS_WATCHED = "0";
 
     public Movie() {
         // Unidentified by default
@@ -68,6 +69,43 @@ public class Movie {
         if (TextUtils.isEmpty(showid))
             return "0";
         return showid;
+    }
+
+    public boolean isFavourite() {
+        return FAVOURITE.equals("1");
+    }
+
+    public boolean toWatch() {
+        return (!TO_WATCH.equals("0"));
+    }
+
+    public boolean hasWatched() {
+        return (!HAS_WATCHED.equals("0"));
+    }
+
+    public void setToWatch(boolean toWatch) {
+        if (toWatch)
+            TO_WATCH = "1";
+        else
+            TO_WATCH = "0";
+    }
+
+    public void setFavourite(boolean isFavourite) {
+        if (isFavourite)
+            FAVOURITE = "1";
+        else
+            FAVOURITE = "0";
+    }
+
+    public void setWatched(String id){
+        this.HAS_WATCHED = id;
+    }
+
+    public void setHasWatched(boolean hasWatched) {
+        if (hasWatched)
+            HAS_WATCHED = "1";
+        else
+            HAS_WATCHED = "0";
     }
 
     public void setShowId(String id) {

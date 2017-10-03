@@ -17,8 +17,10 @@
 package com.nmj.nmjmanager.fragments;
 
 import android.animation.Animator;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -41,6 +43,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -55,6 +58,8 @@ import com.nmj.apis.trakt.Trakt;
 import com.nmj.base.NMJActivity;
 import com.nmj.functions.Actor;
 import com.nmj.functions.FileSource;
+import com.nmj.functions.Filepath;
+import com.nmj.functions.IntentKeys;
 import com.nmj.functions.NMJAdapter;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.Video;
@@ -62,8 +67,12 @@ import com.nmj.functions.PaletteLoader;
 import com.nmj.functions.SimpleAnimatorListener;
 import com.nmj.functions.TmdbTrailerSearch;
 import com.nmj.functions.WebMovie;
+import com.nmj.nmjmanager.EditMovie;
+import com.nmj.nmjmanager.Main;
+import com.nmj.nmjmanager.MovieCoverFanartBrowser;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
+import com.nmj.remoteplayback.RemotePlayback;
 import com.nmj.utils.IntentUtils;
 import com.nmj.utils.TypefaceUtils;
 import com.nmj.utils.VideoUtils;
@@ -78,6 +87,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static com.nmj.functions.PreferenceKeys.ALWAYS_DELETE_FILE;
+import static com.nmj.functions.PreferenceKeys.CHROMECAST_BETA_SUPPORT;
 import static com.nmj.functions.PreferenceKeys.SHOW_FILE_LOCATION;
 
 public class NMJMovieDetailsFragment extends Fragment {
@@ -638,7 +649,7 @@ public class NMJMovieDetailsFragment extends Fragment {
         }
     }
 
-    @Override
+/*    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         if (mMovie != null) {
             inflater.inflate(R.menu.tmdb_details, menu);
@@ -652,6 +663,102 @@ public class NMJMovieDetailsFragment extends Fragment {
             if (!Trakt.hasTraktAccount(mContext))
                 menu.findItem(R.id.checkIn).setVisible(false);
         }
+    }*/
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        if (mMovie.getShowId().equals("0")) {
+            if (mMovie != null) {
+                inflater.inflate(R.menu.tmdb_details, menu);
+
+                if (NMJLib.isTablet(mContext)) {
+                    menu.findItem(R.id.share).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    menu.findItem(R.id.openInBrowser).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    menu.findItem(R.id.checkIn).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                }
+
+                if (!Trakt.hasTraktAccount(mContext))
+                    menu.findItem(R.id.checkIn).setVisible(false);
+            }
+        } else {
+            inflater.inflate(R.menu.movie_details, menu);
+
+            // If this is a tablet, we have more room to display icons
+            if (NMJLib.isTablet(mContext)) {
+                menu.findItem(R.id.movie_fav).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                menu.findItem(R.id.watched).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                menu.findItem(R.id.share).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            }
+
+        /*if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(CHROMECAST_BETA_SUPPORT, false)) {
+
+            boolean add = false;
+            for (Filepath path : mMovie.getFilepaths()) {
+                if (path.isNetworkFile()) {
+                    add = true;
+                    break;
+                }
+            }
+
+            if (add) {
+                menu.add("Remote play").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        final ArrayList<Filepath> networkFiles = new ArrayList<Filepath>();
+
+                        for (Filepath path : mMovie.getFilepaths()) {
+                            if (path.isNetworkFile()) {
+                                networkFiles.add(path);
+                            }
+                        }
+
+                        NMJLib.showSelectFileDialog(mContext, networkFiles, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                Intent i = new Intent(mContext, RemotePlayback.class);
+                                i.putExtra("coverUrl", "");
+                                i.putExtra("title", mMovie.getTitle());
+                                i.putExtra("id", mMovie.getTmdbId());
+                                i.putExtra("type", "movie");
+
+                                if (networkFiles.get(which).getType() == FileSource.SMB) {
+                                    String url = VideoUtils.startSmbServer(getActivity(), networkFiles.get(which).getFilepath(), mMovie);
+                                    i.putExtra("videoUrl", url);
+                                } else {
+                                    i.putExtra("videoUrl", networkFiles.get(which).getFilepath());
+                                }
+
+                                startActivity(i);
+                            }
+                        });
+
+                        return false;
+                    }
+                });
+            }
+        } */
+
+            // Favourite
+            menu.findItem(R.id.movie_fav).setIcon(mMovie.isFavourite() ?
+                    R.drawable.ic_favorite_white_24dp : R.drawable.ic_favorite_outline_white_24dp)
+                    .setTitle(mMovie.isFavourite() ?
+                            R.string.menuFavouriteTitleRemove : R.string.menuFavouriteTitle);
+
+            // Watchlist
+            menu.findItem(R.id.watch_list).setIcon(mMovie.toWatch() ?
+                    R.drawable.ic_video_collection_white_24dp : R.drawable.ic_queue_white_24dp)
+                    .setTitle(mMovie.toWatch() ?
+                            R.string.removeFromWatchlist : R.string.watchLater);
+
+            // Watched / unwatched
+            menu.findItem(R.id.watched).setTitle(mMovie.hasWatched() ?
+                    R.string.stringMarkAsUnwatched : R.string.stringMarkAsWatched);
+
+            // Only allow the user to browse artwork if it's a valid TMDb movie
+            //menu.findItem(R.id.change_cover).setVisible(NMJLib.isValidTmdbId(mMovie.getTmdbId()));
+        }
+
     }
 
 
@@ -670,6 +777,68 @@ public class NMJMovieDetailsFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                if (getActivity().getIntent().getExtras().getBoolean("isFromWidget")) {
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    i.putExtra("startup", String.valueOf(Main.MOVIES));
+                    i.setClass(mContext, Main.class);
+                    startActivity(i);
+                }
+
+                getActivity().finish();
+                return true;
+            case R.id.share:
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_TEXT, "http://www.themoviedb.org/movie/" + mMovie.getTmdbId().replace("tmdb", ""));
+                startActivity(Intent.createChooser(intent, getString(R.string.shareWith)));
+                return true;
+            case R.id.imdb:
+                Intent imdbIntent = new Intent(Intent.ACTION_VIEW);
+                imdbIntent.setData(Uri.parse("http://www.imdb.com/title/" + mMovie.getImdbId()));
+                startActivity(imdbIntent);
+                return true;
+            case R.id.tmdb:
+                Intent tmdbIntent = new Intent(Intent.ACTION_VIEW);
+                tmdbIntent.setData(Uri.parse("http://www.themoviedb.org/movie/" + mMovie.getTmdbId().replace("tmdb","")));
+                startActivity(tmdbIntent);
+                return true;
+            case R.id.change_cover:
+                searchCover();
+                return true;
+            case R.id.editMovie:
+                editMovie();
+                return true;
+            case R.id.identify:
+                identifyMovie();
+                return true;
+            case R.id.watched:
+                watched(true);
+                return true;
+            case R.id.trailer:
+                //VideoUtils.playTrailer(getActivity(), mMovie);
+                return true;
+            case R.id.watch_list:
+                watchList();
+                return true;
+            case R.id.movie_fav:
+                favAction();
+                return true;
+            case R.id.delete_movie:
+                deleteMovie();
+                return true;
+            case R.id.openInBrowser:
+                openInBrowser();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+/*    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
                 getActivity().finish();
                 break;
             case R.id.share:
@@ -684,6 +853,166 @@ public class NMJMovieDetailsFragment extends Fragment {
         }
 
         return super.onOptionsItemSelected(item);
+    }*/
+
+    @SuppressLint("InflateParams")
+    public void deleteMovie() {
+/*        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+
+        View dialogLayout = LayoutInflater.from(mContext).inflate(R.layout.delete_file_dialog_layout, null);
+        final CheckBox cb = (CheckBox) dialogLayout.findViewById(R.id.deleteFile);
+
+
+        if (mMovie.getFilepaths().size() == 1 && mMovie.getFilepaths().get(0).getType() == FileSource.UPNP)
+            cb.setEnabled(false);
+        else
+            cb.setChecked(PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(ALWAYS_DELETE_FILE, false));
+
+        builder.setTitle(getString(R.string.removeMovie))
+                .setView(dialogLayout)
+                .setCancelable(false)
+                .setPositiveButton(getString(android.R.string.yes), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        if (mIgnoreDeletedFiles) {
+                            MovieDatabaseUtils.ignoreMovie(mMovie.getTmdbId());
+                        } else {
+                            MovieDatabaseUtils.deleteMovie(getActivity(), mMovie.getTmdbId());
+                        }
+
+                        if (cb.isChecked()) {
+                            for (Filepath path : mMovie.getFilepaths()) {
+                                Intent deleteIntent = new Intent(mContext, DeleteFile.class);
+                                deleteIntent.putExtra("filepath", path.getFilepath());
+                                mContext.startService(deleteIntent);
+                            }
+                        }
+
+                        boolean movieExists = mDatabase.movieExists(mMovie.getTmdbId());
+
+                        // We only want to delete movie images, if there are no other versions of the same movie
+                        if (!movieExists) {
+                            try { // Delete cover art image
+                                File coverArt = mMovie.getPoster();
+                                if (coverArt.exists() && coverArt.getAbsolutePath().contains("com.nmj.mizuu")) {
+                                    NMJLib.deleteFile(coverArt);
+                                }
+                            } catch (NullPointerException e) {} // No file to delete
+
+                            try { // Delete thumbnail image
+                                File thumbnail = mMovie.getThumbnail();
+                                if (thumbnail.exists() && thumbnail.getAbsolutePath().contains("com.nmj.mizuu")) {
+                                    NMJLib.deleteFile(thumbnail);
+                                }
+                            } catch (NullPointerException e) {} // No file to delete
+
+                            try { // Delete backdrop image
+                                File backdrop = mMovie.getBackdrop();
+                                if (backdrop.exists() && backdrop.getAbsolutePath().contains("com.nmj.mizuu")) {
+                                    NMJLib.deleteFile(backdrop);
+                                }
+                            } catch (NullPointerException e) {} // No file to delete
+                        }
+
+                        notifyDatasetChanges();
+                        getActivity().finish();
+                    }
+                })
+                .setNegativeButton(getString(android.R.string.no), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                })
+                .create().show();*/
+    }
+
+    private void watched(boolean showToast) {
+        mMovie.setHasWatched(!mMovie.hasWatched()); // Reverse the hasWatched boolean
+
+/*        boolean success = mDatabase.updateMovieSingleItem(mMovie.getTmdbId(), DbAdapterMovies.KEY_HAS_WATCHED, mMovie.getHasWatched());
+
+        if (success) {
+            getActivity().invalidateOptionsMenu();
+
+            if (showToast)
+                if (mMovie.hasWatched()) {
+                    Toast.makeText(mContext, getString(R.string.markedAsWatched), Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(mContext, getString(R.string.markedAsUnwatched), Toast.LENGTH_SHORT).show();
+                }
+
+            notifyDatasetChanges();
+
+        } else Toast.makeText(mContext, getString(R.string.errorOccured), Toast.LENGTH_SHORT).show();
+
+        if (mRemoveMoviesFromWatchlist)
+            removeFromWatchlist();
+
+        new Thread() {
+            @Override
+            public void run() {
+                ArrayList<Movie> watchedMovies = new ArrayList<Movie>();
+                watchedMovies.add(mMovie);
+                Trakt.markMovieAsWatched(watchedMovies, mContext);
+            }
+        }.start();*/
+    }
+
+    public void watchList() {
+        mMovie.setToWatch(!mMovie.toWatch()); // Reverse the toWatch boolean
+
+/*        boolean success = mDatabase.updateMovieSingleItem(mMovie.getTmdbId(), DbAdapterMovies.KEY_TO_WATCH, mMovie.getToWatch());
+
+        if (success) {
+            getActivity().invalidateOptionsMenu();
+
+            if (mMovie.toWatch()) {
+                Toast.makeText(mContext, getString(R.string.addedToWatchList), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(mContext, getString(R.string.removedFromWatchList), Toast.LENGTH_SHORT).show();
+            }
+
+            notifyDatasetChanges();
+
+        } else Toast.makeText(mContext, getString(R.string.errorOccured), Toast.LENGTH_SHORT).show();
+
+        new Thread() {
+            @Override
+            public void run() {
+                ArrayList<Movie> watchlist = new ArrayList<Movie>();
+                watchlist.add(mMovie);
+                Trakt.movieWatchlist(watchlist, mContext);
+            }
+        }.start();*/
+    }
+
+    public void favAction() {
+        mMovie.setFavourite(!mMovie.isFavourite()); // Reverse the favourite boolean
+
+/*        boolean success = mDatabase.updateMovieSingleItem(mMovie.getTmdbId(), DbAdapterMovies.KEY_FAVOURITE, mMovie.getFavourite());
+
+        if (success) {
+            getActivity().invalidateOptionsMenu();
+
+            if (mMovie.isFavourite()) {
+                Toast.makeText(mContext, getString(R.string.addedToFavs), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(mContext, getString(R.string.removedFromFavs), Toast.LENGTH_SHORT).show();
+                getActivity().setResult(2); // Favorite removed
+            }
+
+            notifyDatasetChanges();
+
+        } else Toast.makeText(mContext, getString(R.string.errorOccured), Toast.LENGTH_SHORT).show();
+
+        new Thread() {
+            @Override
+            public void run() {
+                ArrayList<Movie> movie = new ArrayList<Movie>();
+                movie.add(mMovie);
+                Trakt.movieFavorite(movie, mContext);
+            }
+        }.start();*/
     }
 
     public void shareMovie() {
@@ -691,6 +1020,42 @@ public class NMJMovieDetailsFragment extends Fragment {
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_TEXT, "http://www.themoviedb.org/movie/" + mMovie.getTmdbId().replace("tmdb", ""));
         startActivity(Intent.createChooser(intent, getString(R.string.shareWith)));
+    }
+
+    public void identifyMovie() {
+/*        if (mMovie.getFilepaths().size() == 1) {
+            getActivity().startActivityForResult(getIdentifyIntent(mMovie.getFilepaths().get(0).getFullFilepath()), 0);
+        } else {
+            NMJLib.showSelectFileDialog(mContext, mMovie.getFilepaths(), new Dialog.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    startActivity(getIdentifyIntent(mMovie.getFilepaths().get(which).getFullFilepath()));
+
+                    // Dismiss the dialog
+                    dialog.dismiss();
+                }
+            });
+        }*/
+    }
+
+    public void editMovie() {
+        Intent intent = new Intent(mContext, EditMovie.class);
+        intent.putExtra("movieId", mMovie.getTmdbId());
+        intent.putExtra(IntentKeys.TOOLBAR_COLOR, mToolbarColor);
+        getActivity().startActivityForResult(intent, 1);
+    }
+
+    public void searchCover() {
+        if (NMJLib.isOnline(mContext)) { // Make sure that the device is connected to the web
+            Intent intent = new Intent(mContext, MovieCoverFanartBrowser.class);
+            intent.putExtra("tmdbId", mMovie.getTmdbId());
+            intent.putExtra("collectionId", mMovie.getCollectionId());
+            intent.putExtra(IntentKeys.TOOLBAR_COLOR, mToolbarColor);
+            startActivity(intent); // Start the intent for result
+        } else {
+            // No movie ID / Internet connection
+            Toast.makeText(mContext, getString(R.string.coverSearchFailed), Toast.LENGTH_LONG).show();
+        }
     }
 
     public void openInBrowser() {

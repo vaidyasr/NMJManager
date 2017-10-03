@@ -98,7 +98,7 @@
     <string name="menuFavouriteTitle">Add favorite</string>
     <string name="menuFavouriteTitleRemove">Remove favorite</string>
     <string name="menuShareTitle">Share</string>
-    <string name="menuRemoveTitle">Remove</string>
+    <string name="menuRemoveTitle">Delete</string>
     <string name="menuUpdateTitle">Update library</string>
     <string name="menuAboutContact">Contact developer</string>
     <string name="prefsFileSourcesDescription">Configure the file sources to include in library updates.</string>
@@ -293,8 +293,11 @@
     <string name="addToList">Add to List</string>
     <string name="updateMediaInfo">Update Mediainfo</string>
     <string name="updateImages">Update images</string>
+    <string name="updateFromTmdb">Update from TMDb</string>
+    <string name="updateFromImdb">Update from IMDb</string>
     <string name="updateData">Update from TMDb</string>
     <string name="deleteVideo">Delete</string>
+    <string name="editFull">Edit&#8230;</string>
     <string name="editVideo">Edit</string>
     <string name="removeFromList">Remove from list</string>
     <string name="ignoreSmallFilesDescription">Ignore video files smaller than the set file size.</string>
@@ -352,6 +355,7 @@
     <string name="nextUpdateIn">Next update in</string>
     <string name="IMDb">Open in IMDb</string>
     <string name="TMDb">Open in TMDb</string>
+    <string name="changeAllImages">Update images</string>
     <string name="enterTitle">Enter title</string>
     <string name="identify">Identify</string>
     <string name="drawer_open">Open navigation drawer</string>
