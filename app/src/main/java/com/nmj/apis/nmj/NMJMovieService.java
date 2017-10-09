@@ -124,6 +124,7 @@ public class NMJMovieService extends NMJApiService {
         Movie movie = new Movie();
         movie.setShowId(id);
         String nmjImgURL = NMJLib.getNMJImageURL();
+        String CacheId;
 
         if (id.equals(DbAdapterMovies.UNIDENTIFIED_ID))
             return movie;
@@ -133,19 +134,10 @@ public class NMJMovieService extends NMJApiService {
             String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
             JSONObject jObject;
-            String CacheId = NMJLib.getDrivePath() + "_nmj_" + id;
-
-            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
-            if (!cacheManager.exists(CacheId)) {
-                System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerPHPURL() +
+            jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerPHPURL() +
                         "action=getVideoDetails&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&showid=" +
                         id + "&title_type=1");
-                NMJLib.putCache(cacheManager, CacheId, jObject.toString());
-            }
-            System.out.println("Getting Cache from " + CacheId);
-            jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
 
             movie.setTitle(NMJLib.getStringFromJSONObject(jObject, "TITLE", ""));
             movie.setCertification(NMJLib.getStringFromJSONObject(jObject, "PARENTAL_CONTROL", ""));
@@ -195,18 +187,16 @@ public class NMJMovieService extends NMJApiService {
             } catch (Exception e) {
             }
             System.out.println("Debug: Video Output: " + movie.getVideo().get(0).getPlayCount());
-
-            CacheId = "movie_" + movie.getTmdbId();
-            if (!cacheManager.exists(CacheId)) {
-                System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + movie.getId() + "?api_key=" + mTmdbApiKey + "&language=" + language + "&append_to_response=recommendations,releases,trailers,credits,images,similar");
-                NMJLib.putCache(cacheManager, CacheId, jObject.toString());
+            if (NMJLib.getTMDbCache(movie.getTmdbId(), "movie").equals("")) {
+                System.out.println("Putting Cache in " + movie.getTmdbId());
+                NMJLib.setTMDbCache(movie.getTmdbId(), "movie", NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + movie.getId() + "?api_key=" + mTmdbApiKey + "&language=" + language + "&append_to_response=recommendations,releases,trailers,credits,images,similar").toString());
             }
-            System.out.println("Getting Cache from " + CacheId);
-            jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
+            System.out.println("Getting Cache from " + movie.getTmdbId());
+            jObject = new JSONObject(NMJLib.getTMDbCache(movie.getTmdbId(), "movie"));
             movie.setTagline(NMJLib.getStringFromJSONObject(jObject, "tagline", ""));
 
         } catch (Exception e) {
+            System.out.println("Exception Occurred in getCompleteMovie : " + e.toString());
             // If something goes wrong here, i.e. API error, we won't get any details
             // about the movie - in other words, it's unidentified
             movie.setTmdbId(DbAdapterMovies.UNIDENTIFIED_ID);

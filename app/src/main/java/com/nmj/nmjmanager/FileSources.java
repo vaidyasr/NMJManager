@@ -105,8 +105,8 @@ public class FileSources extends NMJActivity {
 	}
 
 	private void addFileSource() {
-		Intent i = new Intent(this, AddFileSource.class);
-		startActivity(i);
+		//Intent i = new Intent(this, AddFileSource.class);
+		//startActivity(i);
 	}
 
 	private void loadSources() {

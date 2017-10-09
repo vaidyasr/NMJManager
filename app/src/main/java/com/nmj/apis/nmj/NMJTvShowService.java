@@ -145,19 +145,13 @@ public class NMJTvShowService extends TvShowApiService {
             String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
             JSONObject jObject;
-            String CacheId = NMJLib.getDrivePath() + "_nmj_" + id;
             String dbtype;
 
-            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
-            if (!cacheManager.exists(CacheId)) {
-                System.out.println("Putting Cache in " + CacheId);
+
                 jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerPHPURL() +
                         "action=getVideoDetails&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&showid=" + id + "&title_type=2");
-                NMJLib.putCache(cacheManager, CacheId, jObject.toString());
-            }
-            System.out.println("Getting Cache from " + CacheId);
-            jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
+
 
             show.setTitle(NMJLib.getStringFromJSONObject(jObject, "TITLE", ""));
             show.setCertification(NMJLib.getStringFromJSONObject(jObject, "PARENTAL_CONTROL", ""));
@@ -582,20 +576,19 @@ public class NMJTvShowService extends TvShowApiService {
 
         try {
             String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
-            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(mContext));
 
             JSONObject jObject;
-            String CacheId = "tv_" + id;
-            if (!cacheManager.exists(CacheId)) {
-                System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "tv/" +
-                        id.replace("tmdb", "") + "?api_key=" +
-                        mTmdbApiKey + (language.equals("en") ? "" : "&language=" + language) +
-                        "&append_to_response=recommendations,credits,images,similar,external_ids");
-                NMJLib.putCache(cacheManager, CacheId, jObject.toString());
+            String URL = mTmdbApiURL + "tv/" +
+                    id.replace("tmdb", "") + "?api_key=" +
+                    mTmdbApiKey + (language.equals("en") ? "" : "&language=" + language) +
+                    "&append_to_response=recommendations,credits,images,similar,external_ids";
+
+            if (NMJLib.getTMDbCache(id, "tv").equals("")) {
+                System.out.println("Putting Cache in " + id);
+                NMJLib.setTMDbCache(id, "tv", NMJLib.getJSONObject(mContext, URL).toString());
             }
-            System.out.println("Getting Cache from " + CacheId);
-            jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
+            System.out.println("Getting Cache from " + id);
+            jObject = new JSONObject(NMJLib.getTMDbCache(id, "tv"));
 
             // Set title
             show.setTitle(NMJLib.getStringFromJSONObject(jObject, "name", ""));

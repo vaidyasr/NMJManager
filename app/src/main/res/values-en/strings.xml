@@ -85,7 +85,7 @@
     <string name="tvShowsWithUnwatchedEpisodes">Unwatched TV shows</string>
     <string name="drawerMyMovies">My Movies</string>
     <string name="drawerMyTvShows">My TV Shows</string>
-    <string name="drawerSelectDB">Add NMJ database...</string>
+    <string name="drawerSelectDB">Add NMJ Server...</string>
     <string name="drawerOnlineMovies">Online Movies</string>
     <string name="overviewGridItemSizeDescription">Change the size of film and TV shows covers in the overviews.</string>
     <string name="finishedMovieLibraryUpdate">Finished updating movies</string>
@@ -130,7 +130,7 @@
     <string name="use_dvd_order_description">Identify series and episodes using DVD ordering, if available.</string>
     <string name="no_movies">No movies</string>
     <string name="no_movies_description">Select <b>Update library</b> from the menu to add movies.</string>
-    <string name="no_movies_description_tablet">Select the <b>Update icon</b> from the menu to add movies.</string>
+    <string name="no_movies_description_tablet">Select the <b>Add NMJ Server</b> from the navigation menu to add movies.</string>
     <string name="no_favorites">No favourite\'s</string>
     <string name="no_favorites_description">Don\'t you like movies?</string>
     <string name="no_watched_movies">No watched movies</string>
@@ -139,7 +139,7 @@
     <string name="no_movie_lists">No movie lists</string>
     <string name="no_tv_shows">No TV Shows</string>
     <string name="no_tv_shows_description">Select <b>Update library</b> from the menu to add TV Shows.</string>
-    <string name="no_tv_shows_description_tablet">Select the <b>Update icon</b> from the menu to add TV Shows.</string>
+    <string name="no_tv_shows_description_tablet">Select the <b>Add NMJ Server</b> from the navigation menu to add TV Shows.</string>
     <string name="no_favorites_description_tv">Don\'t you like TV Shows?</string>
     <string name="recently_aired">Recently broadcast</string>
     <string name="popular_shows">Popular</string>

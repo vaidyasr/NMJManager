@@ -85,6 +85,7 @@ public class MovieLibraryOverviewFragment extends Fragment {
         mAdapter.addTab(TITLES.get(0));
         Set<String> defValues = new HashSet<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"));
         Set<String> values = PreferenceManager.getDefaultSharedPreferences(getActivity()).getStringSet(MOVIES_TABS_SELECTED, defValues);
+        System.out.println("Out: " + values.toString());
         List<String> list = new ArrayList<String>(values);
         Collections.sort(list, new Comparator<String>() {
             @Override

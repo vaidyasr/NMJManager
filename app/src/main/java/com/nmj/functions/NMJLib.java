@@ -61,13 +61,10 @@ import android.widget.Toast;
 
 import com.google.gson.reflect.TypeToken;
 import com.iainconnor.objectcache.CacheManager;
-import com.nmj.apis.trakt.Trakt;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.db.DbAdapterSources;
 import com.nmj.db.DbAdapterTvShowEpisodes;
 import com.nmj.db.DbAdapterTvShows;
-import com.nmj.loader.MovieLoader;
-import com.nmj.loader.MovieSortType;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.nmjmanager.TvShow;
@@ -121,6 +118,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -190,6 +188,9 @@ public class NMJLib {
     private static String[] mAdultKeywords = new String[]{"adult", "sex", "porn", "explicit", "penis", "vagina", "asshole",
             "blowjob", "cock", "fuck", "dildo", "kamasutra", "masturbat", "squirt", "slutty", "cum", "cunt"};
     private static String mMachineType = "";
+    public static HashMap<String, String> tmdbMovieCache = new HashMap<>();
+    public static HashMap<String, String> tmdbShowCache = new HashMap<>();
+    public static HashMap<String, String> tmdbPersonCache = new HashMap<>();
 
     private NMJLib() {
     } // No instantiation
@@ -217,6 +218,31 @@ public class NMJLib {
         PORT = port;
     }
 
+    public static void setTMDbCache(String id, String type, String JString){
+        if (type.equals("movie")){
+            tmdbMovieCache.put(id, JString);
+        }else if (type.equals("tv")){
+            tmdbShowCache.put(id, JString);
+        } else if (type.equals("person")){
+            tmdbPersonCache.put(id, JString);
+        }
+    }
+
+    public static String getTMDbCache(String id, String type){
+        String Cache="";
+        if (type.equals("movie")){
+            if (tmdbMovieCache.get(id) != null)
+                Cache=tmdbMovieCache.get(id);
+        }else if (type.equals("tv")){
+            if (tmdbShowCache.get(id) != null)
+                Cache=tmdbShowCache.get(id);
+        } else if (type.equals("person")){
+            if (tmdbPersonCache.get(id) != null)
+                Cache=tmdbPersonCache.get(id);
+        }
+        return Cache;
+    }
+
     public static boolean isNMJDbWritable() {
         if (WRITABLE.equals("yes"))
             return true;
@@ -241,7 +267,7 @@ public class NMJLib {
     }
 
     public static String getNMJServerPHPURL() {
-        return getNMJServerURL() + "getData.php?";
+        return getNMJServerURL() + "?";
     }
 
     public static String getNMJImageURL() {
@@ -261,6 +287,11 @@ public class NMJLib {
 
     public static String getDrivePath() {
         return mDrivePath;
+    }
+
+    public static String getCachePrefix() {
+        File theFile = new File(getDrivePath());
+        return theFile.getName();
     }
 
     public static void setDrivePath(String drivePath) {
@@ -2456,11 +2487,11 @@ public class NMJLib {
         }
     }
 
-    public static void putCache(CacheManager cache, String key, String data) {
+    public static void putCacheNotUsed(CacheManager cache, String key, String data) {
         cache.put(key, data, CacheManager.ExpiryTimes.ONE_DAY.asSeconds(), true);
     }
 
-    public static String getCache(CacheManager cache, String key) {
+    public static String getCacheNotUsed(CacheManager cache, String key) {
         Type myObjectType = new TypeToken<String>() {
         }.getType();
         return cache.get(key, String.class, myObjectType).toString();
@@ -2517,20 +2548,18 @@ public class NMJLib {
                     CacheId = "tv_" + id;
                 id = id.replace("tmdb", "");
             }
-            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(context));
             URL = getTmdbApiURL(context) + type + "/" + id + "?api_key=" + getTmdbApiKey(context) + "&language=" + language;
             if (type.equals("movie"))
                 URL += "&append_to_response=recommendations,releases,trailers,credits,images,similar";
             else
                 URL += "&append_to_response=recommendations,credits,images,similar";
 
-            if (!cacheManager.exists(CacheId)) {
-                System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(context, URL);
-                NMJLib.putCache(cacheManager, CacheId, jObject.toString());
+            if (NMJLib.getTMDbCache(id, type).equals("")) {
+                System.out.println("Putting Cache in " + id);
+                NMJLib.setTMDbCache(id, type, NMJLib.getJSONObject(context, URL).toString());
             }
-            System.out.println("Getting Cache from " + CacheId);
-            jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
+            System.out.println("Getting Cache from " + id);
+            jObject = new JSONObject(NMJLib.getTMDbCache(id, type));
             JSONArray jArray = jObject.getJSONObject("credits").getJSONArray("cast");
 
             Set<String> actorIds = new HashSet<String>();
@@ -2546,8 +2575,8 @@ public class NMJLib {
                             NMJLib.getTmdbImageBaseUrl(context) + NMJLib.getActorUrlSize(context) + jArray.getJSONObject(i).getString("profile_path")));
                 }
             }
-        } catch (Exception ignored) {
-            System.out.println("Error occured");
+        } catch (Exception e) {
+            System.out.println("Error occured in getTMDbCast");
         }
         return results;
     }
@@ -2571,21 +2600,18 @@ public class NMJLib {
                 id = id.replace("tmdb", "");
             }
 
-            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(context));
             URL = getTmdbApiURL(context) + type + "/" + id + "?api_key=" + getTmdbApiKey(context) + "&language=" + language;
             if (type.equals("movie"))
                 URL += "&append_to_response=recommendations,releases,trailers,credits,images,similar";
             else
                 URL += "&append_to_response=recommendations,credits,images,similar";
 
-            if (!cacheManager.exists(CacheId)) {
-                System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(context, URL);
-                NMJLib.putCache(cacheManager, CacheId, jObject.toString());
+            if (NMJLib.getTMDbCache(id, type).equals("")) {
+                System.out.println("Putting Cache in " + id);
+                NMJLib.setTMDbCache(id, type, NMJLib.getJSONObject(context, URL).toString());
             }
-
-            System.out.println("Getting Cache from " + CacheId);
-            jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
+            System.out.println("Getting Cache from " + id);
+            jObject = new JSONObject(NMJLib.getTMDbCache(id, type));
             JSONArray jArray = jObject.getJSONObject("credits").getJSONArray("crew");
 
             Set<String> actorIds = new HashSet<String>();
@@ -2602,7 +2628,8 @@ public class NMJLib {
                             getTmdbImageBaseUrl(context) + NMJLib.getActorUrlSize(context) + jArray.getJSONObject(i).getString("profile_path")));
                 }
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            System.out.println("Error occured in getTMDbCrew");
         }
         return results;
     }
@@ -2625,20 +2652,19 @@ public class NMJLib {
                     CacheId = "tv_" + id;
                 id = id.replace("tmdb", "");
             }
-            CacheManager cacheManager = CacheManager.getInstance(NMJLib.getDiskCache(context));
             URL = getTmdbApiURL(context) + videotype + "/" + id + "?api_key=" + getTmdbApiKey(context) + "&language=" + language;
             if (videotype.equals("movie"))
                 URL += "&append_to_response=recommendations,releases,trailers,credits,images,similar";
             else
                 URL += "&append_to_response=recommendations,credits,images,similar";
 
-            if (!cacheManager.exists(CacheId)) {
-                System.out.println("Putting Cache in " + CacheId);
-                jObject = NMJLib.getJSONObject(context, URL);
-                NMJLib.putCache(cacheManager, CacheId, jObject.toString());
+            if (NMJLib.getTMDbCache(id, videotype).equals("")) {
+                System.out.println("Putting Cache in " + id);
+                NMJLib.setTMDbCache(id, videotype, NMJLib.getJSONObject(context, URL).toString());
             }
-            System.out.println("Getting Cache from " + CacheId);
-            jObject = new JSONObject(NMJLib.getCache(cacheManager, CacheId));
+            System.out.println("Getting Cache from " + id);
+            jObject = new JSONObject(NMJLib.getTMDbCache(id, videotype));
+
             if (loadtype.equals("similar"))
                 jArray = jObject.getJSONObject("similar").getJSONArray("results");
             else
@@ -2663,7 +2689,8 @@ public class NMJLib {
                         release_date, ""));
                 //}
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            System.out.println("Error occured in getTMDbMovies");
         }
         return results;
     }

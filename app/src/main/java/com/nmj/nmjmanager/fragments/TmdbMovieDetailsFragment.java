@@ -53,6 +53,7 @@ import com.nmj.functions.PaletteLoader;
 import com.nmj.functions.SimpleAnimatorListener;
 import com.nmj.functions.TmdbTrailerSearch;
 import com.nmj.functions.WebMovie;
+import com.nmj.nmjmanager.Main;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.utils.IntentUtils;
@@ -632,7 +633,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
 
     public void openInBrowser() {
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse("http://www.themoviedb.org/movie/" + mMovie.getTmdbId()));
+        intent.setData(Uri.parse("http://www.themoviedb.org/movie/" + mMovie.getTmdbId().replace("tmdb", "")));
         startActivity(Intent.createChooser(intent, getString(R.string.openWith)));
     }
 

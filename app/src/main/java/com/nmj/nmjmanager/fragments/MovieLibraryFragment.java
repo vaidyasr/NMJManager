@@ -311,6 +311,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         }
         Intent intent = new Intent();
         mMovieLoader = new MovieLoader(mContext, MovieLibraryType.fromInt(getArguments().getInt("type")), intent, mCallback);
+        mMovieLoader.clearAll();
         //mMovieLoader.setIgnorePrefixes(mIgnorePrefixes);
         mMovieLoader.load();
         showProgressBar();

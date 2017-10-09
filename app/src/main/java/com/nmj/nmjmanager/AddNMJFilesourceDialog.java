@@ -71,7 +71,6 @@ public class AddNMJFilesourceDialog extends Activity {
 
 		server = (EditText) findViewById(R.id.ip_address);
 		display_name = (EditText) findViewById(R.id.display_name);
-		port = (EditText) findViewById(R.id.port);
 
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter("NMJManager-network-search"));
 	}

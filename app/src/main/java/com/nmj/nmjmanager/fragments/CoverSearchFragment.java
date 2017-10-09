@@ -220,6 +220,7 @@ public class CoverSearchFragment extends Fragment {
 
 				mCovers.add(new Cover(baseUrl + NMJLib.getImageUrlSize(getActivity()) + o.getString("file_path"), o.getString("iso_639_1")));
 				mImageUrls.add(baseUrl + NMJLib.getImageUrlSize(getActivity()) + o.getString("file_path"));
+				System.out.println("Image URLS:" + mImageUrls.get(i));
 			}
 			
 		} catch (Exception e) {}

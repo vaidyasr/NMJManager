@@ -237,34 +237,10 @@
 
         <!-- Add network file source dialog activity -->
         <activity
-            android:name="com.nmj.nmjmanager.AddNetworkFilesourceDialog"
-            android:exported="false"
-            android:hardwareAccelerated="false"
-            android:label="@string/networkLogin"
-            android:theme="@style/NMJManager.Theme.Dialog" >
-            <intent-filter>
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <!-- Add network file source dialog activity -->
-        <activity
             android:name="com.nmj.nmjmanager.AddNMJFilesourceDialog"
             android:exported="false"
             android:hardwareAccelerated="false"
             android:label="@string/networkLogin"
-            android:theme="@style/NMJManager.Theme.Dialog" >
-            <intent-filter>
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <!-- Add UPnP file source dialog activity -->
-        <activity
-            android:name="com.nmj.nmjmanager.AddUpnpFilesourceDialog"
-            android:exported="false"
-            android:hardwareAccelerated="false"
-            android:label="@string/select_upnp_server"
             android:theme="@style/NMJManager.Theme.Dialog" >
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
@@ -394,16 +370,6 @@
             android:name="com.nmj.nmjmanager.IdentifyTvShowEpisode"
             android:exported="false"
             android:label="@string/identifyEpisodeTitle" >
-            <intent-filter>
-                <action android:name="android.intent.action.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <!-- Add file source Activity -->
-        <activity
-            android:name="com.nmj.nmjmanager.AddFileSource"
-            android:exported="false"
-            android:title="@string/addFileSourceTitle" >
             <intent-filter>
                 <action android:name="android.intent.action.DEFAULT" />
             </intent-filter>

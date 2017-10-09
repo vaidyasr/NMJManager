@@ -17,7 +17,6 @@
 package com.nmj.nmjmanager;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -26,22 +25,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.Typeface;
-import android.media.Image;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
@@ -49,7 +41,6 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -62,38 +53,25 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-//import com.iainconnor.objectcache.DiskCache;
-//import com.iainconnor.objectcache.CacheManager;
-
-import com.google.gson.JsonObject;
 import com.nmj.base.NMJActivity;
-import com.nmj.db.DbAdapterMovies;
-import com.nmj.db.DbAdapterSources;
 import com.nmj.db.DbAdapterTvShows;
 import com.nmj.functions.AsyncTask;
-import com.nmj.functions.BlurTransformation;
-import com.nmj.functions.FileSource;
 import com.nmj.functions.MenuItem;
 import com.nmj.functions.NMJAdapter;
 import com.nmj.functions.NMJDb;
 import com.nmj.functions.NMJSource;
 import com.nmj.functions.NMJLib;
-import com.nmj.functions.PreferenceKeys;
-import com.nmj.loader.MovieFilter;
 import com.nmj.nmjmanager.fragments.AccountsFragment;
 import com.nmj.nmjmanager.fragments.ContactDeveloperFragment;
 import com.nmj.nmjmanager.fragments.MovieDiscoveryViewPagerFragment;
-import com.nmj.nmjmanager.fragments.MovieLibraryFragment;
 import com.nmj.nmjmanager.fragments.MovieLibraryOverviewFragment;
 import com.nmj.nmjmanager.fragments.TvShowLibraryOverviewFragment;
-import com.nmj.nmjmanager.fragments.WebVideosViewPagerFragment;
 import com.nmj.utils.LocalBroadcastUtils;
 import com.nmj.utils.TypefaceUtils;
 import com.nmj.utils.ViewUtils;
@@ -103,18 +81,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
-
-import info.hoang8f.android.segmented.SegmentedGroup;
 
 import static com.nmj.functions.PreferenceKeys.CONFIRM_BACK_PRESS;
 import static com.nmj.functions.PreferenceKeys.LOAD_LAST_DATABASE;
@@ -131,7 +100,7 @@ public class Main extends NMJActivity {
     ArrayList<NMJDb> nmjdb = new ArrayList<>();
     AlertDialog.Builder alertDialogBuilder;
     private ArrayList<NMJSource> nmjsource;
-    private EditText ip_address, port, display_name;
+    private EditText ip_address, display_name;
     private int mNumMovies, mNumShows, selectedIndex, mStartup, mNumMusic;
     private Typeface mTfMedium, mTfRegular;
     private DrawerLayout mDrawerLayout;
@@ -157,7 +126,7 @@ public class Main extends NMJActivity {
         }
     };
 
-    public void reloadFragment(String fragment) {
+    private void reloadFragment(String fragment) {
         Fragment frag = getSupportFragmentManager().findFragmentByTag(fragment);
         getSupportFragmentManager().beginTransaction().detach(frag).commitAllowingStateLoss();
         getSupportFragmentManager().beginTransaction().attach(frag).commitAllowingStateLoss();
@@ -208,15 +177,17 @@ public class Main extends NMJActivity {
             //editor.putString("LAST_DB", newHighScore);
             //editor.commit();
             System.out.println("Last DB: " + last_db);
-            try {
-                JSONObject jObject = new JSONObject(last_db);
-                NMJLib.setDbPath(NMJLib.getStringFromJSONObject(jObject, "DB_PATH", ""));
-                NMJLib.setDrivePath(NMJLib.getStringFromJSONObject(jObject, "DRIVE_PATH", ""));
-                NMJLib.setNMJPort(NMJLib.getStringFromJSONObject(jObject, "PORT", ""));
-                NMJLib.setNMJServer(NMJLib.getStringFromJSONObject(jObject, "IP_ADDRESS", ""));
-                LoadDatabase(null);
-            } catch (Exception e) {
-                Toast.makeText(this, "Exception Occurred: " + e.toString(), Toast.LENGTH_LONG).show();
+            if (!last_db.equals("")) {
+                try {
+                    JSONObject jObject = new JSONObject(last_db);
+                    NMJLib.setDbPath(NMJLib.getStringFromJSONObject(jObject, "DB_PATH", ""));
+                    NMJLib.setDrivePath(NMJLib.getStringFromJSONObject(jObject, "DRIVE_PATH", ""));
+                    NMJLib.setNMJPort(NMJLib.getStringFromJSONObject(jObject, "PORT", ""));
+                    NMJLib.setNMJServer(NMJLib.getStringFromJSONObject(jObject, "IP_ADDRESS", ""));
+                    LoadDatabase(null);
+                } catch (Exception e) {
+                    Toast.makeText(this, "Exception Occurred: " + e.toString(), Toast.LENGTH_LONG).show();
+                }
             }
         }
 
@@ -437,7 +408,6 @@ public class Main extends NMJActivity {
 
     public void ok(View v) {
         ip_address = (EditText) alertDialog.findViewById(R.id.ip_address);
-        port = (EditText) alertDialog.findViewById(R.id.port);
         display_name = (EditText) alertDialog.findViewById(R.id.display_name);
 
         if (ip_address.getText().toString().isEmpty()) {
@@ -458,7 +428,7 @@ public class Main extends NMJActivity {
 
             JSONObject jobj = new JSONObject();
             jobj.put("IP_ADDRESS", ip_address.getText().toString());
-            jobj.put("PORT", port.getText().toString());
+            jobj.put("PORT", "5678");
             jobj.put("DISPLAY_NAME", display_name.getText().toString());
             db.put(jobj);
             JSONObject jobj1 = new JSONObject();
@@ -554,7 +524,7 @@ public class Main extends NMJActivity {
 
             protected Void doInBackground(Void... params) {
                 try {
-                    String serverURL = "http://www.pchportal.duckdns.org/NMJManager/getData.php?action=getMD5sum";
+                    String serverURL = "http://www.pchportal.duckdns.org/NMJManager/getData.php?action=getServerMD5sum";
                     String clientURL = NMJLib.getNMJServerPHPURL() + "action=getMD5sum";
                     jObject = NMJLib.getJSONObject(mContext, serverURL);
                     String serverMD5 = NMJLib.getStringFromJSONObject(jObject, "md5sum", "");

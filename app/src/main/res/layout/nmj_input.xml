@@ -37,20 +37,6 @@
     </LinearLayout>
 
     <EditText
-        android:id="@+id/port"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        android:drawableLeft="@drawable/ic_port_white_24dp"
-        android:drawableStart="@drawable/ic_port_white_24dp"
-        android:drawablePadding="8dp"
-        android:ems="10"
-        android:hint="Port, default 80"
-        android:maxLines="1"/>
-
-    <EditText
         android:id="@+id/display_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

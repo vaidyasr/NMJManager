@@ -674,7 +674,6 @@ public class NMJMovieDetailsFragment extends Fragment {
                 if (NMJLib.isTablet(mContext)) {
                     menu.findItem(R.id.share).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
                     menu.findItem(R.id.openInBrowser).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-                    menu.findItem(R.id.checkIn).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
                 }
 
                 if (!Trakt.hasTraktAccount(mContext))
