@@ -60,7 +60,6 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.google.gson.reflect.TypeToken;
-import com.iainconnor.objectcache.CacheManager;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.db.DbAdapterSources;
 import com.nmj.db.DbAdapterTvShowEpisodes;
@@ -130,10 +129,6 @@ import java.util.regex.Pattern;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 
-import com.iainconnor.objectcache.DiskCache;
-import com.iainconnor.objectcache.BuildConfig;
-
-
 import static com.nmj.functions.PreferenceKeys.DISABLE_ETHERNET_WIFI_CHECK;
 import static com.nmj.functions.PreferenceKeys.IGNORE_FILE_SIZE;
 import static com.nmj.functions.PreferenceKeys.INCLUDE_ADULT_CONTENT;
@@ -180,6 +175,9 @@ public class NMJLib {
     public static int COVER = 1, BACKDROP = 2;
     public static String WRITABLE = "";
     public static String[] subtitleFormats = new String[]{".srt", ".sub", ".ssa", ".ssf", ".smi", ".txt", ".usf", ".ass", ".stp", ".idx", ".aqt", ".cvd", ".dks", ".jss", ".mpl", ".pjs", ".psb", ".rt", ".svcd", ".usf"};
+    public static HashMap<String, String> tmdbMovieCache = new HashMap<>();
+    public static HashMap<String, String> tmdbShowCache = new HashMap<>();
+    public static HashMap<String, String> tmdbPersonCache = new HashMap<>();
     private static String[] MEDIA_APPS = new String[]{"com.imdb.mobile", "com.google.android.youtube", "com.ted.android", "com.google.android.videos", "se.mtg.freetv.tv3_dk", "tv.twitch.android.viewer",
             "com.netflix.mediaclient", "com.gotv.crackle.handset", "net.flixster.android", "com.google.tv.alf", "com.viki.android", "com.mobitv.client.mobitv", "com.hulu.plus.jp", "com.hulu.plus",
             "com.mobitv.client.tv", "air.com.vudu.air.DownloaderTablet", "com.hbo.android.app", "com.HBO", "bbc.iplayer.android", "air.uk.co.bbc.android.mediaplayer", "com.rhythmnewmedia.tvdotcom",
@@ -188,9 +186,6 @@ public class NMJLib {
     private static String[] mAdultKeywords = new String[]{"adult", "sex", "porn", "explicit", "penis", "vagina", "asshole",
             "blowjob", "cock", "fuck", "dildo", "kamasutra", "masturbat", "squirt", "slutty", "cum", "cunt"};
     private static String mMachineType = "";
-    public static HashMap<String, String> tmdbMovieCache = new HashMap<>();
-    public static HashMap<String, String> tmdbShowCache = new HashMap<>();
-    public static HashMap<String, String> tmdbPersonCache = new HashMap<>();
 
     private NMJLib() {
     } // No instantiation
@@ -289,13 +284,13 @@ public class NMJLib {
         return mDrivePath;
     }
 
+    public static void setDrivePath(String drivePath) {
+        mDrivePath = drivePath;
+    }
+
     public static String getCachePrefix() {
         File theFile = new File(getDrivePath());
         return theFile.getName();
-    }
-
-    public static void setDrivePath(String drivePath) {
-        mDrivePath = drivePath;
     }
 
     public static String getSortType() {
@@ -2473,28 +2468,6 @@ public class NMJLib {
         } else {
             return context.getString(R.string.stringNA);
         }
-    }
-
-    public static DiskCache getDiskCache(Context context) {
-        String cachePath = context.getCacheDir().getPath();
-        File cacheFile = new File(cachePath + File.separator + BuildConfig.APPLICATION_ID);
-        DiskCache diskCache;
-        try {
-            diskCache = new DiskCache(cacheFile, BuildConfig.VERSION_CODE, 1024 * 1024 * 10);
-            return diskCache;
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    public static void putCacheNotUsed(CacheManager cache, String key, String data) {
-        cache.put(key, data, CacheManager.ExpiryTimes.ONE_DAY.asSeconds(), true);
-    }
-
-    public static String getCacheNotUsed(CacheManager cache, String key) {
-        Type myObjectType = new TypeToken<String>() {
-        }.getType();
-        return cache.get(key, String.class, myObjectType).toString();
     }
 
     /**

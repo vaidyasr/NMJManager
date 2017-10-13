@@ -136,74 +136,29 @@ public class CoverSearchFragment extends Fragment {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 				// Create the download Service
-				Intent downloadService = new Intent(getActivity(), DownloadImageService.class);
+
+				getActivity().finish();
+
+/*				Intent downloadService = new Intent(getActivity(), DownloadImageService.class);
 				downloadService.putExtra(DownloadImageService.CONTENT_ID, mTmdbId);
 				downloadService.putExtra(DownloadImageService.IMAGE_URL, mImageUrls.get(arg2));
 				downloadService.putExtra(DownloadImageService.IMAGE_TYPE, DownloadImageService.IMAGE_TYPE_MOVIE_COVER);				
 				getActivity().startService(downloadService);
 				
 				// End the browser Activity
-				getActivity().finish();
+				getActivity().finish();*/
 			}
 		});
 
 		mJson = getArguments().getString("json");
-		loadJson(getArguments().getString("baseUrl"));
+		//loadJson(getArguments().getString("baseUrl"));
+		loadJson(NMJLib.getTmdbImageBaseUrl(getContext()));
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
 		if (mAdapter != null) mAdapter.notifyDataSetChanged();
-	}
-
-	private class ImageAdapter extends BaseAdapter {
-
-		private final Context mContext;
-		private LayoutInflater inflater;
-
-		public ImageAdapter(Context context) {
-			mContext = context;
-			inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		}
-
-		@Override
-		public int getCount() {
-			return mImageUrls.size();
-		}
-
-		@Override
-		public Object getItem(int position) {
-			return null;
-		}
-
-		@Override
-		public long getItemId(int position) {
-			return 0;
-		}
-
-		@Override
-		public View getView(int position, View convertView, ViewGroup container) {
-			CoverItem holder;
-			if (convertView == null) {
-				convertView = inflater.inflate(R.layout.grid_portrait_photo, container, false);
-				holder = new CoverItem();
-				
-				holder.cover = (ImageView) convertView.findViewById(R.id.cover);
-				
-				convertView.setTag(holder);
-			} else {
-				holder = (CoverItem) convertView.getTag();
-			}
-			
-			holder.cover.setImageResource(R.color.card_background_dark);
-
-			// Finally load the image asynchronously into the ImageView, this also takes care of
-			// setting a placeholder image while the background thread runs
-			mPicasso.load(mImageUrls.get(position)).placeholder(R.color.card_background_dark).config(mConfig).into(holder.cover);
-
-			return convertView;
-		}
 	}
 
 	private void loadJson(String baseUrl) {
@@ -222,7 +177,7 @@ public class CoverSearchFragment extends Fragment {
 				mImageUrls.add(baseUrl + NMJLib.getImageUrlSize(getActivity()) + o.getString("file_path"));
 				System.out.println("Image URLS:" + mImageUrls.get(i));
 			}
-			
+
 		} catch (Exception e) {}
 
 		if (isAdded()) {
@@ -276,5 +231,54 @@ public class CoverSearchFragment extends Fragment {
 		}
 
 		return super.onOptionsItemSelected(item);
+	}
+
+	private class ImageAdapter extends BaseAdapter {
+
+		private final Context mContext;
+		private LayoutInflater inflater;
+
+		public ImageAdapter(Context context) {
+			mContext = context;
+			inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		}
+
+		@Override
+		public int getCount() {
+			return mImageUrls.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			return null;
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return 0;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup container) {
+			CoverItem holder;
+			if (convertView == null) {
+				convertView = inflater.inflate(R.layout.grid_portrait_photo, container, false);
+				holder = new CoverItem();
+
+				holder.cover = (ImageView) convertView.findViewById(R.id.cover);
+
+				convertView.setTag(holder);
+			} else {
+				holder = (CoverItem) convertView.getTag();
+			}
+
+			holder.cover.setImageResource(R.color.card_background_dark);
+
+			// Finally load the image asynchronously into the ImageView, this also takes care of
+			// setting a placeholder image while the background thread runs
+			mPicasso.load(mImageUrls.get(position)).placeholder(R.color.card_background_dark).config(mConfig).into(holder.cover);
+
+			return convertView;
+		}
 	}
 }

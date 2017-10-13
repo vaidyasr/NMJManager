@@ -4,7 +4,6 @@ import android.content.Context;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
-import com.iainconnor.objectcache.CacheManager;
 import com.nmj.abstractclasses.TvShowApiService;
 import com.nmj.apis.nmj.TvShow;
 import com.nmj.apis.trakt.Show;

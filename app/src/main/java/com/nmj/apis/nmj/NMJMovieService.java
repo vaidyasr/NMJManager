@@ -4,7 +4,6 @@ import android.content.Context;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
-import com.iainconnor.objectcache.CacheManager;
 import com.nmj.abstractclasses.NMJApiService;
 import com.nmj.apis.trakt.Trakt;
 import com.nmj.db.DbAdapterMovies;
@@ -124,7 +123,6 @@ public class NMJMovieService extends NMJApiService {
         Movie movie = new Movie();
         movie.setShowId(id);
         String nmjImgURL = NMJLib.getNMJImageURL();
-        String CacheId;
 
         if (id.equals(DbAdapterMovies.UNIDENTIFIED_ID))
             return movie;
@@ -173,6 +171,8 @@ public class NMJMovieService extends NMJApiService {
                             video.getJSONObject(i).getString("PATH")
                     ));
                     videoDetails.get(i).setPlayCount(video.getJSONObject(i).getString("PLAY_COUNT"));
+                    if (!videoDetails.get(i).getPlayCount().equals("0"))
+                        movie.setHasWatched(true);
                     videoDetails.get(i).setWidth(video.getJSONObject(i).getString("WIDTH"));
                     videoDetails.get(i).setHeight(video.getJSONObject(i).getString("HEIGHT"));
                     videoDetails.get(i).setResolution();

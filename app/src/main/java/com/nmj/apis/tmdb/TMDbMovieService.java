@@ -4,7 +4,6 @@ import android.content.Context;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
-import com.iainconnor.objectcache.CacheManager;
 import com.nmj.abstractclasses.MovieApiService;
 import com.nmj.apis.trakt.Trakt;
 import com.nmj.apis.nmj.Movie;

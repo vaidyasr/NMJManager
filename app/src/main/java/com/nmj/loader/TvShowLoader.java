@@ -24,7 +24,6 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import com.google.common.collect.Lists;
-import com.iainconnor.objectcache.CacheManager;
 import com.nmj.db.DbAdapterTvShowEpisodes;
 import com.nmj.db.DbAdapterTvShows;
 import com.nmj.functions.ColumnIndexCache;

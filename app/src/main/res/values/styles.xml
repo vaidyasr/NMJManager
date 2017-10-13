@@ -31,6 +31,7 @@
         <item name="colorAccent">#1a237e</item>
         <item name="colorPrimaryDark">#1a237e</item>
         <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="colorControlNormal">#aaffffff</item>
         <item name="colorControlActivated">#fff</item>

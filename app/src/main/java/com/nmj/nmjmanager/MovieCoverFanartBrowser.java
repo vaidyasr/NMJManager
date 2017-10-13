@@ -28,7 +28,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.astuetz.PagerSlidingTabStrip;
-import com.iainconnor.objectcache.CacheManager;
 import com.nmj.base.NMJActivity;
 import com.nmj.functions.IntentKeys;
 import com.nmj.functions.NMJLib;
@@ -108,6 +107,16 @@ public class MovieCoverFanartBrowser extends NMJActivity  {
 		outState.putString("collection", mCollection);
 	}
 
+	private void setupActionBarStuff() {
+		if (!NMJLib.isPortrait(getApplicationContext()))
+			findViewById(R.id.layout).setBackgroundResource(0);
+
+		mProgressBar.setVisibility(View.GONE);
+		mViewPager.setAdapter(new PagerAdapter(getSupportFragmentManager()));
+		mTabs.setViewPager(mViewPager);
+		mTabs.setVisibility(View.VISIBLE);
+	}
+
 	private class PagerAdapter extends FragmentPagerAdapter {
 
         private final String[] TITLES = {getString(R.string.coverart), getString(R.string.backdrop), getString(R.string.collectionart)};
@@ -121,7 +130,7 @@ public class MovieCoverFanartBrowser extends NMJActivity  {
             return TITLES[position];
         }
 
-		@Override  
+		@Override
 		public Fragment getItem(int index) {
 			switch (index) {
 			case 0:
@@ -131,24 +140,24 @@ public class MovieCoverFanartBrowser extends NMJActivity  {
 			default:
 				return CollectionCoverSearchFragment.newInstance(mCollectionId, mCollection, mBaseUrl);
 			}
-		}  
+		}
 
-		@Override  
+		@Override
 		public int getCount() {
 			if (!NMJLib.isValidTmdbId(mCollectionId))
 				return 2;
-			return 3;  
+			return 3;
 		}
 	}
 
 	private class MovieLoader extends AsyncTask<Object, Object, String> {
-		
+
 		private Context mContext;
-		
+
 		public MovieLoader(Context context) {
 			mContext = context;
 		}
-		
+
 		@Override
 		protected String doInBackground(Object... params) {
 			String URL;
@@ -162,7 +171,8 @@ public class MovieCoverFanartBrowser extends NMJActivity  {
 					NMJLib.setTMDbCache(params[0].toString(), "movie", NMJLib.getJSONObject(mContext, URL).toString());
 				}
 				System.out.println("Getting Cache from " + params[0].toString());
-				mJson = new JSONObject(NMJLib.getTMDbCache(params[0].toString(), "movie")).toString();
+				mJson = new JSONObject(NMJLib.getTMDbCache(params[0].toString(), "movie")).getJSONObject("images").toString();
+				System.out.println("JSON: " + mJson);
 
 				//JSONArray jArray = jObject.getJSONObject("images").getJSONArray("cast");
 
@@ -188,15 +198,5 @@ public class MovieCoverFanartBrowser extends NMJActivity  {
 				Toast.makeText(getApplicationContext(), R.string.errorSomethingWentWrong, Toast.LENGTH_SHORT).show();
 			}
 		}
-	}
-
-	private void setupActionBarStuff() {
-		if (!NMJLib.isPortrait(getApplicationContext()))
-			findViewById(R.id.layout).setBackgroundResource(0);
-
-        mProgressBar.setVisibility(View.GONE);
-        mViewPager.setAdapter(new PagerAdapter(getSupportFragmentManager()));
-        mTabs.setViewPager(mViewPager);
-        mTabs.setVisibility(View.VISIBLE);
 	}
 }

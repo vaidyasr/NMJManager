@@ -18,26 +18,42 @@ package com.nmj.nmjmanager;
 
 import android.app.Activity;
 import android.app.SearchManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.nmj.base.NMJActivity;
+import com.nmj.functions.NMJLib;
+import com.nmj.loader.MovieLibraryType;
 import com.nmj.nmjmanager.fragments.NMJMovieDetailsFragment;
+import com.nmj.utils.LocalBroadcastUtils;
 import com.nmj.utils.ViewUtils;
 
 public class NMJMovieDetails extends NMJActivity {
 
     private static String TAG = "NMJMovieDetailsFragment";
+    private Context mContext;
     private String mMovieId, mShowId;
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mContext = NMJManagerApplication.getContext();
 
         // Set theme
         setTheme(R.style.NMJManager_Theme_NoBackground);
@@ -62,6 +78,7 @@ public class NMJMovieDetails extends NMJActivity {
             ft.add(android.R.id.content, NMJMovieDetailsFragment.newInstance(mMovieId, mShowId), TAG);
             ft.commit();
         }
+
     }
 
     @Override
