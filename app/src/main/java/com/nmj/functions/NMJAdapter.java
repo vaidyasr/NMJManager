@@ -83,6 +83,31 @@ public class NMJAdapter {
         return "0";
     }
 
+    public boolean getWatchedByShowId(String movieId) {
+        if (mLibrary != null) {
+            for (int i = 0; i < mLibrary.size(); i++) {
+                if (mLibrary.get(i).getShowId().equals(movieId)) {
+                    if (!mLibrary.get(i).getPlayCount().equals("0"))
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void setWatchedByShowId(String movieId, boolean watched) {
+        if (mLibrary != null) {
+            for (int i = 0; i < mLibrary.size(); i++) {
+                if (mLibrary.get(i).getShowId().equals(movieId)) {
+                    if (watched)
+                        mLibrary.get(i).setPlayCount("1");
+                    else
+                        mLibrary.get(i).setPlayCount("0");
+                }
+            }
+        }
+    }
+
     public boolean hasWatched(String movieId){
         if (mLibrary != null) {
             for (int i = 0; i < mLibrary.size(); i++) {

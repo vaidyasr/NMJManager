@@ -53,9 +53,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.github.ksoichiro.android.observablescrollview.ObservableGridView;
+import com.nmj.apis.nmj.Movie;
 import com.nmj.functions.CoverItem;
 import com.nmj.functions.NMJLib;
-import com.nmj.functions.NMJMovie;
 import com.nmj.loader.MovieLoader;
 import com.nmj.loader.MovieLibraryType;
 import com.nmj.loader.MovieSortType;
@@ -227,28 +227,28 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
 
                     switch (id) {
                         case R.id.movie_add_fav:
-                            NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedMovies(), mAdapter.getCheckedItems(), true);
+                            NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedItems(), true);
                             break;
                         case R.id.movie_remove_fav:
-                            NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedMovies(), mAdapter.getCheckedItems(), false);
+                            NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedItems(), false);
                             break;
                         case R.id.movie_watched:
-                            NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedMovies(), mAdapter.getCheckedItems(), true);
+                            NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedItems(), true);
                             break;
                         case R.id.movie_unwatched:
-                            NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedMovies(), mAdapter.getCheckedItems(), false);
+                            NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedItems(), false);
                             break;
                         case R.id.add_to_watchlist:
-                            NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedMovies(), true);
+                            NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedItems(), true);
                             break;
                         case R.id.remove_from_watchlist:
-                            NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedMovies(), false);
+                            NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedItems(), false);
                             break;
                         case R.id.add_to_list:
-                            NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedMovies(), true);
+                            NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedItems(), true);
                             break;
                         case R.id.remove_from_list:
-                            NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedMovies(), false);
+                            NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedItems(), false);
                             break;
                     }
 
@@ -514,8 +514,8 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
             return movies;
         }
 
-        public List<NMJMovie> getCheckedItems() {
-            List<NMJMovie> movies = new ArrayList<>(mChecked.size());
+        public List<Movie> getCheckedItems() {
+            List<Movie> movies = new ArrayList<>(mChecked.size());
             for (Integer i : mChecked)
                 movies.add(getItem(i));
             return movies;
@@ -534,7 +534,7 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
         }
 
         @Override
-        public NMJMovie getItem(int position) {
+        public Movie getItem(int position) {
             return mMovieLoader.getResults().get(position);
         }
 
@@ -548,7 +548,7 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
 
         @Override
         public View getView(int position, View convertView, ViewGroup container) {
-            final NMJMovie movie = getItem(position);
+            final Movie movie = getItem(position);
             String mURL;
 
             CoverItem holder;
@@ -589,7 +589,7 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
                 mURL = baseUrl + imageSizeUrl;
             else
                 mURL = NMJLib.getNMJImageURL();
-            mPicasso.load(mURL + movie.getNMJThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
+            mPicasso.load(mURL + movie.getThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
             if (mChecked.contains(position)) {
                 holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));
             } else {

@@ -16,13 +16,6 @@
 
 package com.nmj.loader;
 
-import android.text.TextUtils;
-
-import com.nmj.functions.MediumMovie;
-import com.nmj.functions.NMJMovie;
-
-import java.util.Comparator;
-
 public enum MovieSortType {
 
     TITLE(MovieLoader.TITLE, false),
@@ -55,7 +48,7 @@ public enum MovieSortType {
             return mAscendingSort;
         }
 
-        public Comparator<NMJMovie> getComparator() {
+/*        public Comparator<NMJMovie> getComparator() {
             return new Comparator<NMJMovie>() {
                 @Override
                 public int compare(NMJMovie lhs, NMJMovie rhs) {
@@ -122,5 +115,5 @@ public enum MovieSortType {
                     return isAscendingSort() ? result : result * -1;
                 }
             };
-        }
+        }*/
     }

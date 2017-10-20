@@ -33,7 +33,7 @@ public class Movie {
     private String showid = "", title = "", originalTitle = "", plot = "", thumbnail = "", poster = "", backdrop = "",
             rating = "0.0", tagline = "", releasedate = "", imdbId = "", certification = "", runtime = "0",
             trailer = "", genres = "", cast = "", crew = "", collectionTitle = "", collectionId = "",
-            collectionImage = "", year = "", tmdbId = "", filepath = "";
+            collectionImage = "", year = "", tmdbId = "", filepath = "", title_type;
     private List<Video> mVideo = new ArrayList<>();
 
     private List<Actor> mCast = new ArrayList<Actor>();
@@ -42,6 +42,7 @@ public class Movie {
     private List<WebMovie> mRecommendedMovies = new ArrayList<WebMovie>();
     private String mFilepaths = filepath;
     private String TO_WATCH = "0", FAVOURITE = "0", HAS_WATCHED = "0";
+    private String LIST_ID;
 
     public Movie() {
         // Unidentified by default
@@ -71,8 +72,16 @@ public class Movie {
         return showid;
     }
 
+    public void setShowId(String id) {
+        this.showid = id;
+    }
+
     public boolean isFavourite() {
         return FAVOURITE.equals("1");
+    }
+
+    public void setFavourite(String favourite) {
+        this.FAVOURITE = favourite;
     }
 
     public boolean toWatch() {
@@ -83,33 +92,12 @@ public class Movie {
         return (!HAS_WATCHED.equals("0"));
     }
 
-    public void setToWatch(boolean toWatch) {
-        if (toWatch)
-            TO_WATCH = "1";
-        else
-            TO_WATCH = "0";
+    public void setToWatch(String toWatch) {
+        this.TO_WATCH = toWatch;
     }
 
-    public void setFavourite(boolean isFavourite) {
-        if (isFavourite)
-            FAVOURITE = "1";
-        else
-            FAVOURITE = "0";
-    }
-
-    public void setWatched(String id){
+    public void setHasWatched(String id) {
         this.HAS_WATCHED = id;
-    }
-
-    public void setHasWatched(boolean hasWatched) {
-        if (hasWatched)
-            HAS_WATCHED = "1";
-        else
-            HAS_WATCHED = "0";
-    }
-
-    public void setShowId(String id) {
-        this.showid = id;
     }
 
     public String getTitle() {
@@ -150,6 +138,22 @@ public class Movie {
 
     public void setPoster(String poster) {
         this.poster = poster;
+    }
+
+    public String getTitleType() {
+        return title_type;
+    }
+
+    public void setTitleType(String title_type) {
+        this.title_type = title_type;
+    }
+
+    public String getListId() {
+        return LIST_ID;
+    }
+
+    public void setListId(String list_id) {
+        this.LIST_ID = list_id;
     }
 
     public String getBackdrop() {
@@ -292,12 +296,12 @@ public class Movie {
         return mSimilarMovies;
     }
 
-    public List<WebMovie> getRecommendedMovies() {
-        return mRecommendedMovies;
-    }
-
     public void setSimilarMovies(List<WebMovie> movies) {
         mSimilarMovies = movies;
+    }
+
+    public List<WebMovie> getRecommendedMovies() {
+        return mRecommendedMovies;
     }
 
     public String getAllFilepaths() {

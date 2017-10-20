@@ -44,7 +44,6 @@ import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.AsyncTask;
 import com.nmj.functions.CoverItem;
 import com.nmj.functions.NMJLib;
-import com.nmj.functions.NMJMovie;
 import com.nmj.functions.WebMovie;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.NMJMovieDetails;
@@ -176,11 +175,55 @@ public class MovieDiscoveryFragment extends Fragment implements OnSharedPreferen
 		((ActionBarActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
+    private void loadJson() {
+        try {
+            JSONObject jObject = new JSONObject(mJson);
+
+            JSONArray jArray = jObject.getJSONObject(getArguments().getString("type")).getJSONArray("results");
+
+            mMovies.clear();
+            for (int i = 0; i < jArray.length(); i++) {
+                if (!NMJLib.isAdultContent(getActivity(), jArray.getJSONObject(i).getString("title")) && !NMJLib.isAdultContent(getActivity(), jArray.getJSONObject(i).getString("original_title"))) {
+                    mMovies.add(new WebMovie(getActivity().getApplicationContext(),
+                            jArray.getJSONObject(i).getString("original_title"),
+                            jArray.getJSONObject(i).getString("id"),
+                            mBaseUrl + NMJLib.getImageUrlSize(getActivity()) + jArray.getJSONObject(i).getString("poster_path"),
+                            NMJLib.getPrettyDate(getActivity(), jArray.getJSONObject(i).getString("release_date")), ""));
+                }
+            }
+
+            new MoviesInLibraryCheck(mMovies).execute();
+        } catch (Exception e) {
+        }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(GRID_ITEM_SIZE)) {
+            String thumbnailSize = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(GRID_ITEM_SIZE, getString(R.string.normal));
+            if (thumbnailSize.equals(getString(R.string.large)))
+                mImageThumbSize = (int) (getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size) * 1.33);
+            else if (thumbnailSize.equals(getString(R.string.normal)))
+                mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size) * 1;
+            else
+                mImageThumbSize = (int) (getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size) * 0.75);
+
+            mGridView.setColumnWidth(mImageThumbSize);
+
+            final int numColumns = (int) Math.floor(mGridView.getWidth() / (mImageThumbSize + mImageThumbSpacing));
+            if (numColumns > 0) {
+                mAdapter.setNumColumns(numColumns);
+            }
+
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
 	private class ImageAdapter extends BaseAdapter {
 
-		private LayoutInflater inflater;
 		private final Context mContext;
-		private int mNumColumns = 0;
+        private LayoutInflater inflater;
+        private int mNumColumns = 0;
 
 		public ImageAdapter(Context context) {
 			mContext = context;
@@ -242,35 +285,14 @@ public class MovieDiscoveryFragment extends Fragment implements OnSharedPreferen
 			return convertView;
 		}
 
-		public void setNumColumns(int numColumns) {
-			mNumColumns = numColumns;
-		}
-
 		public int getNumColumns() {
 			return mNumColumns;
 		}
-	}
 
-	private void loadJson() {
-		try {
-			JSONObject jObject = new JSONObject(mJson);
-
-			JSONArray jArray = jObject.getJSONObject(getArguments().getString("type")).getJSONArray("results");
-
-			mMovies.clear();
-			for (int i = 0; i < jArray.length(); i++) {
-				if (!NMJLib.isAdultContent(getActivity(), jArray.getJSONObject(i).getString("title")) && !NMJLib.isAdultContent(getActivity(), jArray.getJSONObject(i).getString("original_title"))) {
-					mMovies.add(new WebMovie(getActivity().getApplicationContext(),
-							jArray.getJSONObject(i).getString("original_title"),
-							jArray.getJSONObject(i).getString("id"),
-							mBaseUrl + NMJLib.getImageUrlSize(getActivity()) + jArray.getJSONObject(i).getString("poster_path"),
-							NMJLib.getPrettyDate(getActivity(), jArray.getJSONObject(i).getString("release_date")), ""));
-				}
-			}
-
-			new MoviesInLibraryCheck(mMovies).execute();
-		} catch (Exception e) {}
-	}
+        public void setNumColumns(int numColumns) {
+            mNumColumns = numColumns;
+        }
+    }
 
 	private class MoviesInLibraryCheck extends AsyncTask<Void, Void, Void> {
 
@@ -294,28 +316,6 @@ public class MovieDiscoveryFragment extends Fragment implements OnSharedPreferen
 			if (isAdded()) {
 				mAdapter.notifyDataSetChanged();
 			}
-		}
-	}
-
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		if (key.equals(GRID_ITEM_SIZE)) {
-			String thumbnailSize = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(GRID_ITEM_SIZE, getString(R.string.normal));
-			if (thumbnailSize.equals(getString(R.string.large))) 
-				mImageThumbSize = (int) (getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size) * 1.33);
-			else if (thumbnailSize.equals(getString(R.string.normal))) 
-				mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size) * 1;
-			else
-				mImageThumbSize = (int) (getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size) * 0.75);
-
-			mGridView.setColumnWidth(mImageThumbSize);
-
-			final int numColumns = (int) Math.floor(mGridView.getWidth() / (mImageThumbSize + mImageThumbSpacing));
-			if (numColumns > 0) {
-				mAdapter.setNumColumns(numColumns);
-			}
-
-			mAdapter.notifyDataSetChanged();
 		}
 	}
 }

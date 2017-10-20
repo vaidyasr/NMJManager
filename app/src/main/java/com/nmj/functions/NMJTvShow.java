@@ -17,21 +17,19 @@
 package com.nmj.functions;
 
 import android.content.Context;
-import android.text.TextUtils;
-import com.nmj.abstractclasses.NMJBaseMovie;
+
+import com.nmj.abstractclasses.BaseMovie;
 import java.io.File;
 
-public class NMJTvShow extends NMJBaseMovie {
+public class NMJTvShow extends BaseMovie {
 
-    private String TITLE, TITLE_TYPE, THUMBNAIL, SHOW_ID, LIST_ID, COLLECTION_ID;
+    private String TITLE, TITLE_TYPE, THUMBNAIL, SHOW_ID, LIST_ID, COLLECTION_ID, HAS_WATCHED;
 
-    public NMJTvShow(Context context, String title, String tmdbId, String rating, String releasedate,String genres,
-                    String favourite, String listId, String collectionId, String toWatch, String hasWatched,
-                    String date_added, String certification, String runtime, String showId, String title_type,
-                    String thumbnail, boolean ignorePrefixes) {
+    public NMJTvShow(Context context, String title, String tmdbId, String showId, String listId,
+                     String collectionId, String hasWatched, String title_type,
+                     String thumbnail, boolean ignorePrefixes) {
 
-        super(context, title, tmdbId, rating, releasedate, genres, favourite, listId,
-                collectionId, toWatch, hasWatched, date_added, certification, runtime, showId, thumbnail, ignorePrefixes);
+        super(context, title, tmdbId, showId, ignorePrefixes);
 
         // Set up movie fields based on constructor
         mTmdbId = tmdbId;
@@ -48,17 +46,11 @@ public class NMJTvShow extends NMJBaseMovie {
         return getThumbnail();
     }
 
-    public String getRating() {
-        if (!TextUtils.isEmpty(RATING))
-            return RATING;
-        return "0.0";
-    }
-
     public String getNMJThumbnail() {
         return THUMBNAIL.replaceAll(" ", "%20");
     }
 
-    public String getTitleType(){
+    public String getTitleType() {
         if (TITLE_TYPE == "0")
             return "tmdb";
         else
@@ -67,10 +59,6 @@ public class NMJTvShow extends NMJBaseMovie {
 
     public String getShowId() {
         return SHOW_ID;
-    }
-
-    public String getHasWatched() {
-        return HAS_WATCHED;
     }
 
     public void setHasWatched(boolean hasWatched) {
@@ -85,16 +73,5 @@ public class NMJTvShow extends NMJBaseMovie {
             return false;
         else
             return true;
-    }
-
-    public String getToWatch() {
-        return TO_WATCH;
-    }
-
-    public void setToWatch(boolean toWatch) {
-        if (toWatch)
-            TO_WATCH = "1";
-        else
-            TO_WATCH = "0";
     }
 }

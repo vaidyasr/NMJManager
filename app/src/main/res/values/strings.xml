@@ -522,7 +522,7 @@
     <string name="improve_filename_recognition">Improve filename recognition</string>
     <string name="improve_filename_recognition_description">Anonymously share filenames in order to improve filename recognition in future versions.</string>
     <string name="no_movies">No movies</string>
-    <string name="no_movies_description">Select <b>Update library</b> from the menu to add movies.</string>
+    <string name="no_movies_description">Select <b>Add NMJ Server</b> from the navigation menu to add movies.</string>
     <string name="no_movies_description_tablet">Select the <b>Add NMJ Server</b> from the navigation menu to add movies.</string>
     <string name="no_search_results">Nothing found</string>
     <string name="no_search_results_description">Please try again with a different query.</string>

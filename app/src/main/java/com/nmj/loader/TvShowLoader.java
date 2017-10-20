@@ -262,7 +262,7 @@ public class TvShowLoader {
      * Show genres filter dialog.
      * @param activity
      */
-    public void showGenresFilterDialog(Activity activity) {
+/*    public void showGenresFilterDialog(Activity activity) {
         final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
         String[] splitGenres;
         for (int i = 0; i < mResults.size(); i++) {
@@ -279,14 +279,14 @@ public class TvShowLoader {
         }
 
         createAndShowAlertDialog(activity, setupItemArray(map, false), R.string.selectGenre, TvShowFilter.GENRE);
-    }
+    }*/
 
     /**
      * Show certifications filter dialog.
      *
      * @param activity
      */
-    public void showCertificationsFilterDialog(Activity activity) {
+/*    public void showCertificationsFilterDialog(Activity activity) {
         final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
         for (int i = 0; i < mResults.size(); i++) {
             String certification = mResults.get(i).getCertification();
@@ -300,13 +300,14 @@ public class TvShowLoader {
         }
 
         createAndShowAlertDialog(activity, setupItemArray(map, false), R.string.selectCertification, TvShowFilter.CERTIFICATION);
-    }
+    }*/
 
     /**
      * Show release year filter dialog.
      *
      * @param activity
      */
+/*
     public void showReleaseYearFilterDialog(Activity activity) {
         final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
         for (int i = 0; i < mResults.size(); i++) {
@@ -322,6 +323,7 @@ public class TvShowLoader {
 
         createAndShowAlertDialog(activity, setupItemArray(map, false), R.string.selectReleaseYear, TvShowFilter.RELEASE_YEAR);
     }
+*/
 
     /**
      * Used to set up an array of items for the alert dialog.

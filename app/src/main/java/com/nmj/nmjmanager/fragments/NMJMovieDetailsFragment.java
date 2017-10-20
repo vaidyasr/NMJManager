@@ -155,8 +155,8 @@ public class NMJMovieDetailsFragment extends Fragment {
 
         // Get the database ID of the movie in question
         mMovie = new Movie();
-        System.out.println("Movie Id: " + getArguments().getString("movieId"));
-        System.out.println("Show Id: " + getArguments().getString("showId"));
+        //System.out.println("Movie Id: " + getArguments().getString("movieId"));
+        //System.out.println("Show Id: " + getArguments().getString("showId"));
         mMovie.setShowId(getArguments().getString("showId"));
         mMovie.setTmdbId(getArguments().getString("movieId"));
 
@@ -256,7 +256,7 @@ public class NMJMovieDetailsFragment extends Fragment {
     }
 
     private void setupFields() {
-        System.out.println("Inside setupFields");
+        //System.out.println("Inside setupFields");
         if (isAdded() && mMovie != null) {
             // Set the movie title
             mTitle.setVisibility(View.VISIBLE);
@@ -453,9 +453,8 @@ public class NMJMovieDetailsFragment extends Fragment {
 
             ViewUtils.updateToolbarBackground(getActivity(), mToolbar, 0, mMovie.getTitle(), mToolbarColor);
 
-            if(mMovie.getVideo().size() > 0)
-                if (!mMovie.getVideo().get(0).getPlayCount().equals("0"))
-                    mHasWatched.setVisibility(View.VISIBLE);
+            if (NMJManagerApplication.getNMJAdapter().getWatchedByShowId(mMovie.getShowId()))
+                mHasWatched.setVisibility(View.VISIBLE);
 
             setLoading(false);
 
@@ -659,22 +658,6 @@ public class NMJMovieDetailsFragment extends Fragment {
         }
     }
 
-/*    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        if (mMovie != null) {
-            inflater.inflate(R.menu.tmdb_details, menu);
-
-            if (NMJLib.isTablet(mContext)) {
-                menu.findItem(R.id.share).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-                menu.findItem(R.id.checkIn).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-                menu.findItem(R.id.openInBrowser).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-            }
-
-            if (!Trakt.hasTraktAccount(mContext))
-                menu.findItem(R.id.checkIn).setVisible(false);
-        }
-    }*/
-
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         if (mMovie.getShowId().equals("0")) {
@@ -683,6 +666,7 @@ public class NMJMovieDetailsFragment extends Fragment {
 
                 if (NMJLib.isTablet(mContext)) {
                     menu.findItem(R.id.share).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    //menu.findItem(R.id.checkIn).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
                     menu.findItem(R.id.openInBrowser).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
                 }
 
@@ -755,9 +739,9 @@ public class NMJMovieDetailsFragment extends Fragment {
                             R.string.menuFavouriteTitleRemove : R.string.menuFavouriteTitle);
 
             // Watched / unwatched
-            menu.findItem(R.id.watched).setIcon(mMovie.hasWatched() ?
+            menu.findItem(R.id.watched).setIcon(NMJManagerApplication.getNMJAdapter().getWatchedByShowId(mMovie.getShowId()) ?
                     R.drawable.ic_visibility_white_24dp : R.drawable.ic_visibility_off_white_24dp)
-                    .setTitle(mMovie.hasWatched() ?
+                    .setTitle(NMJManagerApplication.getNMJAdapter().getWatchedByShowId(mMovie.getShowId()) ?
                             R.string.stringMarkAsUnwatched : R.string.stringMarkAsWatched);
 
             // Watchlist
@@ -767,9 +751,8 @@ public class NMJMovieDetailsFragment extends Fragment {
                             R.string.removeFromWatchlist : R.string.watchLater);
 
 
-
             // Only allow the user to browse artwork if it's a valid TMDb movie
-            //menu.findItem(R.id.change_cover).setVisible(NMJLib.isValidTmdbId(mMovie.getTmdbId()));
+            menu.findItem(R.id.change_cover).setVisible(NMJLib.isValidTmdbId(mMovie.getId()));
         }
 
     }
@@ -787,23 +770,34 @@ public class NMJMovieDetailsFragment extends Fragment {
     }*/
 
     public void removeFromWatchlist() {
-        mMovie.setToWatch(false); // Remove it
+        String mode = "remove";
+        final String url = getNMJServerPHPURL() + "action=editWatchlist&drivepath=" +
+                NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&TTYPE=1&mode=" +
+                mode + "&showid=" + mMovie.getShowId();
+        new com.nmj.functions.AsyncTask<Void, Void, Void>() {
+            JSONObject jObject, dObject;
+            String error = "";
 
-        //boolean success = mDatabase.updateMovieSingleItem(mMovie.getTmdbId(), DbAdapterMovies.KEY_TO_WATCH, mMovie.getToWatch());
-
-/*        if (success) {
-            getActivity().invalidateOptionsMenu();
-            notifyDatasetChanges();
-        }*/
-
-        new Thread() {
-            @Override
-            public void run() {
-                ArrayList<Movie> watchlist = new ArrayList<Movie>();
-                watchlist.add(mMovie);
-                //Trakt.movieWatchlist(watchlist, mContext);
+            protected Void doInBackground(Void... params) {
+                try {
+                    jObject = NMJLib.getJSONObject(mContext, url);
+                    dObject = jObject.getJSONObject("data").getJSONObject("status");
+                    //System.out.println("Output: " + dObject.toString());
+                } catch (Exception e) {
+                    error = e.toString();
+                }
+                return null;
             }
-        }.start();
+
+            protected void onPostExecute(Void result) {
+                Toast.makeText(mContext, getString(R.string.removedFromWatchList), Toast.LENGTH_SHORT).show();
+
+                mMovie.setToWatch("0");
+
+                getActivity().invalidateOptionsMenu();
+                LocalBroadcastUtils.updateMovieLibrary(mContext);
+            }
+        }.execute();
     }
 
     @Override
@@ -812,7 +806,7 @@ public class NMJMovieDetailsFragment extends Fragment {
             case android.R.id.home:
                 if (getActivity().getIntent().getExtras().getBoolean("isFromWidget")) {
                     Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     i.putExtra("startup", String.valueOf(Main.MOVIES));
                     i.setClass(mContext, Main.class);
                     startActivity(i);
@@ -833,7 +827,7 @@ public class NMJMovieDetailsFragment extends Fragment {
                 return true;
             case R.id.tmdb:
                 Intent tmdbIntent = new Intent(Intent.ACTION_VIEW);
-                tmdbIntent.setData(Uri.parse("http://www.themoviedb.org/movie/" + mMovie.getTmdbId().replace("tmdb","")));
+                tmdbIntent.setData(Uri.parse("http://www.themoviedb.org/movie/" + mMovie.getTmdbId().replace("tmdb", "")));
                 startActivity(tmdbIntent);
                 return true;
             case R.id.change_cover:
@@ -940,8 +934,6 @@ public class NMJMovieDetailsFragment extends Fragment {
     }
 
     private void watched(final boolean showToast) {
-        //mMovie.setHasWatched(!mMovie.hasWatched()); // Reverse the hasWatched boolean
-
         String mode;
         final boolean watched = !mMovie.hasWatched();
 
@@ -960,7 +952,7 @@ public class NMJMovieDetailsFragment extends Fragment {
                 try {
                     jObject = NMJLib.getJSONObject(mContext, url);
                     dObject = jObject.getJSONObject("data").getJSONObject("status");
-                    System.out.println("Output: " + dObject.toString());
+                    //System.out.println("Output: " + dObject.toString());
                 } catch (Exception e) {
                     error = e.toString();
                 }
@@ -971,66 +963,65 @@ public class NMJMovieDetailsFragment extends Fragment {
                 if (showToast) {
                     if (watched) {
                         Toast.makeText(mContext, mContext.getString(R.string.markedAsWatched), Toast.LENGTH_SHORT).show();
-/*                    if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(REMOVE_MOVIES_FROM_WATCHLIST, true))
-                        setMoviesWatchlist(mContext, showIds, false); // False to remove from watchlist*/
+                        if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(REMOVE_MOVIES_FROM_WATCHLIST, true))
+                            removeFromWatchlist(); // False to remove from watchlist
                     } else
                         Toast.makeText(mContext, mContext.getString(R.string.markedAsUnwatched), Toast.LENGTH_SHORT).show();
                 }
 
-                mMovie.setHasWatched(watched);
+                NMJManagerApplication.getNMJAdapter().setWatchedByShowId(mMovie.getShowId(), watched);
                 getActivity().invalidateOptionsMenu();
-                refreshFragment();
+                LocalBroadcastUtils.updateMovieLibrary(mContext);
+
+                if (NMJManagerApplication.getNMJAdapter().getWatchedByShowId(mMovie.getShowId()))
+                    mHasWatched.setVisibility(View.VISIBLE);
+                else
+                    mHasWatched.setVisibility(View.GONE);
             }
         }.execute();
-
-/*        boolean success = mDatabase.updateMovieSingleItem(mMovie.getTmdbId(), DbAdapterMovies.KEY_HAS_WATCHED, mMovie.getHasWatched());
-
-        if (success) {
-            getActivity().invalidateOptionsMenu();
-
-            notifyDatasetChanges();
-
-        } else Toast.makeText(mContext, getString(R.string.errorOccured), Toast.LENGTH_SHORT).show();
-
-        if (mRemoveMoviesFromWatchlist)
-            removeFromWatchlist();
-
-        new Thread() {
-            @Override
-            public void run() {
-                ArrayList<Movie> watchedMovies = new ArrayList<Movie>();
-                watchedMovies.add(mMovie);
-                Trakt.markMovieAsWatched(watchedMovies, mContext);
-            }
-        }.start();*/
     }
 
     public void watchList() {
-        mMovie.setToWatch(!mMovie.toWatch()); // Reverse the toWatch boolean
+        String mode;
+        final boolean toWatch = !mMovie.toWatch();
 
-/*        boolean success = mDatabase.updateMovieSingleItem(mMovie.getTmdbId(), DbAdapterMovies.KEY_TO_WATCH, mMovie.getToWatch());
+        if (toWatch)
+            mode = "add";
+        else
+            mode = "remove";
+        final String url = getNMJServerPHPURL() + "action=editWatchlist&drivepath=" +
+                NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&TTYPE=1&mode=" +
+                mode + "&showid=" + mMovie.getShowId();
+        new com.nmj.functions.AsyncTask<Void, Void, Void>() {
+            JSONObject jObject, dObject;
+            String error = "";
 
-        if (success) {
-            getActivity().invalidateOptionsMenu();
-
-            if (mMovie.toWatch()) {
-                Toast.makeText(mContext, getString(R.string.addedToWatchList), Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(mContext, getString(R.string.removedFromWatchList), Toast.LENGTH_SHORT).show();
+            protected Void doInBackground(Void... params) {
+                try {
+                    jObject = NMJLib.getJSONObject(mContext, url);
+                    dObject = jObject.getJSONObject("data").getJSONObject("status");
+                    //System.out.println("Output: " + dObject.toString());
+                } catch (Exception e) {
+                    error = e.toString();
+                }
+                return null;
             }
 
-            notifyDatasetChanges();
+            protected void onPostExecute(Void result) {
+                if (toWatch) {
+                    Toast.makeText(mContext, getString(R.string.addedToWatchList), Toast.LENGTH_SHORT).show();
+                } else
+                    Toast.makeText(mContext, getString(R.string.removedFromWatchList), Toast.LENGTH_SHORT).show();
 
-        } else Toast.makeText(mContext, getString(R.string.errorOccured), Toast.LENGTH_SHORT).show();
+                if (toWatch)
+                    mMovie.setToWatch("1");
+                else
+                    mMovie.setToWatch("0");
 
-        new Thread() {
-            @Override
-            public void run() {
-                ArrayList<Movie> watchlist = new ArrayList<Movie>();
-                watchlist.add(mMovie);
-                Trakt.movieWatchlist(watchlist, mContext);
+                getActivity().invalidateOptionsMenu();
+                LocalBroadcastUtils.updateMovieLibrary(mContext);
             }
-        }.start();*/
+        }.execute();
     }
 
     public void favAction() {
@@ -1052,7 +1043,7 @@ public class NMJMovieDetailsFragment extends Fragment {
                 try {
                     jObject = NMJLib.getJSONObject(mContext, url);
                     dObject = jObject.getJSONObject("data").getJSONObject("status");
-                    System.out.println("Output: " + dObject.toString());
+                    //System.out.println("Output: " + dObject.toString());
                 } catch (Exception e) {
                     error = e.toString();
                 }
@@ -1065,36 +1056,14 @@ public class NMJMovieDetailsFragment extends Fragment {
                 } else
                     Toast.makeText(mContext, getString(R.string.removedFromFavs), Toast.LENGTH_SHORT).show();
 
-                mMovie.setFavourite(favourite);
+                if (favourite)
+                    mMovie.setFavourite("1");
+                else
+                    mMovie.setFavourite("0");
                 getActivity().invalidateOptionsMenu();
-                refreshFragment();
+                LocalBroadcastUtils.updateMovieLibrary(mContext);
             }
         }.execute();
-
-/*        boolean success = mDatabase.updateMovieSingleItem(mMovie.getTmdbId(), DbAdapterMovies.KEY_FAVOURITE, mMovie.getFavourite());
-
-        if (success) {
-            getActivity().invalidateOptionsMenu();
-
-            if (mMovie.isFavourite()) {
-                Toast.makeText(mContext, getString(R.string.addedToFavs), Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(mContext, getString(R.string.removedFromFavs), Toast.LENGTH_SHORT).show();
-                getActivity().setResult(2); // Favorite removed
-            }
-
-            notifyDatasetChanges();
-
-        } else Toast.makeText(mContext, getString(R.string.errorOccured), Toast.LENGTH_SHORT).show();
-
-        new Thread() {
-            @Override
-            public void run() {
-                ArrayList<Movie> movie = new ArrayList<Movie>();
-                movie.add(mMovie);
-                Trakt.movieFavorite(movie, mContext);
-            }
-        }.start();*/
     }
 
     public void shareMovie() {
@@ -1122,7 +1091,7 @@ public class NMJMovieDetailsFragment extends Fragment {
 
     public void editMovie() {
         Intent intent = new Intent(mContext, EditMovie.class);
-        intent.putExtra("movieId", mMovie.getTmdbId());
+        intent.putExtra("showId", mMovie.getShowId());
         intent.putExtra(IntentKeys.TOOLBAR_COLOR, mToolbarColor);
         getActivity().startActivityForResult(intent, 1);
     }
@@ -1167,15 +1136,10 @@ public class NMJMovieDetailsFragment extends Fragment {
         }.execute();
     }
 
-    public void refreshFragment() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        ft.detach(this).attach(this).commit();
-    }
-
     private class MovieLoader extends AsyncTask<String, Object, Object> {
         @Override
         protected Object doInBackground(String... params) {
-            System.out.println("TMDB Id: " + mMovie.getTmdbId());
+            //System.out.println("TMDB Id: " + mMovie.getTmdbId());
 
             if (mMovie.getShowId().equals("0"))
                 mMovie = mTMDbMovieApiService.getCompleteTMDbMovie(mMovie.getTmdbId(), "en");

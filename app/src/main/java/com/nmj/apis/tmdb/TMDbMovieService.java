@@ -133,14 +133,15 @@ public class TMDbMovieService extends MovieApiService {
             String URL = mTmdbApiURL + "movie/" +
                     id.replace("tmdb", "") + "?api_key=" +
                     mTmdbApiKey + (language.equals("en") ? "" : "&language=" + language) +
-                    "&append_to_response=recommendations,releases,trailers,credits,images,similar";
+                    "&append_to_response=recommendations,releases,trailers,credits,images,similar&include_image_language=en,null";
             JSONObject jObject;
-            if (NMJLib.getTMDbCache(movie.getTmdbId(), "movie").equals("")) {
-                System.out.println("Putting Cache in " + movie.getTmdbId());
-                NMJLib.setTMDbCache(movie.getTmdbId(), "movie", NMJLib.getJSONObject(mContext, URL).toString());
+            String CacheId = "movie_" + id.replace("tmdb", "");
+            if (NMJLib.getTMDbCache(CacheId).equals("")) {
+                System.out.println("Putting Cache in " + CacheId);
+                NMJLib.setTMDbCache(CacheId, NMJLib.getJSONObject(mContext, URL).toString());
             }
-            System.out.println("Getting Cache from " + movie.getTmdbId());
-            jObject = new JSONObject(NMJLib.getTMDbCache(movie.getTmdbId(), "movie"));
+            System.out.println("Getting Cache from " + CacheId);
+            jObject = new JSONObject(NMJLib.getTMDbCache(CacheId));
 
             movie.setTitle(NMJLib.getStringFromJSONObject(jObject, "title", ""));
             movie.setPlot(NMJLib.getStringFromJSONObject(jObject, "overview", ""));
@@ -321,13 +322,14 @@ public class TMDbMovieService extends MovieApiService {
         JSONObject jObject = new JSONObject();
         String URL = mTmdbApiURL + "person/" + actorId +
                 "?api_key=" + mTmdbApiKey + "&append_to_response=movie_credits,tv_credits,images,tagged_images";
+        String CacheId = "person_" + actorId;
         try {
-            if (NMJLib.getTMDbCache(actorId, "person").equals("")) {
-                System.out.println("Putting Cache in " + actorId);
-                NMJLib.setTMDbCache(actorId, "person", NMJLib.getJSONObject(mContext, URL).toString());
+            if (NMJLib.getTMDbCache(CacheId).equals("")) {
+                System.out.println("Putting Cache in " + CacheId);
+                NMJLib.setTMDbCache(CacheId, NMJLib.getJSONObject(mContext, URL).toString());
             }
-            System.out.println("Getting Cache from " + actorId);
-            jObject = new JSONObject(NMJLib.getTMDbCache(actorId, "person"));
+            System.out.println("Getting Cache from " + CacheId);
+            jObject = new JSONObject(NMJLib.getTMDbCache(CacheId));
 
         } catch (Exception ignored) {
         }

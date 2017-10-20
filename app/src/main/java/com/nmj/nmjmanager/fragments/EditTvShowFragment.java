@@ -93,7 +93,6 @@ public class EditTvShowFragment extends Fragment {
         mCertification = (Button) v.findViewById(R.id.edit_certification);
 
         // Hide tagline stuff
-        v.findViewById(R.id.edit_tagline).setVisibility(View.GONE);
         v.findViewById(R.id.textView2).setVisibility(View.GONE);
 
         // Change "Release date" to "First aired"
@@ -118,7 +117,7 @@ public class EditTvShowFragment extends Fragment {
         }
 
         // Set runtime
-        mRuntime.setText(NMJLib.getPrettyRuntimeFromMinutes(getActivity(), NMJLib.getInteger(mShow.getRuntime())));
+        mRuntime.setText(NMJLib.getPrettyRuntimeFromSeconds(getActivity(), NMJLib.getInteger(mShow.getRuntime())));
         mRuntime.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -25,7 +25,6 @@ import com.nmj.functions.Actor;
 import com.nmj.functions.IntentKeys;
 import com.nmj.functions.Library;
 import com.nmj.functions.NMJAdapter;
-import com.nmj.functions.NMJMovie;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.WebMovie;
 import com.nmj.nmjmanager.ActorBrowser;

@@ -161,18 +161,20 @@ public class MovieCoverFanartBrowser extends NMJActivity  {
 		@Override
 		protected String doInBackground(Object... params) {
 			String URL;
-			try {
-				URL = NMJLib.getTmdbApiURL(mContext) + "movie/" + params[0] + "?api_key=" +
-						NMJLib.getTmdbApiKey(mContext) + "&language=en";
-				URL += "&append_to_response=recommendations,releases,trailers,credits,images,similar";
+            String tmdbid = params[0].toString().replace("tmdb", "");
+            String CacheId = "movie_" + tmdbid;
+            try {
+                URL = NMJLib.getTmdbApiURL(mContext) + "movie/" + tmdbid + "?api_key=" +
+                        NMJLib.getTmdbApiKey(mContext) + "&language=en";
+                URL += "&append_to_response=recommendations,releases,trailers,credits,images,similar&include_image_language=en,null";
 
-				if (NMJLib.getTMDbCache(params[0].toString(), "movie").equals("")) {
-					System.out.println("Putting Cache in " + params[0].toString());
-					NMJLib.setTMDbCache(params[0].toString(), "movie", NMJLib.getJSONObject(mContext, URL).toString());
-				}
-				System.out.println("Getting Cache from " + params[0].toString());
-				mJson = new JSONObject(NMJLib.getTMDbCache(params[0].toString(), "movie")).getJSONObject("images").toString();
-				System.out.println("JSON: " + mJson);
+                if (NMJLib.getTMDbCache(CacheId).equals("")) {
+                    System.out.println("Putting Cache in " + CacheId);
+                    NMJLib.setTMDbCache(CacheId, NMJLib.getJSONObject(mContext, URL).toString());
+                }
+                System.out.println("Getting Cache from " + CacheId);
+                mJson = new JSONObject(NMJLib.getTMDbCache(CacheId)).getJSONObject("images").toString();
+                System.out.println("JSON: " + mJson);
 
 				//JSONArray jArray = jObject.getJSONObject("images").getJSONArray("cast");
 

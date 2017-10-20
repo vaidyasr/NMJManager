@@ -129,7 +129,7 @@
     <string name="blur_backdrops_description">Background images for movies and TV Shows will be blurry in landscape mode.</string>
     <string name="use_dvd_order_description">Identify series and episodes using DVD ordering, if available.</string>
     <string name="no_movies">No movies</string>
-    <string name="no_movies_description">Select <b>Update library</b> from the menu to add movies.</string>
+    <string name="no_movies_description">Select <b>Add NMJ Server</b> from the navigation menu to add movies.</string>
     <string name="no_movies_description_tablet">Select the <b>Add NMJ Server</b> from the navigation menu to add movies.</string>
     <string name="no_favorites">No favourite\'s</string>
     <string name="no_favorites_description">Don\'t you like movies?</string>

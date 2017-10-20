@@ -558,7 +558,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
 
             @Override
             protected Void doInBackground(Void... params) {
-                System.out.println("Input Id: " + mShow.getTmdbId());
+                //System.out.println("Input Id: " + mShow.getTmdbId());
                 List<Actor> actors = NMJLib.getTMDbCast(mContext, "tv", mShow.getTmdbId(), "en");
                 for (Integer i = 0; i < actors.size(); i++) {
                     mActors.add(new Actor(

@@ -13,10 +13,12 @@ import com.nmj.functions.Video;
 import com.nmj.functions.WebMovie;
 import com.nmj.nmjmanager.R;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -132,10 +134,19 @@ public class NMJMovieService extends NMJApiService {
             String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
             JSONObject jObject;
-            jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerPHPURL() +
+            File f = new File(NMJLib.getDrivePath());
+            String CacheId = f.getName() + "_nmj_" + id;
+
+            if (NMJLib.getTMDbCache(CacheId).equals("")) {
+                System.out.println("Putting Cache in " + CacheId);
+                jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerPHPURL() +
                         "action=getVideoDetails&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&showid=" +
                         id + "&title_type=1");
+                NMJLib.setTMDbCache(CacheId, jObject.toString());
+            }
+            System.out.println("Getting Cache from " + CacheId);
+            jObject = new JSONObject(NMJLib.getTMDbCache(CacheId));
 
             movie.setTitle(NMJLib.getStringFromJSONObject(jObject, "TITLE", ""));
             movie.setCertification(NMJLib.getStringFromJSONObject(jObject, "PARENTAL_CONTROL", ""));
@@ -145,7 +156,9 @@ public class NMJMovieService extends NMJApiService {
             movie.setRating(NMJLib.getStringFromJSONObject(jObject, "RATING", "0.0"));
             movie.setReleasedate(NMJLib.getStringFromJSONObject(jObject, "RELEASE_DATE", ""));
             movie.setRuntime(NMJLib.getStringFromJSONObject(jObject, "RUNTIME", "0"));
-
+            movie.setFavourite(NMJLib.getStringFromJSONObject(jObject, "FAVOURITE", "0"));
+            movie.setToWatch(NMJLib.getStringFromJSONObject(jObject, "WATCHLIST", "0"));
+            System.out.println("To Watch: " + movie.toWatch());
             try {
                 movie.setPoster(nmjImgURL + jObject.getString("POSTER"));
             } catch (Exception e) {
@@ -171,8 +184,7 @@ public class NMJMovieService extends NMJApiService {
                             video.getJSONObject(i).getString("PATH")
                     ));
                     videoDetails.get(i).setPlayCount(video.getJSONObject(i).getString("PLAY_COUNT"));
-                    if (!videoDetails.get(i).getPlayCount().equals("0"))
-                        movie.setHasWatched(true);
+                    movie.setHasWatched(videoDetails.get(i).getPlayCount());
                     videoDetails.get(i).setWidth(video.getJSONObject(i).getString("WIDTH"));
                     videoDetails.get(i).setHeight(video.getJSONObject(i).getString("HEIGHT"));
                     videoDetails.get(i).setResolution();
@@ -186,13 +198,15 @@ public class NMJMovieService extends NMJApiService {
                 movie.setVideo(videoDetails);
             } catch (Exception e) {
             }
-            System.out.println("Debug: Video Output: " + movie.getVideo().get(0).getPlayCount());
-            if (NMJLib.getTMDbCache(movie.getTmdbId(), "movie").equals("")) {
-                System.out.println("Putting Cache in " + movie.getTmdbId());
-                NMJLib.setTMDbCache(movie.getTmdbId(), "movie", NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + movie.getId() + "?api_key=" + mTmdbApiKey + "&language=" + language + "&append_to_response=recommendations,releases,trailers,credits,images,similar").toString());
+            //System.out.println("Debug: Video Output: " + movie.getVideo().get(0).getPlayCount());
+            CacheId = "movie_" + movie.getTmdbId().replace("tmdb", "");
+
+            if (NMJLib.getTMDbCache(CacheId).equals("")) {
+                System.out.println("Putting Cache in " + CacheId);
+                NMJLib.setTMDbCache(CacheId, NMJLib.getJSONObject(mContext, mTmdbApiURL + "movie/" + movie.getId() + "?api_key=" + mTmdbApiKey + "&language=" + language + "&append_to_response=recommendations,releases,trailers,credits,images,similar&include_image_language=en,null").toString());
             }
-            System.out.println("Getting Cache from " + movie.getTmdbId());
-            jObject = new JSONObject(NMJLib.getTMDbCache(movie.getTmdbId(), "movie"));
+            System.out.println("Getting Cache from " + CacheId);
+            jObject = new JSONObject(NMJLib.getTMDbCache(CacheId));
             movie.setTagline(NMJLib.getStringFromJSONObject(jObject, "tagline", ""));
 
         } catch (Exception e) {

@@ -15,8 +15,8 @@ public class EditMovie extends NMJActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		final String movieId = getIntent().getStringExtra("movieId");
-        mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
+		final String movieId = getIntent().getStringExtra("showId");
+		mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
 
 		final FragmentManager fm = getSupportFragmentManager();
 		

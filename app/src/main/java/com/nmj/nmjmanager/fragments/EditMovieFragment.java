@@ -28,11 +28,15 @@ import android.widget.Toast;
 import com.nmj.base.NMJActivity;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.NMJLib;
-import com.nmj.functions.Movie;
+import com.nmj.apis.nmj.Movie;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.utils.TypefaceUtils;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -41,7 +45,7 @@ public class EditMovieFragment extends Fragment {
 
     private Movie mMovie;
     private Toolbar mToolbar;
-    private EditText mTitle, mTagline, mDescription, mGenres;
+    private EditText mTitle, mDescription, mGenres;
     private Button mRuntime, mRating, mReleaseDate, mCertification;
 
     public EditMovieFragment() {} // Empty constructor
@@ -49,7 +53,7 @@ public class EditMovieFragment extends Fragment {
     public static EditMovieFragment newInstance(String movieId) {
         EditMovieFragment fragment = new EditMovieFragment();
         Bundle args = new Bundle();
-        args.putString("movieId", movieId);
+        args.putString("showId", movieId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -62,7 +66,7 @@ public class EditMovieFragment extends Fragment {
         setRetainInstance(true);
 
         // Load the movie details
-        loadMovie(getArguments().getString("movieId"));
+        loadMovie(getArguments().getString("showId"));
 
         // Hide the keyboard when the Activity starts
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
@@ -82,7 +86,6 @@ public class EditMovieFragment extends Fragment {
 
         // Text fields
         mTitle = (EditText) v.findViewById(R.id.edit_title);
-        mTagline = (EditText) v.findViewById(R.id.edit_tagline);
         mDescription = (EditText) v.findViewById(R.id.edit_description);
         mGenres = (EditText) v.findViewById(R.id.edit_genres);
 
@@ -101,9 +104,6 @@ public class EditMovieFragment extends Fragment {
             mTitle.setText(mMovie.getTitle());
             mTitle.setTypeface(TypefaceUtils.getRobotoBold(getActivity()));
             mTitle.setSelection(mMovie.getTitle().length());
-
-            // Set tagline
-            mTagline.setText(mMovie.getTagline());
 
             // Set description
             if (!mMovie.getPlot().equals(getString(R.string.stringNoPlot)))
@@ -136,7 +136,7 @@ public class EditMovieFragment extends Fragment {
         mRating.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                showRatingDialog(mMovie.getRawRating());
+                //showRatingDialog(mMovie.getRawRating());
             }
         });
 
@@ -164,33 +164,31 @@ public class EditMovieFragment extends Fragment {
     }
 
     private void loadMovie(String movieId) {
-        Cursor cursor = NMJManagerApplication.getMovieAdapter().fetchMovie(movieId);
+        JSONObject jObject;
+        File f = new File(NMJLib.getDrivePath());
+        String CacheId = f.getName() + "_nmj_" + movieId;
+        System.out.println("Getting Cache from " + CacheId);
+        mMovie = new Movie();
         try {
-            mMovie = new Movie(getActivity(),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TITLE)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_PLOT)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TAGLINE)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TMDB_ID)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_IMDB_ID)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_RATING)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_RELEASEDATE)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_CERTIFICATION)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_RUNTIME)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TRAILER)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_GENRES)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_FAVOURITE)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_ACTORS)),
-                    NMJManagerApplication.getCollectionsAdapter().getCollection(cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_COLLECTION_ID))),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_COLLECTION_ID)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TO_WATCH)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_HAS_WATCHED)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_DATE_ADDED)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_DATE_ADDED)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_DATE_ADDED)),
-                    false
-            );
-        } catch (Exception e) {} finally {
-            cursor.close();
+            jObject = new JSONObject(NMJLib.getTMDbCache(CacheId));
+            mMovie.setTitle(NMJLib.getStringFromJSONObject(jObject, "TITLE", ""));
+            mMovie.setCertification(NMJLib.getStringFromJSONObject(jObject, "PARENTAL_CONTROL", ""));
+            mMovie.setPlot(NMJLib.getStringFromJSONObject(jObject, "CONTENT", ""));
+            mMovie.setImdbId(NMJLib.getStringFromJSONObject(jObject, "TTID", ""));
+            mMovie.setTmdbId(NMJLib.getStringFromJSONObject(jObject, "CONTENT_TTID", ""));
+            mMovie.setRating(NMJLib.getStringFromJSONObject(jObject, "RATING", "0.0"));
+            mMovie.setReleasedate(NMJLib.getStringFromJSONObject(jObject, "RELEASE_DATE", ""));
+            mMovie.setRuntime(NMJLib.getStringFromJSONObject(jObject, "RUNTIME", "0"));
+            mMovie.setFavourite(NMJLib.getStringFromJSONObject(jObject, "FAVOURITE", "0"));
+            mMovie.setToWatch(NMJLib.getStringFromJSONObject(jObject, "WATCHLIST", "0"));
+
+            JSONArray genre = jObject.getJSONArray("GENRE");
+            String genres = "";
+            for (int i = 0; i < genre.length(); i++)
+                genres = genres + genre.get(i) + ", ";
+            mMovie.setGenres(genres.substring(0, genres.length() - 2));
+        } catch (Exception e) {
+            System.out.println("Exception: " + e.toString());
         }
 
         if (mMovie == null) {
@@ -213,7 +211,7 @@ public class EditMovieFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // Update the runtime
-                mMovie.setRuntime(numberPicker.getValue());
+                //mMovie.setRuntime(numberPicker.getValue());
 
                 // Update the UI with the new value
                 setupValues(false);
@@ -241,7 +239,7 @@ public class EditMovieFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // Update the rating
-                mMovie.setRating(numberPicker.getValue());
+                //mMovie.setRating(numberPicker.getValue());
 
                 // Update the UI with the new value
                 setupValues(false);
@@ -261,7 +259,7 @@ public class EditMovieFragment extends Fragment {
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                 // Update the date
-                mMovie.setReleaseDate(year, monthOfYear + 1, dayOfMonth);
+                //mMovie.setReleaseDate(year, monthOfYear + 1, dayOfMonth);
 
                 // Update the UI with the new value
                 setupValues(false);
@@ -330,7 +328,7 @@ public class EditMovieFragment extends Fragment {
     }
 
     private void saveChanges() {
-        NMJManagerApplication.getMovieAdapter().editMovie(mMovie.getTmdbId(), mTitle.getText().toString(), mTagline.getText().toString(), mDescription.getText().toString(),
+        NMJManagerApplication.getMovieAdapter().editMovie(mMovie.getTmdbId(), mTitle.getText().toString(), "", mDescription.getText().toString(),
                 mGenres.getText().toString(), mMovie.getRuntime(), mMovie.getRating(), mMovie.getReleasedate(), mMovie.getCertification());
 
         getActivity().setResult(4);

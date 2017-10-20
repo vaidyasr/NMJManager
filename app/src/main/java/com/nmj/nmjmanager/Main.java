@@ -70,6 +70,7 @@ import com.nmj.functions.NMJLib;
 import com.nmj.nmjmanager.fragments.AccountsFragment;
 import com.nmj.nmjmanager.fragments.ContactDeveloperFragment;
 import com.nmj.nmjmanager.fragments.MovieDiscoveryViewPagerFragment;
+import com.nmj.nmjmanager.fragments.MovieLibraryFragment;
 import com.nmj.nmjmanager.fragments.MovieLibraryOverviewFragment;
 import com.nmj.nmjmanager.fragments.TvShowLibraryOverviewFragment;
 import com.nmj.utils.LocalBroadcastUtils;
@@ -170,28 +171,6 @@ public class Main extends NMJActivity {
         //
         //PreferenceManager.getDefaultSharedPreferences(this).edit().putString(STORED_DB, "").apply();
 
-        if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(LOAD_LAST_DATABASE, true)) {
-            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-            String last_db = sharedPref.getString("LAST_DB", "");
-            //SharedPreferences.Editor editor = sharedPref.edit();
-            //editor.putString("LAST_DB", newHighScore);
-            //editor.commit();
-            System.out.println("Last DB: " + last_db);
-            if (!last_db.equals("")) {
-                try {
-                    JSONObject jObject = new JSONObject(last_db);
-                    NMJLib.setDbPath(NMJLib.getStringFromJSONObject(jObject, "DB_PATH", ""));
-                    NMJLib.setDrivePath(NMJLib.getStringFromJSONObject(jObject, "DRIVE_PATH", ""));
-                    NMJLib.setNMJPort(NMJLib.getStringFromJSONObject(jObject, "PORT", ""));
-                    NMJLib.setNMJServer(NMJLib.getStringFromJSONObject(jObject, "IP_ADDRESS", ""));
-                    LoadDatabase(null);
-                } catch (Exception e) {
-                    Toast.makeText(this, "Exception Occurred: " + e.toString(), Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-
-
         // Attach click listener
         mDrawerList.setOnItemClickListener(new OnItemClickListener() {
             @Override
@@ -246,11 +225,10 @@ public class Main extends NMJActivity {
             loadFragment(selectedIndex, 0);
         } else if (getIntent().getExtras() != null && getIntent().getExtras().containsKey("startup")) {
             loadFragment(Integer.parseInt(getIntent().getExtras().getString("startup")), 0);
-            System.out.println("Startup:" + Integer.parseInt(getIntent().getExtras().getString("startup")));
+            //System.out.println("Startup:" + Integer.parseInt(getIntent().getExtras().getString("startup")));
 
         } else {
             //System.out.println("Startup Variable:" + mStartup);
-
             loadFragment(mStartup, 0);
         }
 
@@ -259,6 +237,26 @@ public class Main extends NMJActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_LIBRARY_COUNT));
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.RELOAD_MOVIE_FRAGMENT));
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.RELOAD_SHOW_FRAGMENT));
+
+        if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(LOAD_LAST_DATABASE, true)) {
+            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+            String last_db = sharedPref.getString("LAST_DB", "");
+
+            //System.out.println("Last DB: " + last_db);
+            if (!last_db.equals("")) {
+                try {
+                    JSONObject jObject = new JSONObject(last_db);
+                    NMJLib.setDbPath(NMJLib.getStringFromJSONObject(jObject, "DB_PATH", ""));
+                    NMJLib.setDrivePath(NMJLib.getStringFromJSONObject(jObject, "DRIVE_PATH", ""));
+                    NMJLib.setNMJPort(NMJLib.getStringFromJSONObject(jObject, "PORT", ""));
+                    NMJLib.setNMJServer(NMJLib.getStringFromJSONObject(jObject, "IP_ADDRESS", ""));
+                    showToast("Loading last opened database...");
+                    LoadDatabase(null);
+                } catch (Exception e) {
+                    showToast("Exception Occurred: " + e.toString());
+                }
+            }
+        }
     }
 
     public void loadFragment(int type, int index) {
@@ -280,7 +278,7 @@ public class Main extends NMJActivity {
                     getNMJServer();
                     break;
                 case SOURCE:
-                    System.out.println("Selected: " + nmjsource.get(index - 7).getMachine());
+                    //System.out.println("Selected: " + nmjsource.get(index - 7).getMachine());
                     NMJLib.setNMJPort(nmjsource.get(index - 7).getPort());
                     NMJLib.setNMJServer(nmjsource.get(index - 7).getMachine());
                     loadDriveData(mDriveType);
@@ -340,7 +338,7 @@ public class Main extends NMJActivity {
             tobj.put("DRIVE_PATH", nmjdb.get(pos).getDrivePath());
             tobj.put("JUKEBOX", nmjdb.get(pos).getJukebox());
             tobj.put("NMJ_TYPE", nmjdb.get(pos).getNMJType());
-            System.out.println("To cache : " + tobj.toString());
+            //System.out.println("To cache : " + tobj.toString());
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putString("LAST_DB", tobj.toString());
@@ -359,7 +357,7 @@ public class Main extends NMJActivity {
         RelativeLayout relativeLayout = (RelativeLayout) promptsView.findViewById(R.id.segmented_layout);
 
         ListView listView = (ListView) promptsView.findViewById(R.id.nmjlist);
-        System.out.println("Machine Type: " + NMJLib.getMachineType());
+        //System.out.println("Machine Type: " + NMJLib.getMachineType());
         if (NMJLib.getMachineType().equals(""))
             relativeLayout.setVisibility(View.GONE);
         RadioGroup radioGroup = (RadioGroup) promptsView.findViewById(R.id.segmented_group);
@@ -448,20 +446,28 @@ public class Main extends NMJActivity {
     }
 
     public void LoadDatabase(AlertDialog dialog) {
-        System.out.println("DBPath : " + NMJLib.getDbPath());
-        System.out.println("Drivepath : " + NMJLib.getDrivePath());
+        //System.out.println("DBPath : " + NMJLib.getDbPath());
+        //System.out.println("Drivepath : " + NMJLib.getDrivePath());
+        showToast("Checking Server Script Changes...");
         updatePHPScript();
-        if (mStartup == 1)
-            LocalBroadcastUtils.loadMovieLibrary(NMJManagerApplication.getContext());
-        else if (mStartup == 2)
-            LocalBroadcastUtils.loadTvShowLibrary(NMJManagerApplication.getContext());
-        new Thread() {
-            @Override
-            public void run() {
+
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+            protected Void doInBackground(Void... params) {
                 NMJLib.setLibrary(NMJManagerApplication.getContext(), mDbHelper);
-                LocalBroadcastUtils.updateLibraryCount(NMJManagerApplication.getContext());
+                return null;
             }
-        }.start();
+
+            protected void onPostExecute(Void result) {
+                LocalBroadcastUtils.updateLibraryCount(NMJManagerApplication.getContext());
+                //System.out.println("Total : " + NMJManagerApplication.getNMJAdapter().getLibrary().size());
+                if (mStartup == 1)
+                    LocalBroadcastUtils.loadMovieLibrary(NMJManagerApplication.getContext());
+                else if (mStartup == 2)
+                    LocalBroadcastUtils.loadTvShowLibrary(NMJManagerApplication.getContext());
+            }
+        };
+        task.execute();
+
         if(dialog != null)
             dialog.dismiss();
     }
@@ -549,15 +555,15 @@ public class Main extends NMJActivity {
             protected void onPostExecute(Void result) {
                 if(!status.equals("success") && !status.equals("")){
                 } else if(status.equals("success")) {
-                    showToast("Updated successfully...", Toast.LENGTH_LONG);
+                    showToast("Updated Server script successfully...");
                 }
             }
         };
         task.execute();
     }
 
-    public void showToast(String message, int messg_length){
-        Toast.makeText(this, message, messg_length).show();
+    public void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     public void loadDriveDetails(final String path, final String deviceType, final AlertDialog dialog) {
@@ -730,7 +736,7 @@ public class Main extends NMJActivity {
                 jObject = new JSONObject(stored_db);
                 db = jObject.getJSONArray("machines");
                 db.remove(position - 7);
-                System.out.println("Available Machines: " + jObject.toString());
+                //System.out.println("Available Machines: " + jObject.toString());
                 SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putString("STORED_DB", jObject.toString());

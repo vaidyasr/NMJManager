@@ -41,7 +41,6 @@ import com.nmj.db.DbAdapterTvShowEpisodeMappings;
 import com.nmj.db.DbAdapterTvShowEpisodes;
 import com.nmj.db.DbAdapterTvShows;
 import com.nmj.functions.FileRequestTransformer;
-import com.nmj.functions.NMJMovie;
 import com.nmj.functions.OkHttpDownloader;
 import com.nmj.functions.NMJAdapter;
 

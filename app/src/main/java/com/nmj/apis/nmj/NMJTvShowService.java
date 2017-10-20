@@ -577,17 +577,18 @@ public class NMJTvShowService extends TvShowApiService {
             String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
             JSONObject jObject;
+            String CacheId = "tv_" + id.replace("tmdb", "");
             String URL = mTmdbApiURL + "tv/" +
                     id.replace("tmdb", "") + "?api_key=" +
                     mTmdbApiKey + (language.equals("en") ? "" : "&language=" + language) +
                     "&append_to_response=recommendations,credits,images,similar,external_ids";
 
-            if (NMJLib.getTMDbCache(id, "tv").equals("")) {
-                System.out.println("Putting Cache in " + id);
-                NMJLib.setTMDbCache(id, "tv", NMJLib.getJSONObject(mContext, URL).toString());
+            if (NMJLib.getTMDbCache(CacheId).equals("")) {
+                System.out.println("Putting Cache in " + CacheId);
+                NMJLib.setTMDbCache(CacheId, NMJLib.getJSONObject(mContext, URL).toString());
             }
-            System.out.println("Getting Cache from " + id);
-            jObject = new JSONObject(NMJLib.getTMDbCache(id, "tv"));
+            System.out.println("Getting Cache from " + CacheId);
+            jObject = new JSONObject(NMJLib.getTMDbCache(CacheId));
 
             // Set title
             show.setTitle(NMJLib.getStringFromJSONObject(jObject, "name", ""));

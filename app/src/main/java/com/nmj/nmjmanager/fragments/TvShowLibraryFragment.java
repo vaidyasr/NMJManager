@@ -370,10 +370,10 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
                 showProgressBar();
                 break;
             case R.id.genres:
-                mTvShowLoader.showGenresFilterDialog(getActivity());
+                //mTvShowLoader.showGenresFilterDialog(getActivity());
                 break;
             case R.id.certifications:
-                mTvShowLoader.showCertificationsFilterDialog(getActivity());
+                //mTvShowLoader.showCertificationsFilterDialog(getActivity());
                 break;
             case R.id.user_rating:
                 //mTvShowLoader.showFoldersFilterDialog(getActivity());
@@ -382,7 +382,7 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
                 //mTvShowLoader.showFileSourcesFilterDialog(getActivity());
                 break;
             case R.id.release_year:
-                mTvShowLoader.showReleaseYearFilterDialog(getActivity());
+                //mTvShowLoader.showReleaseYearFilterDialog(getActivity());
                 break;
             case R.id.video_resolution:
                 //mTvShowLoader.addFilter(new TvShowFilter(TvShowFilter.OFFLINE_FILES));

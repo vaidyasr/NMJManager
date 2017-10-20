@@ -28,6 +28,7 @@ import android.text.TextUtils;
 import android.widget.ListView;
 
 import com.google.common.collect.Lists;
+import com.nmj.apis.nmj.Movie;
 import com.nmj.db.DbAdapterMovieMappings;
 
 import com.nmj.functions.Filepath;
@@ -35,7 +36,6 @@ import com.nmj.functions.Library;
 import com.nmj.functions.LibrarySectionAsyncTask;
 import com.nmj.functions.NMJAdapter;
 import com.nmj.functions.NMJLib;
-import com.nmj.functions.NMJMovie;
 import com.nmj.functions.PreferenceKeys;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
@@ -89,7 +89,7 @@ public class MovieLoader {
     private final NMJAdapter mDatabase;
     protected ListView mDrawerList;
     private MovieSortType mSortType;
-    private ArrayList<NMJMovie> mResults = new ArrayList<>();
+    private ArrayList<Movie> mResults = new ArrayList<>();
     private HashSet<MovieFilter> mFilters = new HashSet<>();
     private MovieLoaderAsyncTask mAsyncTask;
     private boolean mShowingSearchResults = false;
@@ -143,8 +143,8 @@ public class MovieLoader {
      * @param type
      */
     public void setSortType(MovieSortType type) {
-        System.out.println("INput type: " + type);
-        System.out.println("GetSortType " + getSortType());
+        //System.out.println("INput type: " + type);
+        //System.out.println("GetSortType " + getSortType());
         if (getSortType() == type) {
             getSortType().toggleSortOrder();
             System.out.println("Saved state: " + getSortType().getSortOrder());
@@ -251,12 +251,16 @@ public class MovieLoader {
 
         mShowingSearchResults = !TextUtils.isEmpty(query);
         //System.out.println("Executing MovieLoader");
-        if (mLibraryType == MovieLibraryType.TOP_RATED || mLibraryType == MovieLibraryType.POPULAR ||
-                mLibraryType == MovieLibraryType.NOW_PLAYING || mLibraryType == MovieLibraryType.UPCOMING)
-            mAsyncTask = new MovieLoaderAsyncTask(mQuery, 0, 1);
-        else
-            mAsyncTask = new MovieLoaderAsyncTask(mQuery, 0, 25);
-        mAsyncTask.execute();
+        if (!NMJLib.getDbPath().equals("")) {
+
+            if (mLibraryType == MovieLibraryType.TOP_RATED || mLibraryType == MovieLibraryType.POPULAR ||
+                    mLibraryType == MovieLibraryType.NOW_PLAYING || mLibraryType == MovieLibraryType.UPCOMING)
+                mAsyncTask = new MovieLoaderAsyncTask(mQuery, 0, 1);
+            else
+                mAsyncTask = new MovieLoaderAsyncTask(mQuery, 0, 25);
+            mAsyncTask.execute();
+        } else
+            mResults.clear();
     }
 
     public void loadMore(int start, int count) {
@@ -276,7 +280,7 @@ public class MovieLoader {
      *
      * @return List of movie objects.
      */
-    public ArrayList<NMJMovie> getResults() {
+    public ArrayList<Movie> getResults() {
         return mResults;
     }
 
@@ -285,7 +289,7 @@ public class MovieLoader {
      *
      * @param activity
      */
-    public void showGenresFilterDialog(Activity activity) {
+/*    public void showGenresFilterDialog(Activity activity) {
         final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
         String[] splitGenres;
         for (int i = 0; i < mResults.size(); i++) {
@@ -302,14 +306,14 @@ public class MovieLoader {
         }
 
         createAndShowAlertDialog(activity, setupItemArray(map), R.string.selectGenre, MovieFilter.GENRE);
-    }
+    }*/
 
     /**
      * Show certifications filter dialog.
      *
      * @param activity
      */
-    public void showCertificationsFilterDialog(Activity activity) {
+/*    public void showCertificationsFilterDialog(Activity activity) {
         final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
         for (int i = 0; i < mResults.size(); i++) {
             String certification = mResults.get(i).getCertification();
@@ -323,14 +327,14 @@ public class MovieLoader {
         }
 
         createAndShowAlertDialog(activity, setupItemArray(map), R.string.selectCertification, MovieFilter.CERTIFICATION);
-    }
+    }*/
 
     /**
      * Show release year filter dialog.
      *
      * @param activity
      */
-    public void showReleaseYearFilterDialog(Activity activity) {
+/*    public void showReleaseYearFilterDialog(Activity activity) {
         final TreeMap<String, Integer> map = new TreeMap<String, Integer>();
         for (int i = 0; i < mResults.size(); i++) {
             String year = mResults.get(i).getReleaseYear().trim();
@@ -344,7 +348,7 @@ public class MovieLoader {
         }
 
         createAndShowAlertDialog(activity, setupItemArray(map), R.string.selectReleaseYear, MovieFilter.RELEASE_YEAR);
-    }
+    }*/
 
     /**
      * Used to set up an array of items for the alert dialog.
@@ -440,7 +444,7 @@ public class MovieLoader {
      */
     private class MovieLoaderAsyncTask extends LibrarySectionAsyncTask<Void, Void, Void> {
 
-        private final ArrayList<NMJMovie> mMovieList;
+        private final ArrayList<Movie> mMovieList;
         private final NMJAdapter mTotalCount = new NMJAdapter();
         private final String mSearchQuery;
         private final int mStart, mCount;
@@ -642,7 +646,7 @@ public class MovieLoader {
         @Override
         protected void onPostExecute(Void result) {
             if (!isCancelled()) {
-                ArrayList<NMJMovie> tmpList = new ArrayList<>(mMovieList);
+                ArrayList<Movie> tmpList = new ArrayList<>(mMovieList);
                 mResults.addAll(tmpList);
                 mCallback.onLoadCompleted();
             } else
