@@ -22,8 +22,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -31,6 +34,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -69,6 +73,7 @@ import com.nmj.functions.PaletteLoader;
 import com.nmj.functions.SimpleAnimatorListener;
 import com.nmj.functions.TmdbTrailerSearch;
 import com.nmj.functions.WebMovie;
+import com.nmj.loader.MovieLibraryType;
 import com.nmj.nmjmanager.EditMovie;
 import com.nmj.nmjmanager.Main;
 import com.nmj.nmjmanager.MovieCoverFanartBrowser;
@@ -120,6 +125,16 @@ public class NMJMovieDetailsFragment extends Fragment {
     private FloatingActionButton mFab;
     private PaletteLoader mPaletteLoader;
 
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+                if (intent.filterEquals(new Intent("NMJManager-movie-detail-update"))) {
+                    System.out.println("Updating fields: ");
+                    setupFields();
+                }
+        }
+    };
+
     /**
      * Empty constructor as per the Fragment documentation
      */
@@ -161,6 +176,9 @@ public class NMJMovieDetailsFragment extends Fragment {
         mMovie.setTmdbId(getArguments().getString("movieId"));
 
         mPicasso = NMJManagerApplication.getPicassoDetailsView(getActivity());
+
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_MOVIE_DETAIL));
+
     }
 
     @Override
@@ -216,6 +234,7 @@ public class NMJMovieDetailsFragment extends Fragment {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         //watchTrailer();
+                        playMovie(mMovie.getVideo().get(0).getPath(), FileSource.SMB);
                     }
                 });
             }
@@ -576,6 +595,7 @@ public class NMJMovieDetailsFragment extends Fragment {
 
 
     private void loadImages() {
+        System.out.println("Poster: " + mMovie.getPoster());
         if (!mMovie.getPoster().isEmpty())
             mPicasso.load(mMovie.getPoster()).placeholder(R.drawable.gray).error(R.drawable.loading_image).into(mCover, new Callback() {
                 @Override
@@ -654,7 +674,7 @@ public class NMJMovieDetailsFragment extends Fragment {
         switch (keyCode) {
             case KeyEvent.KEYCODE_MEDIA_PLAY:
             case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-                //playMovie();
+                playMovie(mMovie.getVideo().get(0).getPath(), FileSource.SMB);
         }
     }
 
@@ -758,16 +778,17 @@ public class NMJMovieDetailsFragment extends Fragment {
     }
 
 
-    /*private void playMovie(String filepath, int filetype) {
-        if (filepath.toLowerCase(Locale.getDefault()).matches(".*(cd1|part1).*")) {
-            new MovieDetailsFragment.GetSplitFiles(filepath, filetype).execute();
+    private void playMovie(String filepath, int filetype) {
+/*        if (filepath.toLowerCase(Locale.getDefault()).matches(".*(cd1|part1).*")) {
+            //new MovieDetailsFragment.GetSplitFiles(filepath, filetype).execute();
         } else {
-            mVideoPlaybackStarted = System.currentTimeMillis();
+            //mVideoPlaybackStarted = System.currentTimeMillis();*/
+System.out.println("Playing...");
             boolean playbackStarted = VideoUtils.playVideo(getActivity(), filepath, filetype, mMovie);
             if (playbackStarted)
                 checkIn();
-        }
-    }*/
+//        }
+    }
 
     public void removeFromWatchlist() {
         String mode = "remove";
@@ -833,6 +854,15 @@ public class NMJMovieDetailsFragment extends Fragment {
             case R.id.change_cover:
                 searchCover();
                 return true;
+            case R.id.change_all_images:
+                changeAllImages();
+                return true;
+            case R.id.update_from_tmdb:
+                updateFromTMDb();
+                return true;
+            case R.id.update_from_imdb:
+                updateFromIMDb();
+                return true;
             case R.id.editMovie:
                 editMovie();
                 return true;
@@ -843,7 +873,7 @@ public class NMJMovieDetailsFragment extends Fragment {
                 watched(true);
                 return true;
             case R.id.trailer:
-                //VideoUtils.playTrailer(getActivity(), mMovie);
+                VideoUtils.playTrailer(getActivity(), mMovie);
                 return true;
             case R.id.watch_list:
                 watchList();
@@ -1096,10 +1126,89 @@ public class NMJMovieDetailsFragment extends Fragment {
         getActivity().startActivityForResult(intent, 1);
     }
 
+    public void changeAllImages() {
+        final ArrayList<String> temp = new ArrayList<>();
+        new AsyncTask<Void, Void, Void>() {
+            JSONObject jObject;
+            JSONArray jArray;
+            String error = "";
+
+            protected Void doInBackground(Void... params) {
+                final String url = NMJLib.getNMJServerPHPURL() + "action=saveImage&drivepath=" +
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&filter=certification";
+                try {
+                    jObject = NMJLib.getJSONObject(getContext(), url);
+                    jArray = jObject.getJSONArray("data");
+                    System.out.println("Output: " + jArray.toString());
+                    for (int i = 0; i < jArray.length(); i++) {
+                        JSONObject dObject = jArray.getJSONObject(i);
+                        temp.add(i, NMJLib.getStringFromJSONObject(dObject, "name", ""));
+                    }
+                } catch (Exception e) {
+                    error = e.toString();
+                }
+                return null;
+            }
+
+            protected void onPostExecute(Void result) {
+            }
+        }.execute();
+    }
+
+    public void updateFromTMDb() {
+        final ArrayList<String> temp = new ArrayList<>();
+        new AsyncTask<Void, Void, Void>() {
+            JSONObject jObject, dObject;
+            String error = "";
+
+            protected Void doInBackground(Void... params) {
+                final String url = NMJLib.getNMJServerPHPURL() + "action=updateData&drivepath=" +
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() +
+                        "&SHOWID=" + mMovie.getShowId() + "&tmdbid=" + mMovie.getId();
+                try {
+                    jObject = NMJLib.getJSONObject(getContext(), url);
+                } catch (Exception e) {
+                    error = e.toString();
+                    System.out.println("Error: " + error);
+                }
+                return null;
+            }
+
+            protected void onPostExecute(Void result) {
+                System.out.println("Output: " + jObject.toString());
+            }
+        }.execute();
+    }
+
+    public void updateFromIMDb() {
+        final ArrayList<String> temp = new ArrayList<>();
+        new AsyncTask<Void, Void, Void>() {
+            JSONObject jObject;
+            String error = "";
+
+            protected Void doInBackground(Void... params) {
+                final String url = NMJLib.getNMJServerPHPURL() + "action=updateData&drivepath=" +
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() +
+                        "&SHOWID=" + mMovie.getShowId() + "&imdbid=" + mMovie.getImdbId();
+                try {
+                    jObject = NMJLib.getJSONObject(getContext(), url);
+                    System.out.println("Output: " + jObject.toString());
+                } catch (Exception e) {
+                    error = e.toString();
+                }
+                return null;
+            }
+
+            protected void onPostExecute(Void result) {
+            }
+        }.execute();
+    }
+
     public void searchCover() {
         if (NMJLib.isOnline(mContext)) { // Make sure that the device is connected to the web
             Intent intent = new Intent(mContext, MovieCoverFanartBrowser.class);
             intent.putExtra("tmdbId", mMovie.getTmdbId());
+            intent.putExtra("showId", mMovie.getShowId());
             intent.putExtra("collectionId", mMovie.getCollectionId());
             intent.putExtra(IntentKeys.TOOLBAR_COLOR, mToolbarColor);
             startActivity(intent); // Start the intent for result

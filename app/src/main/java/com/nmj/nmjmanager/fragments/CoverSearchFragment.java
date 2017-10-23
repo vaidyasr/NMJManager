@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.graphics.Bitmap.Config;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -41,11 +42,14 @@ import com.nmj.functions.NMJLib;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.service.DownloadImageService;
+import com.nmj.utils.LocalBroadcastUtils;
+import com.nmj.utils.WidgetUtils;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -57,7 +61,7 @@ public class CoverSearchFragment extends Fragment {
 	private ArrayList<Cover> mCovers = new ArrayList<Cover>();
 	private ArrayList<String> mImageUrls = new ArrayList<String>();
 	private GridView mGridView = null;
-	private String mTmdbId, mJson;
+	private String mTmdbId, mJson, mShowId;
 	private String[] mItems = new String[]{};
 	private ProgressBar mProgressBar;
 	private Picasso mPicasso;
@@ -68,10 +72,11 @@ public class CoverSearchFragment extends Fragment {
 	 */
 	public CoverSearchFragment() {}
 
-	public static CoverSearchFragment newInstance(String tmdbId, String json, String baseUrl) {
+	public static CoverSearchFragment newInstance(String tmdbId, String showId, String json, String baseUrl) {
 		CoverSearchFragment pageFragment = new CoverSearchFragment();
 		Bundle b = new Bundle();
 		b.putString("tmdbId", tmdbId);
+		b.putString("showId", showId);
 		b.putString("json", json);
 		b.putString("baseUrl", baseUrl);
 		pageFragment.setArguments(b);
@@ -92,6 +97,8 @@ public class CoverSearchFragment extends Fragment {
 		mConfig = NMJManagerApplication.getBitmapConfig();
 
 		mTmdbId = getArguments().getString("tmdbId");
+		mShowId = getArguments().getString("showId");
+
 	}
 
 	@Override
@@ -136,8 +143,21 @@ public class CoverSearchFragment extends Fragment {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 				// Create the download Service
+				JSONObject jObject;
+				File f = new File(NMJLib.getDrivePath());
+				String CacheId = f.getName() + "_nmj_" + mShowId;
+				try {
+					jObject = new JSONObject(NMJLib.getTMDbCache(CacheId));
+					jObject.put("THUMBNAIL", mImageUrls.get(arg2));
+					jObject.put("POSTER", mImageUrls.get(arg2));
+					NMJLib.setTMDbCache(CacheId, jObject.toString());
+				} catch (Exception e){
+					System.out.println("Exception: " + e.toString());
+				}
 
+				LocalBroadcastUtils.updateMovieDetail(getContext());
 				getActivity().finish();
+
 
 /*				Intent downloadService = new Intent(getActivity(), DownloadImageService.class);
 				downloadService.putExtra(DownloadImageService.CONTENT_ID, mTmdbId);
@@ -175,7 +195,6 @@ public class CoverSearchFragment extends Fragment {
 
 				mCovers.add(new Cover(baseUrl + NMJLib.getImageUrlSize(getActivity()) + o.getString("file_path"), o.getString("iso_639_1")));
 				mImageUrls.add(baseUrl + NMJLib.getImageUrlSize(getActivity()) + o.getString("file_path"));
-				System.out.println("Image URLS:" + mImageUrls.get(i));
 			}
 
 		} catch (Exception e) {}

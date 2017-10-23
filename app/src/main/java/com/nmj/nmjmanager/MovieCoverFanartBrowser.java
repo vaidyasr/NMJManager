@@ -41,7 +41,7 @@ import org.json.JSONObject;
 
 public class MovieCoverFanartBrowser extends NMJActivity  {
 
-	private String mTmdbId, mCollectionId, mBaseUrl = "", mJson = "", mCollection = "", mTmdbApiKey, mTmdbApiURL;
+	private String mTmdbId, mShowId, mCollectionId, mBaseUrl = "", mJson = "", mCollection = "", mTmdbApiKey, mTmdbApiURL;
 	private ViewPager mViewPager;
 	private ProgressBar mProgressBar;
     private PagerSlidingTabStrip mTabs;
@@ -62,7 +62,8 @@ public class MovieCoverFanartBrowser extends NMJActivity  {
             getSupportActionBar().setElevation(0);
 
         mTmdbId = getIntent().getExtras().getString("tmdbId");
-        mCollectionId = getIntent().getExtras().getString("collectionId");
+		mShowId = getIntent().getExtras().getString("showId");
+		mCollectionId = getIntent().getExtras().getString("collectionId");
         mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
 		mTmdbApiKey = NMJLib.getTmdbApiKey(this);
 		mTmdbApiURL = NMJLib.getTmdbApiURL(this);
@@ -134,9 +135,9 @@ public class MovieCoverFanartBrowser extends NMJActivity  {
 		public Fragment getItem(int index) {
 			switch (index) {
 			case 0:
-				return CoverSearchFragment.newInstance(mTmdbId, mJson, mBaseUrl);
+				return CoverSearchFragment.newInstance(mTmdbId, mShowId, mJson, mBaseUrl);
 			case 1:
-				return FanartSearchFragment.newInstance(mTmdbId, mJson, mBaseUrl);
+				return FanartSearchFragment.newInstance(mTmdbId, mShowId, mJson, mBaseUrl);
 			default:
 				return CollectionCoverSearchFragment.newInstance(mCollectionId, mCollection, mBaseUrl);
 			}

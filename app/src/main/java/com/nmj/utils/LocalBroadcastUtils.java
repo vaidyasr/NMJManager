@@ -25,6 +25,7 @@ import com.nmj.nmjmanager.NMJManagerApplication;
 public class LocalBroadcastUtils {
 
 	public static final String UPDATE_MOVIE_LIBRARY = "NMJManager-movies-update";
+	public static final String UPDATE_MOVIE_DETAIL = "NMJManager-movie-detail-update";
 	public static final String LOAD_MOVIE_LIBRARY = "NMJManager-movies-load";
 	public static final String LOAD_TV_SHOW_LIBRARY = "NMJManager-tvshows-load";
 	public static final String UPDATE_TV_SHOW_LIBRARY = "NMJManager-tvshows-update";
@@ -45,6 +46,10 @@ public class LocalBroadcastUtils {
 	 */
 	public static void updateMovieLibrary(Context context) {
 		LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(UPDATE_MOVIE_LIBRARY));
+	}
+
+	public static void updateMovieDetail(Context context) {
+		LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(UPDATE_MOVIE_DETAIL));
 	}
 
 	public static void loadMovieLibrary(Context context) {

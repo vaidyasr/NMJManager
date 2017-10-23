@@ -21,6 +21,7 @@ import android.text.TextUtils;
 import com.nmj.db.DbAdapterMovies;
 import com.nmj.functions.Actor;
 import com.nmj.functions.Filepath;
+import com.nmj.functions.NMJLib;
 import com.nmj.functions.Video;
 import com.nmj.functions.WebMovie;
 
@@ -187,6 +188,11 @@ public class Movie {
     public void setReleasedate(String releasedate) {
         this.releasedate = releasedate;
     }
+
+    public void setReleaseDateYMD(int year, int month, int day) {
+        this.releasedate = year + "-" + NMJLib.addIndexZero(month) + "-" + NMJLib.addIndexZero(day);
+    }
+
 
     public String getCertification() {
         return certification;

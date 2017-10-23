@@ -82,7 +82,7 @@ public class Movie extends MediumBaseMovie {
 		return "0.0";
 	}
 
-	public String getTrailer() {
+	public String  getTrailer() {
 		return TRAILER;
 	}
 

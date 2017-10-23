@@ -16,7 +16,7 @@
         android:layout_centerVertical="true"
         android:layout_marginLeft="16dp"
         android:layout_toRightOf="@+id/number_picker"
-        android:text="@string/minutes"
+        android:text="@string/seconds"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
 </RelativeLayout>

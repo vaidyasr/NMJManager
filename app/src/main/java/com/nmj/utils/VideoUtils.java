@@ -30,7 +30,7 @@ import com.google.android.youtube.player.YouTubeStandalonePlayer;
 import com.nmj.functions.FileSource;
 import com.nmj.functions.Filepath;
 import com.nmj.functions.NMJLib;
-import com.nmj.functions.Movie;
+import com.nmj.apis.nmj.Movie;
 import com.nmj.functions.SmbLogin;
 import com.nmj.functions.TmdbTrailerSearch;
 import com.nmj.nmjmanager.R;
@@ -185,27 +185,8 @@ public class VideoUtils {
 	
 	public static void playTrailer(final Activity activity, final Movie movie) {
 		String localTrailer = "";
-		for (Filepath path : movie.getFilepaths()) {
-			if (path.getType() == FileSource.FILE) {
-				localTrailer = path.getFullFilepath();
-				break;
-			}
-		}
 
-		localTrailer = movie.getLocalTrailer(localTrailer);
-
-		if (!TextUtils.isEmpty(localTrailer)) {
-			try { // Attempt to launch intent based on the MIME type
-				activity.startActivity(getVideoIntent(localTrailer, false, movie.getTitle() + " " + activity.getString(R.string.detailsTrailer)));
-			} catch (Exception e) {
-				try { // Attempt to launch intent based on wildcard MIME type
-					activity.startActivity(getVideoIntent(localTrailer, "video/*", movie.getTitle() + " " + activity.getString(R.string.detailsTrailer)));
-				} catch (Exception e2) {
-					Toast.makeText(activity, activity.getString(R.string.noVideoPlayerFound), Toast.LENGTH_LONG).show();
-				}
-			}
-		} else {
-			if (!TextUtils.isEmpty(movie.getTrailer())) {
+		if (!TextUtils.isEmpty(movie.getTrailer())) {
 				if (YouTubeApiServiceUtil.isYouTubeApiServiceAvailable(activity).equals(YouTubeInitializationResult.SUCCESS)) {
 					Intent intent = YouTubeStandalonePlayer.createVideoIntent(activity, NMJLib.getYouTubeApiKey(activity), NMJLib.getYouTubeId(movie.getTrailer()), 0, false, true);
 					activity.startActivity(intent);
@@ -217,7 +198,6 @@ public class VideoUtils {
 			} else {
 				new TmdbTrailerSearch(activity, movie.getTmdbId(), movie.getTitle()).execute();
 			}
-		}
 	}
 	
 	public static Intent getVideoIntent(String fileUrl, boolean useWildcard, Object videoObject) {
@@ -265,8 +245,8 @@ public class VideoUtils {
 			title = ((Movie) videoObject).getTitle();
 			b.putString("plot", ((Movie) videoObject).getPlot());
 			b.putString("date", ((Movie) videoObject).getReleasedate());
-			b.putDouble("rating", ((Movie) videoObject).getRawRating());
-			b.putString("cover", ((Movie) videoObject).getThumbnail().getAbsolutePath());
+			b.putDouble("rating", Double.parseDouble(((Movie) videoObject).getRating()));
+			//b.putString("cover", ((Movie) videoObject).getThumbnail().getAbsolutePath());
 			b.putString("genres", ((Movie) videoObject).getGenres());
 		} else if (videoObject instanceof TvShowEpisode) {
 			title = ((TvShowEpisode) videoObject).getTitle();

@@ -66,10 +66,11 @@ public class FanartSearchFragment extends Fragment {
 	 */
 	public FanartSearchFragment() {}
 	
-	public static FanartSearchFragment newInstance(String tmdbId, String json, String baseUrl) {
+	public static FanartSearchFragment newInstance(String tmdbId, String showId, String json, String baseUrl) {
 		FanartSearchFragment pageFragment = new FanartSearchFragment();
 		Bundle b = new Bundle();
 		b.putString("tmdbId", tmdbId);
+		b.putString("showId", showId);
 		b.putString("json", json);
 		b.putString("baseUrl", baseUrl);
 		pageFragment.setArguments(b);
@@ -131,7 +132,8 @@ public class FanartSearchFragment extends Fragment {
 		});
 		
 		mJson = getArguments().getString("json");
-		loadJson(getArguments().getString("baseUrl"));
+		//loadJson(getArguments().getString("baseUrl"));
+		loadJson(NMJLib.getTmdbImageBaseUrl(getContext()));
 	}
 
 	@Override

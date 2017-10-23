@@ -27,12 +27,15 @@ import android.widget.Toast;
 
 import com.nmj.base.NMJActivity;
 import com.nmj.db.DbAdapterMovies;
+import com.nmj.functions.AsyncTask;
 import com.nmj.functions.NMJLib;
 import com.nmj.apis.nmj.Movie;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
+import com.nmj.utils.LocalBroadcastUtils;
 import com.nmj.utils.TypefaceUtils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -114,7 +117,7 @@ public class EditMovieFragment extends Fragment {
         }
 
         // Set runtime
-        mRuntime.setText(NMJLib.getPrettyRuntimeFromMinutes(getActivity(), NMJLib.getInteger(mMovie.getRuntime())));
+        mRuntime.setText(NMJLib.getPrettyRuntimeFromSeconds(getActivity(), NMJLib.getInteger(mMovie.getRuntime())));
         mRuntime.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -125,7 +128,8 @@ public class EditMovieFragment extends Fragment {
         // Set rating
         if (!mMovie.getRating().equals("0.0")) {
             try {
-                int rating = (int) (Double.parseDouble(mMovie.getRating()) * 10);
+                int rating;
+                rating = (int) (Double.parseDouble(mMovie.getRating()) * 10);
                 mRating.setText(rating + " %");
             } catch (NumberFormatException e) {
                 mRating.setText(mMovie.getRating());
@@ -136,7 +140,10 @@ public class EditMovieFragment extends Fragment {
         mRating.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                //showRatingDialog(mMovie.getRawRating());
+                if(mMovie.getRating().contains(","))
+                    showRatingDialog(Double.parseDouble(mMovie.getRating().replace(",", ".")));
+                else
+                    showRatingDialog(Double.parseDouble(mMovie.getRating()));
             }
         });
 
@@ -200,7 +207,7 @@ public class EditMovieFragment extends Fragment {
     private void showRuntimeDialog(int initialValue) {
         final View numberPickerLayout = getActivity().getLayoutInflater().inflate(R.layout.number_picker_dialog, null, false);
         final NumberPicker numberPicker = (NumberPicker) numberPickerLayout.findViewById(R.id.number_picker);
-        numberPicker.setMaxValue(600);
+        numberPicker.setMaxValue(14400);
         numberPicker.setMinValue(0);
         numberPicker.setValue(initialValue);
 
@@ -211,7 +218,7 @@ public class EditMovieFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // Update the runtime
-                //mMovie.setRuntime(numberPicker.getValue());
+                mMovie.setRuntime(String.valueOf(numberPicker.getValue()));
 
                 // Update the UI with the new value
                 setupValues(false);
@@ -239,7 +246,10 @@ public class EditMovieFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // Update the rating
-                //mMovie.setRating(numberPicker.getValue());
+                if (mMovie.getRating().contains(","))
+                    mMovie.setRating(String.valueOf(((double)numberPicker.getValue())/10).replace(".",","));
+                else
+                    mMovie.setRating(String.valueOf(((double)numberPicker.getValue())/10));
 
                 // Update the UI with the new value
                 setupValues(false);
@@ -259,7 +269,7 @@ public class EditMovieFragment extends Fragment {
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                 // Update the date
-                //mMovie.setReleaseDate(year, monthOfYear + 1, dayOfMonth);
+                mMovie.setReleaseDateYMD(year, monthOfYear + 1, dayOfMonth);
 
                 // Update the UI with the new value
                 setupValues(false);
@@ -269,35 +279,60 @@ public class EditMovieFragment extends Fragment {
     }
 
     private void showCertificationDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.set_certification);
 
-        ArrayList<String> temp = NMJManagerApplication.getMovieAdapter().getCertifications();
-        final CharSequence[] items = new CharSequence[temp.size() + 1];
-        items[0] = getString(R.string.create_new_certification);
-        for (int i = 0; i < temp.size(); i++) {
-            items[i + 1] = temp.get(i);
-        }
+        final ArrayList<String> temp = new ArrayList<>();
+        new AsyncTask<Void, Void, Void>() {
+            JSONObject jObject;
+            JSONArray jArray;
+            String error = "";
 
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == 0) {
-                    // Create new certification dialog
-                    showNewCertificationDialog();
-                } else {
-                    // Set certification
-                    mMovie.setCertification(items[which].toString());
-
-                    // Update the UI with the new value
-                    setupValues(false);
-
-                    // Dismiss the dialog
-                    dialog.cancel();
+            protected Void doInBackground(Void... params) {
+                final String url = NMJLib.getNMJServerPHPURL() + "action=getMenu&drivepath=" +
+                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&filter=certification";
+                try {
+                    jObject = NMJLib.getJSONObject(getContext(), url);
+                    jArray = jObject.getJSONArray("data");
+                    System.out.println("Output: " + jArray.toString());
+                    for(int i=0; i<jArray.length();i++){
+                        JSONObject dObject = jArray.getJSONObject(i);
+                        temp.add(i, NMJLib.getStringFromJSONObject(dObject, "name", ""));
+                    }
+                } catch (Exception e) {
+                    error = e.toString();
                 }
+                return null;
             }
-        });
-        builder.show();
+
+            protected void onPostExecute(Void result) {
+                final CharSequence[] items = new CharSequence[temp.size() + 1];
+                items[0] = getString(R.string.create_new_certification);
+                for (int i = 0; i < temp.size(); i++) {
+                    items[i + 1] = temp.get(i);
+                }
+
+                builder.setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == 0) {
+                            // Create new certification dialog
+                            showNewCertificationDialog();
+                        } else {
+                            // Set certification
+                            mMovie.setCertification(items[which].toString());
+
+                            // Update the UI with the new value
+                            setupValues(false);
+
+                            // Dismiss the dialog
+                            dialog.cancel();
+                        }
+                    }
+                });
+                builder.show();
+            }
+        }.execute();
     }
 
     private void showNewCertificationDialog() {

@@ -55,12 +55,14 @@ public class TmdbTrailerSearch extends AsyncTask<String, Integer, String> {
 	@Override
 	protected String doInBackground(String... params) {
 		try {
-			JSONObject jObject = NMJLib.getJSONObject(mActivity, "https://api.themoviedb.org/3/movie/" + mMovieId + "/trailers?api_key=" + NMJLib.getTmdbApiKey(mActivity));
+			JSONObject jObject = NMJLib.getJSONObject(mActivity, "https://api.themoviedb.org/3/movie/" + mMovieId.replace("tmdb","") + "/trailers?api_key=" + NMJLib.getTmdbApiKey(mActivity));
 			JSONArray trailers = jObject.getJSONArray("youtube");
 
 			if (trailers.length() > 0)
 				return trailers.getJSONObject(0).getString("source");
-		} catch (Exception ignored) {}
+		} catch (Exception e) {
+			System.out.println("Exception: " + e.toString());
+		}
 		
 		return null;
 	}
@@ -68,15 +70,10 @@ public class TmdbTrailerSearch extends AsyncTask<String, Integer, String> {
 	@Override
 	protected void onPostExecute(String result) {
 		if (result != null) {
-			if (YouTubeApiServiceUtil.isYouTubeApiServiceAvailable(mActivity).equals(YouTubeInitializationResult.SUCCESS)) {
-				Intent intent = YouTubeStandalonePlayer.createVideoIntent(mActivity, NMJLib.getYouTubeApiKey(mActivity), NMJLib.getYouTubeId(result), 0, false, true);
-				mActivity.startActivity(intent);
-			} else {
 				Intent intent = new Intent(Intent.ACTION_VIEW);
 				intent.setData(Uri.parse(result));
-			}
 		} else {
-			new YoutubeTrailerSearch(mActivity, mSearchQuery).execute();
+			Toast.makeText(mActivity, mActivity.getString(R.string.errorSomethingWentWrong), Toast.LENGTH_LONG).show();
 		}
 	}
 }
