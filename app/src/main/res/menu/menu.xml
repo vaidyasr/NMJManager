@@ -37,40 +37,6 @@
         android:icon="@drawable/ic_filter_list_white_24dp"
         android:title="@string/filters"
         app:showAsAction="ifRoom">
-        <menu>
-            <item
-                android:id="@+id/index"
-                android:icon="@drawable/ic_flag_white_24dp"
-                android:title="@string/index"/>
-            <item
-                android:id="@+id/genres"
-                android:icon="@drawable/ic_label_white_24dp"
-                android:title="@string/choiceGenres"/>
-            <item
-                android:id="@+id/certifications"
-                android:icon="@drawable/ic_flag_white_24dp"
-                android:title="@string/detailsCertification"/>
-            <item
-                android:id="@+id/release_year"
-                android:icon="@drawable/ic_today_white_24dp"
-                android:title="@string/release_year"/>
-            <item
-                android:id="@+id/user_rating"
-                android:icon="@drawable/ic_done_white_24dp"
-                android:title="@string/user_rating"/>
-            <item
-                android:id="@+id/video_resolution"
-                android:icon="@drawable/ic_cloud_download_white_24dp"
-                android:title="@string/video_resolution"/>
-            <item
-                android:id="@+id/others"
-                android:icon="@drawable/ic_cloud_download_white_24dp"
-                android:title="@string/others"/>
-            <item
-                android:id="@+id/clear_filters"
-                android:icon="@drawable/ic_close_white_24dp"
-                android:title="@string/clear_filters"/>
-        </menu>
     </item>
     <item
         android:id="@+id/update"

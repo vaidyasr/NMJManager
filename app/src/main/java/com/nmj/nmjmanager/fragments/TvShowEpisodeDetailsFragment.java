@@ -32,6 +32,7 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.Html;
@@ -50,7 +51,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.melnykov.fab.FloatingActionButton;
 import com.nmj.apis.trakt.Trakt;
 import com.nmj.db.DbAdapterTvShowEpisodes;
 import com.nmj.functions.BlurTransformation;
@@ -102,6 +102,13 @@ import static com.nmj.functions.PreferenceKeys.SHOW_FILE_LOCATION;
     private FloatingActionButton mFab;
     private PaletteLoader mPaletteLoader;
     private ObservableScrollView mScrollView;
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            loadEpisode();
+            loadData();
+        }
+    };
 
     /**
      * Empty constructor as per the Fragment documentation
@@ -151,14 +158,6 @@ import static com.nmj.functions.PreferenceKeys.SHOW_FILE_LOCATION;
 
         LocalBroadcastManager.getInstance(mContext).unregisterReceiver(mBroadcastReceiver);
     }
-
-    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            loadEpisode();
-            loadData();
-        }
-    };
 
     private void loadEpisode() {
         if (!getArguments().getString("showId").isEmpty() && getArguments().getInt("season") >= 0 && getArguments().getInt("episode") >= 0) {
@@ -226,8 +225,7 @@ import static com.nmj.functions.PreferenceKeys.SHOW_FILE_LOCATION;
                 });
             }
         });
-        if (NMJLib.isTablet(mContext))
-            mFab.setType(FloatingActionButton.TYPE_NORMAL);
+        mFab.setSize(FloatingActionButton.SIZE_AUTO);
 
         final int height = NMJLib.getActionBarAndStatusBarHeight(getActivity());
 

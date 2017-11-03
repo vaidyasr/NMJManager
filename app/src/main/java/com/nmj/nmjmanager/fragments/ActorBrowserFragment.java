@@ -31,11 +31,9 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.nmj.abstractclasses.MovieApiService;
 import com.nmj.functions.Actor;
 import com.nmj.functions.CoverItem;
 import com.nmj.functions.IntentKeys;
@@ -51,7 +49,7 @@ import java.util.ArrayList;
 public class ActorBrowserFragment extends Fragment {
 
     private int mImageThumbSize, mImageThumbSpacing, mToolbarColor;
-    private ArrayList<Actor> mCast = new ArrayList<Actor>();
+    private ArrayList<Actor> mCast = new ArrayList<>();
     private String loadType, videoType;
     private GridView mGridView = null;
     private ProgressBar mProgressBar;
@@ -105,10 +103,10 @@ public class ActorBrowserFragment extends Fragment {
 
         mEmptyView = v.findViewById(R.id.empty_library_layout);
 
-        mProgressBar = (ProgressBar) v.findViewById(R.id.progress);
+        mProgressBar = v.findViewById(R.id.progress);
         mProgressBar.setVisibility(View.GONE);
 
-        mGridView = (GridView) v.findViewById(R.id.gridView);
+        mGridView = v.findViewById(R.id.gridView);
         mGridView.setAdapter(mAdapter);
         mGridView.getViewTreeObserver().addOnGlobalLayoutListener(
                 new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -130,10 +128,10 @@ public class ActorBrowserFragment extends Fragment {
         });
 
         // "No actors" message
-        TextView title = (TextView) v.findViewById(R.id.empty_library_title);
+        TextView title = v.findViewById(R.id.empty_library_title);
         title.setText(R.string.no_actors);
 
-        TextView description = (TextView) v.findViewById(R.id.empty_library_description);
+        TextView description = v.findViewById(R.id.empty_library_description);
         description.setText(R.string.no_actors_description);
     }
 
@@ -196,12 +194,12 @@ public class ActorBrowserFragment extends Fragment {
                 convertView = mInflater.inflate(R.layout.grid_cover_two_line, container, false);
                 holder = new CoverItem();
 
-                holder.cover = (ImageView) convertView.findViewById(R.id.cover);
-                holder.hasWatched = (ImageView) convertView.findViewById(R.id.hasWatched);
-                holder.inLibrary = (ImageView) convertView.findViewById(R.id.inLibrary);
-                holder.text = (TextView) convertView.findViewById(R.id.text);
+                holder.cover = convertView.findViewById(R.id.cover);
+                holder.hasWatched = convertView.findViewById(R.id.hasWatched);
+                holder.inLibrary = convertView.findViewById(R.id.inLibrary);
+                holder.text = convertView.findViewById(R.id.text);
                 holder.text.setSingleLine(true);
-                holder.subtext = (TextView) convertView.findViewById(R.id.sub_text);
+                holder.subtext = convertView.findViewById(R.id.sub_text);
                 holder.subtext.setSingleLine(true);
 
                 holder.text.setTypeface(TypefaceUtils.getRobotoMedium(mContext));
@@ -228,12 +226,12 @@ public class ActorBrowserFragment extends Fragment {
         }
     }
 
-    protected class GetPeopleDetails extends AsyncTask<Void, Void, Void> {
+    private class GetPeopleDetails extends AsyncTask<Void, Void, Void> {
 
         private final Context mContext;
         private final String mMovieId;
 
-        public GetPeopleDetails(String movieId, Context context) {
+        private GetPeopleDetails(String movieId, Context context) {
             mMovieId = movieId;
             mContext = context;
         }
@@ -246,9 +244,9 @@ public class ActorBrowserFragment extends Fragment {
         @Override
         protected Void doInBackground(Void... params) {
             if (loadType.equals("cast"))
-                mCast = new ArrayList<Actor>(NMJLib.getTMDbCast(mContext, videoType, mMovieId, "en"));
+                mCast = new ArrayList<>(NMJLib.getTMDbCast(mContext, videoType, mMovieId, "en"));
             else
-                mCast = new ArrayList<Actor>(NMJLib.getTMDbCrew(mContext, videoType, mMovieId, "en"));
+                mCast = new ArrayList<>(NMJLib.getTMDbCrew(mContext, videoType, mMovieId, "en"));
             return null;
         }
 

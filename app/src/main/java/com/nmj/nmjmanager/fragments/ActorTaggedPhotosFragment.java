@@ -28,7 +28,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.nmj.apis.tmdb.TMDbMovieService;
@@ -88,8 +87,8 @@ public class ActorTaggedPhotosFragment extends Fragment {
 	public void onViewCreated(View v, Bundle savedInstanceState) {
 		super.onViewCreated(v, savedInstanceState);
 
-		mProgressBar = (ProgressBar) v.findViewById(R.id.progress);
-		mGridView = (GridView) v.findViewById(R.id.gridView);
+		mProgressBar = v.findViewById(R.id.progress);
+		mGridView = v.findViewById(R.id.gridView);
 
 		mGridView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
@@ -111,8 +110,8 @@ public class ActorTaggedPhotosFragment extends Fragment {
 
 	private class ImageAdapter extends BaseAdapter {
 
-		private LayoutInflater inflater;
 		private final Context mContext;
+		private LayoutInflater inflater;
 
 		public ImageAdapter(Context context) {
 			mContext = context;
@@ -141,8 +140,8 @@ public class ActorTaggedPhotosFragment extends Fragment {
 			if (convertView == null) {
 				convertView = inflater.inflate(R.layout.grid_landscape_photo, container, false);
 				holder = new CoverItem();
-				
-				holder.cover = (ImageView) convertView.findViewById(R.id.cover);
+
+				holder.cover = convertView.findViewById(R.id.cover);
 				
 				convertView.setTag(holder);
 			} else {
@@ -164,7 +163,7 @@ public class ActorTaggedPhotosFragment extends Fragment {
 		private final Context mContext;
 		private final String mActorId;
 
-		public TaggedPhotoLoader(Context context, String actorId) {
+		private TaggedPhotoLoader(Context context, String actorId) {
 			mContext = context;
 			mActorId = actorId;
 		}

@@ -31,9 +31,10 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
@@ -50,7 +51,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.melnykov.fab.FloatingActionButton;
 import com.nmj.apis.tmdb.TMDbTvShowService;
 import com.nmj.apis.trakt.Trakt;
 import com.nmj.base.NMJActivity;
@@ -209,7 +209,7 @@ public class TvShowDetailsFragment extends Fragment {
         ViewUtils.setProperToolbarSize(mContext, mToolbar);
 
         ((NMJActivity) getActivity()).setSupportActionBar(mToolbar);
-        ((ActionBarActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // This needs to be re-initialized here and not in onCreate()
         mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.horizontal_grid_item_width);
@@ -243,8 +243,7 @@ public class TvShowDetailsFragment extends Fragment {
                 });
             }
         });
-        if (NMJLib.isTablet(mContext))
-            mFab.setType(FloatingActionButton.TYPE_NORMAL);
+        mFab.setSize(FloatingActionButton.SIZE_AUTO);
 
         // Get rid of these...
         v.findViewById(R.id.textView3).setVisibility(View.GONE); // File

@@ -39,7 +39,10 @@ public class ActorPhotoFragment extends Fragment {
 	private Picasso mPicasso;
 	private Bus mBus;
 	private boolean mPortraitPhotos;
-	
+
+	public ActorPhotoFragment() {
+	}
+
 	public static ActorPhotoFragment newInstance(String url, boolean portraitPhotos) {
 		ActorPhotoFragment frag = new ActorPhotoFragment();
 		Bundle b = new Bundle();
@@ -48,8 +51,6 @@ public class ActorPhotoFragment extends Fragment {
 		frag.setArguments(b);
 		return frag;
 	}
-
-	public ActorPhotoFragment() {}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -80,8 +81,8 @@ public class ActorPhotoFragment extends Fragment {
 	public void onViewCreated(View v, Bundle savedInstanceState) {
 		super.onViewCreated(v, savedInstanceState);
 
-		final ProgressBar pbar = (ProgressBar) v.findViewById(R.id.progressBar1);
-		ImageView img = (ImageView) v.findViewById(R.id.imageView1);
+		final ProgressBar pbar = v.findViewById(R.id.progressBar1);
+		ImageView img = v.findViewById(R.id.imageView1);
 		
 		if (NMJLib.isPortrait(getActivity()) && mPortraitPhotos || !NMJLib.isPortrait(getActivity()) && !mPortraitPhotos)
 			img.setScaleType(ScaleType.CENTER_CROP);

@@ -31,9 +31,10 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
@@ -50,7 +51,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.melnykov.fab.FloatingActionButton;
 import com.nmj.apis.nmj.TvShow;
 import com.nmj.apis.nmj.NMJMovieService;
 import com.nmj.apis.tmdb.TMDbTvShowService;
@@ -201,7 +201,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
         ViewUtils.setProperToolbarSize(mContext, mToolbar);
 
         ((NMJActivity) getActivity()).setSupportActionBar(mToolbar);
-        ((ActionBarActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // This needs to be re-initialized here and not in onCreate()
         mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.horizontal_grid_item_width);
@@ -209,27 +209,27 @@ public class NMJTvShowDetailsFragment extends Fragment {
 
         mDetailsArea = v.findViewById(R.id.details_area);
 
-        background = (ImageView) v.findViewById(R.id.imageBackground);
-        textTitle = (TextView) v.findViewById(R.id.movieTitle);
-        textPlot = (TextView) v.findViewById(R.id.textView2);
-        textGenre = (TextView) v.findViewById(R.id.textView7);
-        textRuntime = (TextView) v.findViewById(R.id.textView9);
-        textReleaseDate = (TextView) v.findViewById(R.id.textReleaseDate);
-        textRating = (TextView) v.findViewById(R.id.textView12);
-        textCertification = (TextView) v.findViewById(R.id.textView11);
-        cover = (ImageView) v.findViewById(R.id.traktIcon);
-        mSeasonsLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout);
-        mCastLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra);
+        background = v.findViewById(R.id.imageBackground);
+        textTitle = v.findViewById(R.id.movieTitle);
+        textPlot = v.findViewById(R.id.textView2);
+        textGenre = v.findViewById(R.id.textView7);
+        textRuntime = v.findViewById(R.id.textView9);
+        textReleaseDate = v.findViewById(R.id.textReleaseDate);
+        textRating = v.findViewById(R.id.textView12);
+        textCertification = v.findViewById(R.id.textView11);
+        cover = v.findViewById(R.id.traktIcon);
+        mSeasonsLayout = v.findViewById(R.id.horizontal_card_layout);
+        mCastLayout = v.findViewById(R.id.horizontal_card_layout_extra);
         mCastLayout.setVisibility(View.VISIBLE);
-        mCrewLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra_1);
-        mSimilarShowsLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra_2);
-        mRecommendedShowsLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra_3);
+        mCrewLayout = v.findViewById(R.id.horizontal_card_layout_extra_1);
+        mSimilarShowsLayout = v.findViewById(R.id.horizontal_card_layout_extra_2);
+        mRecommendedShowsLayout = v.findViewById(R.id.horizontal_card_layout_extra_3);
 
         mCrewLayout.setVisibility(View.VISIBLE);
-        mScrollView = (ObservableScrollView) v.findViewById(R.id.observableScrollView);
-        mFab = (FloatingActionButton) v.findViewById(R.id.fab);
-        mHasWatched = (ImageView) v.findViewById(R.id.hasWatched);
-        mInLibrary = (ImageView) v.findViewById(R.id.inLibrary);
+        mScrollView = v.findViewById(R.id.observableScrollView);
+        mFab = v.findViewById(R.id.fab);
+        mHasWatched = v.findViewById(R.id.hasWatched);
+        mInLibrary = v.findViewById(R.id.inLibrary);
 
         if (mShow.getShowId().equals("0"))
             mFab.setVisibility(View.INVISIBLE);
@@ -250,8 +250,7 @@ public class NMJTvShowDetailsFragment extends Fragment {
                 });
             }
         });
-        if (NMJLib.isTablet(mContext))
-            mFab.setType(FloatingActionButton.TYPE_NORMAL);
+        mFab.setSize(FloatingActionButton.SIZE_AUTO);
 
         // Get rid of these...
         v.findViewById(R.id.textView3).setVisibility(View.GONE); // File

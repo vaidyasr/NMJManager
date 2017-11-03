@@ -22,7 +22,7 @@ import android.graphics.Bitmap.Config;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -124,8 +124,17 @@ public class FanartSearchFragmentTv extends Fragment {
 	@Override
 	public void onStart() {
 		super.onStart();
-        ((ActionBarActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-	}
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            getActivity().onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
 	private class ImageAdapter extends BaseAdapter {
 
@@ -201,14 +210,5 @@ public class FanartSearchFragmentTv extends Fragment {
 				mAdapter.notifyDataSetChanged();
 			}
 		}
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == android.R.id.home) {
-			getActivity().onBackPressed();
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
 	}
 }

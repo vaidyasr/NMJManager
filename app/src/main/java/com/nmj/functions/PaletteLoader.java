@@ -4,10 +4,10 @@ import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.graphics.Color;
 import android.net.Uri;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.graphics.Palette;
 import android.view.View;
 
-import com.melnykov.fab.FloatingActionButton;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.squareup.picasso.Picasso;
 
@@ -50,12 +50,12 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
         return mViews;
     }
 
-    public void setFab(FloatingActionButton fab) {
-        mFab = fab;
-    }
-
     private FloatingActionButton getFab() {
         return mFab;
+    }
+
+    public void setFab(FloatingActionButton fab) {
+        mFab = fab;
     }
 
     public void clearViews() {
@@ -109,9 +109,9 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
 
         // Set the FAB color, if a FAB has been set
         if (getFab() != null) {
-            mFab.setColorNormal(getSwatchColor());
+/*            mFab.setColorNormal(getSwatchColor());
             mFab.setColorPressed(getSwatchColor());
-            mFab.setColorRipple(Color.parseColor("#80ffffff"));
+            mFab.setColorRipple(Color.parseColor("#80ffffff"));*/
         }
     }
 

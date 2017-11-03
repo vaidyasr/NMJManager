@@ -14,16 +14,14 @@ package com.nmj.nmjmanager.fragments;/*
  * limitations under the License.
  */
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.MultiSelectListPreference;
 import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,8 +43,7 @@ import static com.nmj.functions.PreferenceKeys.MOVIES_TABS_SELECTED;
 
 public class MovieLibraryOverviewFragment extends Fragment {
 
-    List<String> TITLES = new ArrayList<>();
-    private ViewPager mViewPager;
+    private List<String> TITLES = new ArrayList<>();
     private PagerSlidingTabStrip mTabs;
 
     public MovieLibraryOverviewFragment() {
@@ -60,6 +57,8 @@ public class MovieLibraryOverviewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.viewpager_with_tabs, container, false);
         PagerAdapter mAdapter;
+        ViewPager mViewPager;
+
         final String[] TITLES1 = {getString(R.string.choiceAllMovies), getString(R.string.choiceFavorites), getString(R.string.choiceNewReleases),
                 getString(R.string.chooserWatchList), getString(R.string.choiceWatchedMovies), getString(R.string.choiceUnwatchedMovies), getString(R.string.choiceCollections),
                 getString(R.string.choiceLists), getString(R.string.choiceUpcoming), getString(R.string.choicePopular), getString(R.string.choiceNowPlaying),
@@ -68,12 +67,12 @@ public class MovieLibraryOverviewFragment extends Fragment {
             TITLES.add(i, TITLES1[i]);
 
         if (NMJLib.hasLollipop())
-            ((ActionBarActivity) getActivity()).getSupportActionBar().setElevation(0);
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setElevation(0);
 
-        mViewPager = (ViewPager) v.findViewById(R.id.awesomepager);
+        mViewPager = v.findViewById(R.id.awesomepager);
         mViewPager.setPageMargin(NMJLib.convertDpToPixels(getActivity(), 16));
 
-        mTabs = (PagerSlidingTabStrip) v.findViewById(R.id.tabs);
+        mTabs = v.findViewById(R.id.tabs);
 
         mViewPager.setAdapter(mAdapter = new PagerAdapter(getChildFragmentManager()));
 
@@ -85,7 +84,7 @@ public class MovieLibraryOverviewFragment extends Fragment {
         mAdapter.addTab(TITLES.get(0));
         Set<String> defValues = new HashSet<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"));
         Set<String> values = PreferenceManager.getDefaultSharedPreferences(getActivity()).getStringSet(MOVIES_TABS_SELECTED, defValues);
-        List<String> list = new ArrayList<String>(values);
+        List<String> list = new ArrayList<>(values);
         Collections.sort(list, new Comparator<String>() {
             @Override
             public int compare(String s1, String s2) {

@@ -23,7 +23,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -70,7 +69,8 @@ public class ActorDetailsFragment extends Fragment {
     private Toolbar mToolbar;
     private PaletteLoader mPaletteLoader;
 
-    public ActorDetailsFragment() {}
+    public ActorDetailsFragment() {
+    }
 
     public static ActorDetailsFragment newInstance(String actorId, String personType) {
         ActorDetailsFragment frag = new ActorDetailsFragment();
@@ -112,7 +112,7 @@ public class ActorDetailsFragment extends Fragment {
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mToolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        mToolbar = view.findViewById(R.id.toolbar);
         mToolbar.setBackgroundResource(android.R.color.transparent);
         ViewUtils.setProperToolbarSize(mContext, mToolbar);
 
@@ -131,19 +131,19 @@ public class ActorDetailsFragment extends Fragment {
         // Details layout
         mDetailsLayout = view.findViewById(R.id.details_area);
 
-        mName = (TextView) view.findViewById(R.id.actor_name);
+        mName = view.findViewById(R.id.actor_name);
         mName.setTypeface(mCondensedRegular);
 
-        mPlaceOfBirth = (TextView) view.findViewById(R.id.place_of_birth);
+        mPlaceOfBirth = view.findViewById(R.id.place_of_birth);
         mPlaceOfBirth.setTypeface(mBold);
 
-        mBirthday = (TextView) view.findViewById(R.id.actor_birthday);
+        mBirthday = view.findViewById(R.id.actor_birthday);
         mBirthday.setTypeface(mMedium);
 
-        mKnownCredits = (TextView) view.findViewById(R.id.actor_known_credits);
+        mKnownCredits = view.findViewById(R.id.actor_known_credits);
         mKnownCredits.setTypeface(mMedium);
 
-        mBiography = (TextView) view.findViewById(R.id.actor_biography);
+        mBiography = view.findViewById(R.id.actor_biography);
 
         mBiography.setBackgroundResource(R.drawable.selectable_background);
         mBiography.setMaxLines(mContext.getResources().getInteger(R.integer.show_details_max_lines));
@@ -171,15 +171,15 @@ public class ActorDetailsFragment extends Fragment {
         mBiography.setFocusable(true);
         mBiography.setTypeface(mCondensedRegular);
 
-        mPhoto = (ImageView) view.findViewById(R.id.actor_image);
-        mBackdrop = (ImageView) view.findViewById(R.id.imageBackground);
+        mPhoto = view.findViewById(R.id.actor_image);
+        mBackdrop = view.findViewById(R.id.imageBackground);
 
-        mMovieCards = (HorizontalCardLayout) view.findViewById(R.id.actor_movie_cards);
-        mTvCards = (HorizontalCardLayout) view.findViewById(R.id.actor_tv_cards);
-        mPhotoCards = (HorizontalCardLayout) view.findViewById(R.id.actor_photo_cards);
-        mTaggedPhotoCards = (HorizontalCardLayout) view.findViewById(R.id.actor_tagged_photo_cards);
+        mMovieCards = view.findViewById(R.id.actor_movie_cards);
+        mTvCards = view.findViewById(R.id.actor_tv_cards);
+        mPhotoCards = view.findViewById(R.id.actor_photo_cards);
+        mTaggedPhotoCards = view.findViewById(R.id.actor_tagged_photo_cards);
 
-        mScrollView = (ObservableScrollView) view.findViewById(R.id.observableScrollView);
+        mScrollView = view.findViewById(R.id.observableScrollView);
 
         final int height = NMJLib.getActionBarAndStatusBarHeight(mContext);
 
@@ -315,7 +315,7 @@ public class ActorDetailsFragment extends Fragment {
     }
 
     private void loadImages() {
-            mPicasso.load(mActor.getProfilePhoto()).placeholder(R.drawable.noactor).error(R.drawable.noactor).into(mPhoto, new Callback() {
+        mPicasso.load(mActor.getProfilePhoto()).placeholder(R.drawable.noactor).error(R.drawable.noactor).into(mPhoto, new Callback() {
             @Override
             public void onSuccess() {
                 if (mPaletteLoader == null) {
@@ -366,7 +366,7 @@ public class ActorDetailsFragment extends Fragment {
 
         private final String mActorId;
 
-        public ActorLoader(String actorId) {
+        private ActorLoader(String actorId) {
             mActorId = actorId;
         }
 

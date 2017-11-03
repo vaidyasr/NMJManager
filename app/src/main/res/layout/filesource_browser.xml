@@ -5,15 +5,15 @@
     android:background="@drawable/bg">
 
     <ListView
-        android:clipToPadding="false"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:divider="@null"
-        android:drawSelectorOnTop="true"
-        android:dividerHeight="0dp"
         android:id="@+id/currentList"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:drawSelectorOnTop="true"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp">
     </ListView>
 
     <LinearLayout
@@ -45,18 +45,18 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center" />
 
-    <com.melnykov.fab.FloatingActionButton
+    <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|right"
-        android:src="@drawable/ic_add_white_36dp"
-        android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
-        app:fab_type="mini"
-        app:fab_colorNormal="@color/color_primary"
-        app:fab_colorRipple="#80ffffff"
-        app:fab_colorPressed="@color/color_primary_dark"
+        android:layout_marginRight="16dp"
         android:clickable="true"
-        android:focusable="true" />
+        android:focusable="true"
+        android:src="@drawable/ic_add_white_36dp"
+        app:backgroundTint="@color/color_primary"
+        app:fabSize="mini"
+        app:fab_colorPressed="@color/color_primary_dark"
+        app:rippleColor="#80ffffff" />
 </FrameLayout>

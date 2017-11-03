@@ -21,7 +21,6 @@ import android.content.Intent;
 import android.graphics.Bitmap.Config;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.Html;
@@ -192,6 +191,28 @@ public class SearchWebMoviesFragment extends Fragment {
         } else Toast.makeText(getActivity().getApplicationContext(), getString(R.string.noInternet), Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mAdapter != null) mAdapter.notifyDataSetChanged();
+    }
+
+    private void showProgressBar() {
+        mListView.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.VISIBLE);
+    }
+
+    private void hideProgressBar() {
+        mListView.setVisibility(View.VISIBLE);
+        mProgressBar.setVisibility(View.GONE);
+    }
+
+    static class ViewHolder {
+        TextView title, rating, release, originalTitle;
+        ImageView cover;
+        LinearLayout layout;
+    }
+
     protected class SearchTask extends AsyncTask<String, String, String> {
 
         @Override
@@ -247,16 +268,10 @@ public class SearchWebMoviesFragment extends Fragment {
         }
     }
 
-    static class ViewHolder {
-        TextView title, rating, release, originalTitle;
-        ImageView cover;
-        LinearLayout layout;
-    }
-
     public class ListAdapter extends BaseAdapter {
 
-        private LayoutInflater inflater;
         private final Context mContext;
+        private LayoutInflater inflater;
         private int mItemHeight = 0;
         private GridView.LayoutParams mImageViewLayoutParams;
 
@@ -332,12 +347,6 @@ public class SearchWebMoviesFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (mAdapter != null) mAdapter.notifyDataSetChanged();
-    }
-
     public class Result {
 
         private String mName, mId, mImage, mRating, mRelease;
@@ -371,15 +380,5 @@ public class SearchWebMoviesFragment extends Fragment {
                 return getString(R.string.unknownYear);
             return mRelease;
         }
-    }
-
-    private void showProgressBar() {
-        mListView.setVisibility(View.GONE);
-        mProgressBar.setVisibility(View.VISIBLE);
-    }
-
-    private void hideProgressBar() {
-        mListView.setVisibility(View.VISIBLE);
-        mProgressBar.setVisibility(View.GONE);
     }
 }

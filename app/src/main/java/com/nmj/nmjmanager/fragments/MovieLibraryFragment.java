@@ -17,6 +17,7 @@
 package com.nmj.nmjmanager.fragments;
 
 import android.app.SearchManager;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -32,8 +33,10 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.MenuItemCompat.OnActionExpandListener;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.SearchView.OnQueryTextListener;
@@ -48,6 +51,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.ExpandableListView;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -112,6 +116,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     private MovieLoader mMovieLoader;
     private SearchView mSearchView;
     private View mEmptyLibraryLayout;
+    private DrawerLayout mFilterLayout;
     private TextView mEmptyLibraryTitle, mEmptyLibraryDescription;
     private MenuItem sortMenu;
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
@@ -232,6 +237,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 viewMovieDetails(arg2, arg1);
             }
         });
+
 
         mGridView.setOnScrollListener(new EndlessScrollListener());
 
@@ -499,35 +505,8 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 mMovieLoader.load();
                 showProgressBar();
                 break;
-            case R.id.genres:
-                //mMovieLoader.showGenresFilterDialog(getActivity());
-                break;
-            case R.id.certifications:
-                //mMovieLoader.showCertificationsFilterDialog(getActivity());
-                break;
-            case R.id.user_rating:
-                //mMovieLoader.showFoldersFilterDialog(getActivity());
-                break;
-            case R.id.index:
-                //mMovieLoader.showFileSourcesFilterDialog(getActivity());
-                break;
-            case R.id.release_year:
-                //mMovieLoader.showReleaseYearFilterDialog(getActivity());
-                break;
-            case R.id.video_resolution:
-                //mMovieLoader.addFilter(new MovieFilter(MovieFilter.OFFLINE_FILES));
-                //mMovieLoader.load();
-                //showProgressBar();
-                break;
-            case R.id.others:
-                //mMovieLoader.addFilter(new MovieFilter(MovieFilter.AVAILABLE_FILES));
-                //mMovieLoader.load();
-                //showProgressBar();
-                break;
-            case R.id.clear_filters:
-                mMovieLoader.clearFilters();
-                mMovieLoader.load();
-                showProgressBar();
+            case R.id.filters:
+                System.out.println("Filters selected");
                 break;
             case R.id.random:
                 if (mAdapter.getCount() > 0) {

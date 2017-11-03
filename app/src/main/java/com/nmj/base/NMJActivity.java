@@ -17,13 +17,13 @@
 package com.nmj.base;
 
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import com.nmj.functions.NMJLib;
 import com.nmj.nmjmanager.R;
 
-public abstract class NMJActivity extends ActionBarActivity {
+public abstract class NMJActivity extends AppCompatActivity {
 
     public Toolbar mToolbar;
 

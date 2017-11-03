@@ -24,7 +24,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -116,7 +116,20 @@ public class MovieDiscoveryViewPagerFragment extends Fragment {
 		outState.putInt("selectedIndex", mViewPager.getCurrentItem());
 	}
 
-	private class WebVideosAdapter extends FragmentPagerAdapter {
+    private void setupAdapterAndTabs() {
+        if (NMJLib.hasLollipop())
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setElevation(0);
+
+        mViewPager.setAdapter(new WebVideosAdapter(getChildFragmentManager()));
+        mTabs.setViewPager(mViewPager);
+        mTabs.setVisibility(View.VISIBLE);
+        if (NMJLib.hasLollipop())
+            mTabs.setElevation(1f);
+
+        mProgressBar.setVisibility(View.GONE);
+    }
+
+    private class WebVideosAdapter extends FragmentPagerAdapter {
 
         private final String[] TITLES = {getString(R.string.stringUpcoming), getString(R.string.stringNowPlaying), getString(R.string.stringPopular)};
 
@@ -129,36 +142,36 @@ public class MovieDiscoveryViewPagerFragment extends Fragment {
             return TITLES[position];
         }
 
-		@Override  
-		public Fragment getItem(int index) {		
-			switch (index) {
+        @Override
+        public Fragment getItem(int index) {
+            switch (index) {
 			case 0: return MovieDiscoveryFragment.newInstance("upcoming", mJson, mBaseUrl);
 			case 1: return MovieDiscoveryFragment.newInstance("now_playing", mJson, mBaseUrl);
 			default: return MovieDiscoveryFragment.newInstance("popular", mJson, mBaseUrl);
 			}
-		}  
+        }
 
-		@Override  
-		public int getCount() {
+        @Override
+        public int getCount() {
 			return 3;
 		}
 	}
-	
-	private class MovieLoader extends AsyncTask<Object, Object, String> {
-		
-		private Context mContext;
-		
-		public MovieLoader(Context context) {
+
+    private class MovieLoader extends AsyncTask<Object, Object, String> {
+
+        private Context mContext;
+
+        public MovieLoader(Context context) {
 			mContext = context;
 		}
-		
-		@Override
+
+        @Override
 		protected String doInBackground(Object... params) {
 			try {
                 mBaseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
                 mJson = NMJLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie?api_key=" + NMJLib.getTmdbApiKey(mContext) + "&append_to_response=upcoming,now_playing,popular,top_rated").toString();
-				
-				return mJson;
+
+                return mJson;
 			} catch (Exception e) {} // If the fragment is no longer attached to the Activity
 
 			return null;
@@ -173,17 +186,4 @@ public class MovieDiscoveryViewPagerFragment extends Fragment {
 			}
 		}
 	}
-
-    private void setupAdapterAndTabs() {
-        if (NMJLib.hasLollipop())
-            ((ActionBarActivity) getActivity()).getSupportActionBar().setElevation(0);
-
-        mViewPager.setAdapter(new WebVideosAdapter(getChildFragmentManager()));
-        mTabs.setViewPager(mViewPager);
-        mTabs.setVisibility(View.VISIBLE);
-        if (NMJLib.hasLollipop())
-            mTabs.setElevation(1f);
-
-        mProgressBar.setVisibility(View.GONE);
-    }
 }

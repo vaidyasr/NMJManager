@@ -29,7 +29,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.nmj.apis.tmdb.TMDbMovieService;
@@ -93,8 +92,8 @@ public class ActorPhotosFragment extends Fragment {
 	public void onViewCreated(View v, Bundle savedInstanceState) {
 		super.onViewCreated(v, savedInstanceState);
 
-		mProgressBar = (ProgressBar) v.findViewById(R.id.progress);
-		mGridView = (GridView) v.findViewById(R.id.gridView);
+		mProgressBar = v.findViewById(R.id.progress);
+		mGridView = v.findViewById(R.id.gridView);
 
 		// Calculate the total column width to set item heights by factor 1.5
 		mGridView.getViewTreeObserver().addOnGlobalLayoutListener(
@@ -128,7 +127,7 @@ public class ActorPhotosFragment extends Fragment {
 
 	private class ImageAdapter extends BaseAdapter {
 
-		private LayoutInflater inflater;
+		private final LayoutInflater inflater;
 		private final Context mContext;
 
 		public ImageAdapter(Context context) {
@@ -158,8 +157,8 @@ public class ActorPhotosFragment extends Fragment {
 			if (convertView == null) {
 				convertView = inflater.inflate(R.layout.grid_portrait_photo, container, false);
 				holder = new CoverItem();
-				
-				holder.cover = (ImageView) convertView.findViewById(R.id.cover);
+
+				holder.cover = convertView.findViewById(R.id.cover);
 				
 				convertView.setTag(holder);
 			} else {
@@ -181,7 +180,7 @@ public class ActorPhotosFragment extends Fragment {
 		private final Context mContext;
 		private final String mActorId;
 
-		public PhotoLoader(Context context, String actorId) {
+		private PhotoLoader(Context context, String actorId) {
 			mContext = context;
 			mActorId = actorId;
 		}

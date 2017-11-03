@@ -31,7 +31,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.Display;
@@ -64,6 +63,8 @@ import java.util.List;
 import static com.nmj.functions.PreferenceKeys.GRID_ITEM_SIZE;
 
 public class ViewUtils {
+
+    private static int defaultTitleTextColor = -1;
 
     private ViewUtils() {} // No instantiation
 
@@ -317,8 +318,6 @@ public class ViewUtils {
             // Some devices crash at runtime when using the ObjectAnimator
         }
     }
-
-    private static int defaultTitleTextColor = -1;
 
     /**
      * Update the Toolbar background color and title.

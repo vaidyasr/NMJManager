@@ -24,7 +24,6 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.Html;
@@ -250,6 +249,22 @@ public class IdentifyMovieFragment extends Fragment {
         return mLocale;
     }
 
+    private void showProgressBar() {
+        mListView.setVisibility(View.GONE);
+        mProgress.setVisibility(View.VISIBLE);
+    }
+
+    private void hideProgressBar() {
+        mListView.setVisibility(View.VISIBLE);
+        mProgress.setVisibility(View.GONE);
+    }
+
+    static class ViewHolder {
+        TextView title, release, rating, originalTitle;
+        ImageView cover;
+        LinearLayout layout;
+    }
+
     protected class MovieSearch extends AsyncTask<Void, Boolean, Boolean> {
 
         private final Context mContext;
@@ -319,16 +334,10 @@ public class IdentifyMovieFragment extends Fragment {
         }
     }
 
-    static class ViewHolder {
-        TextView title, release, rating, originalTitle;
-        ImageView cover;
-        LinearLayout layout;
-    }
-
     public class ListAdapter extends BaseAdapter {
 
-        private LayoutInflater inflater;
         private final Context mContext;
+        private LayoutInflater inflater;
         private int mItemHeight = 0;
         private GridView.LayoutParams mImageViewLayoutParams;
         private ArrayList<Result> mItems = new ArrayList<Result>();
@@ -466,9 +475,9 @@ public class IdentifyMovieFragment extends Fragment {
 
     public class LanguageAdapter implements SpinnerAdapter {
 
-        private ArrayList<Locale> mLocales = new ArrayList<Locale>();
         private final Locale[] mSystemLocales;
         private final LayoutInflater mInflater;
+        private ArrayList<Locale> mLocales = new ArrayList<Locale>();
 
         public LanguageAdapter() {
 
@@ -575,15 +584,5 @@ public class IdentifyMovieFragment extends Fragment {
             return convertView;
         }
 
-    }
-
-    private void showProgressBar() {
-        mListView.setVisibility(View.GONE);
-        mProgress.setVisibility(View.VISIBLE);
-    }
-
-    private void hideProgressBar() {
-        mListView.setVisibility(View.VISIBLE);
-        mProgress.setVisibility(View.GONE);
     }
 }

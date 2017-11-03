@@ -104,7 +104,7 @@ public class Main extends NMJActivity {
     private EditText ip_address, display_name;
     private int mNumMovies, mNumShows, selectedIndex, mStartup, mNumMusic;
     private Typeface mTfMedium, mTfRegular;
-    private DrawerLayout mDrawerLayout;
+    private DrawerLayout mDrawerLayout, mFilterLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private NMJAdapter mDbHelper;
     private DbAdapterTvShows mDbHelperTv;
@@ -488,6 +488,7 @@ public class Main extends NMJActivity {
                             "action=getDrives&type=" + mDriveType);
                     NMJLib.setMachineType(NMJLib.getStringFromJSONObject(jObject, "machine", ""));
                     jArray = jObject.getJSONArray("data");
+                    System.out.println("Output: " + jArray.toString());
                     for (int i = 0; i < jArray.length(); i++) {
                         JSONObject dObject = jArray.getJSONObject(i);
                         NMJDb tmpdb = new NMJDb(NMJManagerApplication.getContext(),

@@ -21,7 +21,7 @@ import android.content.Intent;
 import android.graphics.Bitmap.Config;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,7 +31,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.nmj.abstractclasses.TvShowApiService;
@@ -50,7 +49,7 @@ public class CoverSearchFragmentTv extends Fragment {
 
 	private int mImageThumbSize, mImageThumbSpacing;
 	private ImageAdapter mAdapter;
-	private ArrayList<String> mImages = new ArrayList<String>();
+	private ArrayList<String> mImages = new ArrayList<>();
 	private GridView mGridView = null;
 	private String mShowId;
 	private ProgressBar mProgressBar;
@@ -97,10 +96,10 @@ public class CoverSearchFragmentTv extends Fragment {
 	public void onViewCreated(View v, Bundle savedInstanceState) {
 		super.onViewCreated(v, savedInstanceState);
 
-		mProgressBar = (ProgressBar) v.findViewById(R.id.progress);
+		mProgressBar = v.findViewById(R.id.progress);
 		if (mImages.size() > 0) mProgressBar.setVisibility(View.GONE); // Hack to remove the ProgressBar on orientation change
 
-		mGridView = (GridView) v.findViewById(R.id.gridView);
+		mGridView = v.findViewById(R.id.gridView);
 
 		mAdapter = new ImageAdapter(getActivity());
 		mGridView.setAdapter(mAdapter);
@@ -142,13 +141,22 @@ public class CoverSearchFragmentTv extends Fragment {
 	@Override
 	public void onStart() {
 		super.onStart();
-        ((ActionBarActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == android.R.id.home) {
+			getActivity().onBackPressed();
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	private class ImageAdapter extends BaseAdapter {
 
 		private final Context mContext;
-		private LayoutInflater inflater;
+		private final LayoutInflater inflater;
 
 		public ImageAdapter(Context context) {
 			mContext = context;
@@ -177,7 +185,7 @@ public class CoverSearchFragmentTv extends Fragment {
 				convertView = inflater.inflate(R.layout.grid_portrait_photo, container, false);
 				holder = new CoverItem();
 
-				holder.cover = (ImageView) convertView.findViewById(R.id.cover);
+				holder.cover = convertView.findViewById(R.id.cover);
 
 				convertView.setTag(holder);
 			} else {
@@ -194,12 +202,12 @@ public class CoverSearchFragmentTv extends Fragment {
 		}
 	}
 
-	protected class GetCoverImages extends AsyncTask<String, String, String> {
+	private class GetCoverImages extends AsyncTask<String, String, String> {
 		@Override
 		protected String doInBackground(String... params) {
 			String id = params[0];
 
-			TvShowApiService service = null;
+			TvShowApiService service;
 			if (id.startsWith("tmdb_")) {
 				id = id.replace("tmdb_", "");
 				service = TMDbTvShowService.getInstance(getActivity());
@@ -219,14 +227,5 @@ public class CoverSearchFragmentTv extends Fragment {
 				mAdapter.notifyDataSetChanged();
 			}
 		}
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == android.R.id.home) {
-			getActivity().onBackPressed();
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
 	}
 }

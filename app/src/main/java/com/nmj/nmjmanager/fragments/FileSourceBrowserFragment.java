@@ -30,9 +30,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -48,7 +49,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.melnykov.fab.FloatingActionButton;
 import com.nmj.abstractclasses.AbstractFileSourceBrowser;
 import com.nmj.db.DbAdapterSources;
 import com.nmj.filesources.BrowserFile;
@@ -108,6 +108,54 @@ public class FileSourceBrowserFragment extends Fragment {
 	private AndroidUpnpService upnpService;
 	private ArrayAdapter<ContentItem> contentListAdapter;
     private FloatingActionButton mFab;
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            onBackPressed();
+        }
+    };
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            upnpService = (AndroidUpnpService) service;
+
+            boolean found = false;
+
+            for (Device<?, ?, ?> device : upnpService.getRegistry().getDevices()) {
+                try {
+                    if (device.getDetails().getSerialNumber() != null && !device.getDetails().getSerialNumber().isEmpty()) {
+                        if (device.getDetails().getSerialNumber().equals(((BrowserUpnp) mBrowser).getSerial())) {
+                            startBrowse(device);
+                            found = true;
+                        }
+                    } else {
+                        if (device.getIdentity().getUdn().toString().equals(((BrowserUpnp) mBrowser).getSerial())) {
+                            startBrowse(device);
+                            found = true;
+                        }
+                    }
+                } catch (Exception e) {
+                }
+            }
+
+            if (!found)
+                Toast.makeText(getActivity(), getString(R.string.errorSomethingWentWrong), Toast.LENGTH_LONG).show();
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            upnpService = null;
+        }
+
+        private void startBrowse(Device<?, ?, ?> device) {
+            Service<?, ?> service = device.findService(new UDAServiceType("ContentDirectory"));
+            ((BrowserUpnp) mBrowser).setService(service);
+
+            Container rootContainer = new Container();
+            rootContainer.setId("0");
+            rootContainer.setTitle(device.getDetails().getFriendlyName());
+
+            upnpService.getControlPoint().execute(new ContentBrowseCallback(getActivity(), service, rootContainer, contentListAdapter, true));
+        }
+    };
 
 	/**
 	 * Empty constructor as per the Fragment documentation
@@ -118,8 +166,8 @@ public class FileSourceBrowserFragment extends Fragment {
 		FileSourceBrowserFragment frag = new FileSourceBrowserFragment();
 		Bundle args = new Bundle();
 		args.putInt(TYPE, FileSource.FILE);
-		args.putBoolean(MOVIE, isMovie);	
-		frag.setArguments(args);
+        args.putBoolean(MOVIE, isMovie);
+        frag.setArguments(args);
 		return frag;
 	}
 
@@ -131,8 +179,8 @@ public class FileSourceBrowserFragment extends Fragment {
 		args.putString(USER, user);
 		args.putString(PASSWORD, pass);
 		args.putString(DOMAIN, domain);
-		args.putBoolean(MOVIE, isMovie);		
-		frag.setArguments(args);
+        args.putBoolean(MOVIE, isMovie);
+        frag.setArguments(args);
 		return frag;
 	}
 
@@ -142,8 +190,8 @@ public class FileSourceBrowserFragment extends Fragment {
 		args.putInt(TYPE, FileSource.UPNP);
 		args.putString(SERIAL_NUMBER, serialNumber);
 		args.putString(SERVER, server);
-		args.putBoolean(MOVIE, isMovie);	
-		frag.setArguments(args);
+        args.putBoolean(MOVIE, isMovie);
+        frag.setArguments(args);
 		return frag;
 	}
 
@@ -207,13 +255,6 @@ public class FileSourceBrowserFragment extends Fragment {
 		LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(new Intent("NMJManager-filesource-change"));
 		getActivity().finish();
 	}
-
-	private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			onBackPressed();
-		}
-	};
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -304,6 +345,85 @@ public class FileSourceBrowserFragment extends Fragment {
 		}
 	}
 
+    private void browse(int index, boolean fromParent) {
+        if (mLoading)
+            return;
+
+        if (mBrowseFolder != null)
+            mBrowseFolder.cancel(true);
+
+        mBrowseFolder = new BrowseFolder(index, fromParent);
+        mBrowseFolder.execute();
+    }
+
+    private void onBackPressed() {
+        goBack();
+    }
+
+    private void goBack() {
+        if (mType != FileSource.UPNP)
+            browse(GO_BACK, false);
+        else {
+            if (mBrowser == null)
+                return;
+
+            Container parentContainer = new Container();
+
+            String id = "0";
+            if (((BrowserUpnp) mBrowser).getContainer() != null) {
+                id = ((BrowserUpnp) mBrowser).getParentId(((BrowserUpnp) mBrowser).getContainer().getId());
+            }
+            parentContainer.setId(id);
+
+            if (((BrowserUpnp) mBrowser).getService() != null)
+                upnpService.getControlPoint().execute(new ContentBrowseCallback(getActivity(), ((BrowserUpnp) mBrowser).getService(), parentContainer, contentListAdapter, false));
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
+
+        if (mType == FileSource.UPNP)
+            getActivity().getApplicationContext().unbindService(serviceConnection);
+    }
+
+    private void setLoading(boolean loading) {
+        mLoading = loading;
+        if (loading) {
+            mProgress.setVisibility(View.VISIBLE);
+            mCurrent.setVisibility(View.GONE);
+        } else {
+            mProgress.setVisibility(View.GONE);
+            mCurrent.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private boolean hasParentView() {
+        return mParent != null;
+    }
+
+    private void notifyDataSetChanged() {
+        if (mType != FileSource.UPNP) {
+            mCurrentFolderAdapter.notifyDataSetChanged();
+            if (hasParentView())
+                mParentFolderAdapter.notifyDataSetChanged();
+        } else {
+            contentListAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private void updateSubtitle() {
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle(mBrowser.getSubtitle());
+    }
+
+    static class ViewHolder {
+        TextView name, size;
+        ImageView icon;
+    }
+
 	private class BrowseFolder extends AsyncTask<Void, Void, Boolean> {
 
 		private int mIndex;
@@ -373,22 +493,6 @@ public class FileSourceBrowserFragment extends Fragment {
 
 			mCurrent.setSelectionAfterHeaderView();
 		}
-	}
-
-	private void browse(int index, boolean fromParent) {
-		if (mLoading)
-			return;
-
-		if (mBrowseFolder != null)
-			mBrowseFolder.cancel(true);
-
-		mBrowseFolder = new BrowseFolder(index, fromParent);
-		mBrowseFolder.execute();
-	}
-
-	static class ViewHolder {
-		TextView name, size;
-		ImageView icon;
 	}
 
 	private class CurrentFolderAdapter extends BaseAdapter {
@@ -517,111 +621,6 @@ public class FileSourceBrowserFragment extends Fragment {
 			super.notifyDataSetChanged();
 		}
 	}
-
-	private void onBackPressed() {
-		goBack();
-	}
-
-	private void goBack() {
-		if (mType != FileSource.UPNP)
-			browse(GO_BACK, false);
-		else {
-			if (mBrowser == null)
-				return;
-
-			Container parentContainer = new Container();
-
-			String id = "0";
-			if (((BrowserUpnp) mBrowser).getContainer() != null) {
-				id = ((BrowserUpnp) mBrowser).getParentId(((BrowserUpnp) mBrowser).getContainer().getId());
-			}
-			parentContainer.setId(id);
-
-			if (((BrowserUpnp) mBrowser).getService() != null)
-				upnpService.getControlPoint().execute(new ContentBrowseCallback(getActivity(), ((BrowserUpnp) mBrowser).getService(), parentContainer, contentListAdapter, false));
-		}
-	}
-
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-
-		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
-
-		if (mType == FileSource.UPNP)
-			getActivity().getApplicationContext().unbindService(serviceConnection);
-	}
-
-	private void setLoading(boolean loading) {
-		mLoading = loading;
-		if (loading) {
-			mProgress.setVisibility(View.VISIBLE);
-			mCurrent.setVisibility(View.GONE);
-		} else {
-			mProgress.setVisibility(View.GONE);
-			mCurrent.setVisibility(View.VISIBLE);
-		}	
-	}
-
-	private boolean hasParentView() {
-		return mParent != null;
-	}
-
-	private void notifyDataSetChanged() {
-		if (mType != FileSource.UPNP) {
-			mCurrentFolderAdapter.notifyDataSetChanged();
-			if (hasParentView())
-				mParentFolderAdapter.notifyDataSetChanged();
-		} else {
-			contentListAdapter.notifyDataSetChanged();
-		}
-	}
-
-	private void updateSubtitle() {
-		((ActionBarActivity) getActivity()).getSupportActionBar().setSubtitle(mBrowser.getSubtitle());
-	}
-
-	private ServiceConnection serviceConnection = new ServiceConnection() {
-		public void onServiceConnected(ComponentName className, IBinder service) {
-			upnpService = (AndroidUpnpService) service;
-
-			boolean found = false;
-
-			for (Device<?, ?, ?> device : upnpService.getRegistry().getDevices()) {
-				try {
-					if (device.getDetails().getSerialNumber() != null && !device.getDetails().getSerialNumber().isEmpty()) {
-						if (device.getDetails().getSerialNumber().equals(((BrowserUpnp) mBrowser).getSerial())) {
-							startBrowse(device);
-							found = true;
-						}
-					} else {
-						if (device.getIdentity().getUdn().toString().equals(((BrowserUpnp) mBrowser).getSerial())) {
-							startBrowse(device);
-							found = true;
-						}
-					}
-				} catch (Exception e) {}
-			}
-
-			if (!found)
-				Toast.makeText(getActivity(), getString(R.string.errorSomethingWentWrong), Toast.LENGTH_LONG).show();
-		}
-
-		public void onServiceDisconnected(ComponentName className) {
-			upnpService = null;
-		}
-
-		private void startBrowse(Device<?, ?, ?> device) {
-			Service<?, ?> service = device.findService(new UDAServiceType("ContentDirectory"));
-			((BrowserUpnp) mBrowser).setService(service);
-
-			Container rootContainer = new Container();
-			rootContainer.setId("0");
-			rootContainer.setTitle(device.getDetails().getFriendlyName());
-
-			upnpService.getControlPoint().execute(new ContentBrowseCallback(getActivity(), service, rootContainer, contentListAdapter, true));
-		}
-	};
 
 	private class ContentBrowseCallback extends Browse {
 
