@@ -19,12 +19,8 @@ package com.nmj.nmjmanager.fragments;
 import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Typeface;
@@ -34,7 +30,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -49,13 +44,11 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nmj.abstractclasses.MovieApiService;
 import com.nmj.apis.nmj.Movie;
 import com.nmj.apis.nmj.NMJMovieService;
 import com.nmj.apis.tmdb.TMDbMovieService;
@@ -63,7 +56,6 @@ import com.nmj.apis.trakt.Trakt;
 import com.nmj.base.NMJActivity;
 import com.nmj.functions.Actor;
 import com.nmj.functions.FileSource;
-import com.nmj.functions.Filepath;
 import com.nmj.functions.IntentKeys;
 import com.nmj.functions.NMJAdapter;
 import com.nmj.functions.NMJLib;
@@ -72,13 +64,11 @@ import com.nmj.functions.PaletteLoader;
 import com.nmj.functions.SimpleAnimatorListener;
 import com.nmj.functions.TmdbTrailerSearch;
 import com.nmj.functions.WebMovie;
-import com.nmj.loader.MovieLibraryType;
 import com.nmj.nmjmanager.EditMovie;
 import com.nmj.nmjmanager.Main;
 import com.nmj.nmjmanager.MovieCoverFanartBrowser;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
-import com.nmj.remoteplayback.RemotePlayback;
 import com.nmj.utils.IntentUtils;
 import com.nmj.utils.LocalBroadcastUtils;
 import com.nmj.utils.TypefaceUtils;
@@ -90,17 +80,13 @@ import com.nmj.views.ObservableScrollView.OnScrollChangedListener;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import static com.nmj.functions.NMJLib.getNMJServerPHPURL;
-import static com.nmj.functions.PreferenceKeys.ALWAYS_DELETE_FILE;
-import static com.nmj.functions.PreferenceKeys.CHROMECAST_BETA_SUPPORT;
 import static com.nmj.functions.PreferenceKeys.REMOVE_MOVIES_FROM_WATCHLIST;
 import static com.nmj.functions.PreferenceKeys.SHOW_FILE_LOCATION;
 
@@ -110,7 +96,6 @@ public class NMJMovieDetailsFragment extends Fragment {
     private TextView mTitle, mPlot, mSrc, mGenre, mRuntime, mReleaseDate, mRating, mTagline, mCertification;
     private ImageView mBackground, mCover, mHasWatched, mInLibrary;
     private Movie mMovie;
-    private Video mVideo;
     private ObservableScrollView mScrollView;
     private View mProgressBar, mDetailsArea;
     private boolean mRetained = false, mShowFileLocation;
@@ -127,10 +112,10 @@ public class NMJMovieDetailsFragment extends Fragment {
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-                if (intent.filterEquals(new Intent("NMJManager-movie-detail-update"))) {
-                    System.out.println("Updating fields: ");
-                    setupFields();
-                }
+            if (intent.filterEquals(new Intent("NMJManager-movie-detail-update"))) {
+                System.out.println("Updating fields: ");
+                setupFields();
+            }
         }
     };
 
@@ -323,7 +308,7 @@ public class NMJMovieDetailsFragment extends Fragment {
             // Set the movie file source
             mSrc.setTypeface(mCondensedRegular);
             if (mShowFileLocation) {
-                List<String> list = new ArrayList<String>();
+                List<String> list = new ArrayList<>();
                 for (int i = 0; i < mMovie.getVideo().size(); i++) {
                     list.add(mMovie.getVideo().get(i).getPath());
                 }
@@ -482,7 +467,7 @@ public class NMJMovieDetailsFragment extends Fragment {
     private void loadCast(final int capacity) {
         // Show ProgressBar
         new AsyncTask<Void, Void, Void>() {
-            private List<Actor> mActors = new ArrayList<Actor>();
+            private List<Actor> mActors = new ArrayList<>();
 
             @Override
             protected Void doInBackground(Void... params) {
@@ -508,7 +493,7 @@ public class NMJMovieDetailsFragment extends Fragment {
     private void loadCrew(final int capacity) {
         // Show ProgressBar
         new AsyncTask<Void, Void, Void>() {
-            private List<Actor> mActors = new ArrayList<Actor>();
+            private List<Actor> mActors = new ArrayList<>();
 
             @Override
             protected Void doInBackground(Void... params) {
@@ -534,7 +519,7 @@ public class NMJMovieDetailsFragment extends Fragment {
     private void loadSimilarMovies(final int capacity) {
         // Show ProgressBar
         new AsyncTask<Void, Void, Void>() {
-            private List<WebMovie> mSimilarMovies = new ArrayList<WebMovie>();
+            private List<WebMovie> mSimilarMovies = new ArrayList<>();
 
             @Override
             protected Void doInBackground(Void... params) {
@@ -564,7 +549,7 @@ public class NMJMovieDetailsFragment extends Fragment {
     private void loadRecommendedMovies(final int capacity) {
         // Show ProgressBar
         new AsyncTask<Void, Void, Void>() {
-            private List<WebMovie> mSimilarMovies = new ArrayList<WebMovie>();
+            private List<WebMovie> mSimilarMovies = new ArrayList<>();
 
             @Override
             protected Void doInBackground(Void... params) {
@@ -781,10 +766,10 @@ public class NMJMovieDetailsFragment extends Fragment {
             //new MovieDetailsFragment.GetSplitFiles(filepath, filetype).execute();
         } else {
             //mVideoPlaybackStarted = System.currentTimeMillis();*/
-System.out.println("Playing...");
-            boolean playbackStarted = VideoUtils.playVideo(getActivity(), filepath, filetype, mMovie);
-            if (playbackStarted)
-                checkIn();
+        System.out.println("Playing...");
+        boolean playbackStarted = VideoUtils.playVideo(getActivity(), filepath, filetype, mMovie);
+        if (playbackStarted)
+            checkIn();
 //        }
     }
 
@@ -868,7 +853,7 @@ System.out.println("Playing...");
                 identifyMovie();
                 return true;
             case R.id.watched:
-                watched(true);
+                watched();
                 return true;
             case R.id.trailer:
                 VideoUtils.playTrailer(getActivity(), mMovie);
@@ -961,7 +946,7 @@ System.out.println("Playing...");
                 .create().show();*/
     }
 
-    private void watched(final boolean showToast) {
+    private void watched() {
         String mode;
         final boolean watched = !mMovie.hasWatched();
 
@@ -988,18 +973,21 @@ System.out.println("Playing...");
             }
 
             protected void onPostExecute(Void result) {
-                if (showToast) {
-                    if (watched) {
-                        Toast.makeText(mContext, mContext.getString(R.string.markedAsWatched), Toast.LENGTH_SHORT).show();
-                        if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(REMOVE_MOVIES_FROM_WATCHLIST, true))
-                            removeFromWatchlist(); // False to remove from watchlist
-                    } else
-                        Toast.makeText(mContext, mContext.getString(R.string.markedAsUnwatched), Toast.LENGTH_SHORT).show();
-                }
+                if (watched) {
+                    Toast.makeText(mContext, mContext.getString(R.string.markedAsWatched), Toast.LENGTH_SHORT).show();
+                    if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(REMOVE_MOVIES_FROM_WATCHLIST, true))
+                        removeFromWatchlist(); // False to remove from watchlist
+                } else
+                    Toast.makeText(mContext, mContext.getString(R.string.markedAsUnwatched), Toast.LENGTH_SHORT).show();
 
                 NMJManagerApplication.getNMJAdapter().setWatchedByShowId(mMovie.getShowId(), watched);
                 getActivity().invalidateOptionsMenu();
                 LocalBroadcastUtils.updateMovieLibrary(mContext);
+
+                if (watched)
+                    mMovie.setHasWatched("1");
+                else
+                    mMovie.setHasWatched("0");
 
                 if (NMJManagerApplication.getNMJAdapter().getWatchedByShowId(mMovie.getShowId()))
                     mHasWatched.setVisibility(View.VISIBLE);

@@ -23,7 +23,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.MenuItem;
 
 import com.nmj.base.NMJActivity;
-import com.nmj.loader.MovieLibraryType;
 import com.nmj.nmjmanager.fragments.ListLibraryFragment;
 
 public class MovieList extends NMJActivity {
@@ -46,10 +45,6 @@ public class MovieList extends NMJActivity {
 		}
 
 		setTitle(getIntent().getExtras().getString("listTitle"));
-
-		System.out.println("List Title : " + getIntent().getExtras().getString("listTitle"));
-		System.out.println("List Id : " + getIntent().getExtras().getString("listId"));
-		System.out.println("List TmdbId : " + getIntent().getExtras().getString("listTmdbId"));
 	}
 
 	@Override

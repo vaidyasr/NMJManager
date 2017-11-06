@@ -2,18 +2,13 @@ package com.nmj.apis.nmj;
 
 import android.content.Context;
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
 
 import com.nmj.abstractclasses.NMJApiService;
-import com.nmj.apis.trakt.Trakt;
 import com.nmj.db.DbAdapterMovies;
-import com.nmj.functions.Actor;
 import com.nmj.functions.NMJLib;
 import com.nmj.functions.Video;
-import com.nmj.functions.WebMovie;
 import com.nmj.nmjmanager.R;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,9 +17,7 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static com.nmj.functions.PreferenceKeys.MOVIE_RATINGS_SOURCE;
 
@@ -48,11 +41,6 @@ public class NMJMovieService extends NMJApiService {
         return mService;
     }
 
-    /**
-     * Get the ratings provider. This isn't a static value, so it should be reloaded when needed.
-     *
-     * @return
-     */
     public String getRatingsProvider() {
         return PreferenceManager.getDefaultSharedPreferences(mContext).getString(MOVIE_RATINGS_SOURCE, mContext.getString(R.string.ratings_option_1));
     }
@@ -89,7 +77,7 @@ public class NMJMovieService extends NMJApiService {
     public List<Movie> searchByImdbId(String imdbId, String language) {
         language = getLanguage(language);
 
-        ArrayList<Movie> results = new ArrayList<Movie>();
+        ArrayList<Movie> results = new ArrayList<>();
 
         try {
             JSONObject jObject = NMJLib.getJSONObject(mContext, mTmdbApiURL + "find/" + imdbId + "?language=" + language + "&external_source=imdb_id&api_key=" + mTmdbApiKey);
@@ -174,7 +162,7 @@ public class NMJMovieService extends NMJApiService {
             }
 
             try {
-                ArrayList<Video> videoDetails = new ArrayList<Video>();
+                ArrayList<Video> videoDetails = new ArrayList<>();
                 JSONArray video = jObject.getJSONArray("VIDEO");
 
                 for (int i = 0; i < video.length(); i++) {
@@ -221,7 +209,7 @@ public class NMJMovieService extends NMJApiService {
 
     @Override
     public List<String> getCovers(String id) {
-        ArrayList<String> covers = new ArrayList<String>();
+        ArrayList<String> covers = new ArrayList<>();
         String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
         try {
@@ -238,7 +226,7 @@ public class NMJMovieService extends NMJApiService {
 
     @Override
     public List<String> getBackdrops(String id) {
-        ArrayList<String> covers = new ArrayList<String>();
+        ArrayList<String> covers = new ArrayList<>();
         String baseUrl = NMJLib.getTmdbImageBaseUrl(mContext);
 
         try {
@@ -254,7 +242,7 @@ public class NMJMovieService extends NMJApiService {
     }
 
     private ArrayList<Movie> getListFromUrl(String serviceUrl) {
-        ArrayList<Movie> results = new ArrayList<Movie>();
+        ArrayList<Movie> results = new ArrayList<>();
 
         try {
             JSONObject jObject = NMJLib.getJSONObject(mContext, serviceUrl);

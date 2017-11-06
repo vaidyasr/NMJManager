@@ -36,7 +36,6 @@ import com.nmj.nmjmanager.fragments.CoverSearchFragment;
 import com.nmj.nmjmanager.fragments.FanartSearchFragment;
 import com.nmj.utils.ViewUtils;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class MovieCoverFanartBrowser extends NMJActivity  {
@@ -68,14 +67,14 @@ public class MovieCoverFanartBrowser extends NMJActivity  {
 		mTmdbApiKey = NMJLib.getTmdbApiKey(this);
 		mTmdbApiURL = NMJLib.getTmdbApiURL(this);
 
-        mProgressBar = (ProgressBar) findViewById(R.id.progressbar);
+        mProgressBar = findViewById(R.id.progressbar);
         mProgressBar.setVisibility(View.VISIBLE);
 
-        mViewPager = (ViewPager) findViewById(R.id.awesomepager);
+        mViewPager = findViewById(R.id.awesomepager);
         mViewPager.setOffscreenPageLimit(2);
         mViewPager.setPageMargin(NMJLib.convertDpToPixels(this, 16));
 
-        mTabs = (PagerSlidingTabStrip) findViewById(R.id.tabs);
+        mTabs = findViewById(R.id.tabs);
         mTabs.setVisibility(View.GONE);
 
 		if (savedInstanceState != null) {

@@ -138,13 +138,13 @@ public class IdentifyMovieFragment extends Fragment {
     public void onViewCreated(View v, Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
 
-        mToolbar = (Toolbar) v.findViewById(R.id.toolbar);
+        mToolbar = v.findViewById(R.id.toolbar);
         ((NMJActivity) getActivity()).setSupportActionBar(mToolbar);
 
-        mListView = (ListView) v.findViewById(R.id.listView1);
-        mQuery = (EditText) v.findViewById(R.id.editText1);
-        mSpinner = (Spinner) v.findViewById(R.id.spinner1);
-        mProgress = (ProgressBar) v.findViewById(R.id.progressBar1);
+        mListView = v.findViewById(R.id.listView1);
+        mQuery = v.findViewById(R.id.editText1);
+        mSpinner = v.findViewById(R.id.spinner1);
+        mProgress = v.findViewById(R.id.progressBar1);
 
         mListView.setOnItemClickListener(new OnItemClickListener() {
             @Override

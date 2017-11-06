@@ -70,7 +70,6 @@ import com.nmj.functions.NMJLib;
 import com.nmj.nmjmanager.fragments.AccountsFragment;
 import com.nmj.nmjmanager.fragments.ContactDeveloperFragment;
 import com.nmj.nmjmanager.fragments.MovieDiscoveryViewPagerFragment;
-import com.nmj.nmjmanager.fragments.MovieLibraryFragment;
 import com.nmj.nmjmanager.fragments.MovieLibraryOverviewFragment;
 import com.nmj.nmjmanager.fragments.TvShowLibraryOverviewFragment;
 import com.nmj.utils.LocalBroadcastUtils;
@@ -151,7 +150,7 @@ public class Main extends NMJActivity {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         mConfirmExit = settings.getBoolean(CONFIRM_BACK_PRESS, false);
         mStartup = Integer.valueOf(settings.getString(STARTUP_SELECTION, "1"));
-        ip_address = (EditText) findViewById(R.id.ip_address);
+        ip_address = findViewById(R.id.ip_address);
 
         mDbHelper = NMJManagerApplication.getNMJAdapter();
         mDbHelperTv = NMJManagerApplication.getTvDbAdapter();
@@ -161,11 +160,11 @@ public class Main extends NMJActivity {
 
         setupMenuItems(true);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
         mDrawerLayout.setStatusBarBackgroundColor(getResources().getColor(R.color.color_primary_dark));
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_list_shadow, GravityCompat.START);
 
-        mDrawerList = (ListView) findViewById(R.id.listView1);
+        mDrawerList = findViewById(R.id.listView1);
         mDrawerList.setLayoutParams(new FrameLayout.LayoutParams(ViewUtils.getNavigationDrawerWidth(this), FrameLayout.LayoutParams.MATCH_PARENT));
         mDrawerList.setAdapter(new MenuAdapter());
         //
@@ -217,7 +216,7 @@ public class Main extends NMJActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close);
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         //System.out.println("Selected Index:" + selectedIndex);
         if (savedInstanceState != null && savedInstanceState.containsKey("selectedIndex")) {
@@ -319,8 +318,7 @@ public class Main extends NMJActivity {
         // set prompts.xml to alertdialog builder
         alertDialogBuilder.setView(promptsView);
 
-        final EditText userInput = (EditText) promptsView
-                .findViewById(R.id.ip_address);
+        final EditText userInput =  promptsView.findViewById(R.id.ip_address);
 
         // create alert dialog
         alertDialog = alertDialogBuilder.create();

@@ -24,7 +24,6 @@ import android.view.MenuItem;
 
 import com.nmj.base.NMJActivity;
 import com.nmj.nmjmanager.fragments.CollectionLibraryFragment;
-import com.nmj.nmjmanager.fragments.ListLibraryFragment;
 
 public class MovieCollection extends NMJActivity {
 	
@@ -46,9 +45,6 @@ public class MovieCollection extends NMJActivity {
 		}
 		
 		setTitle(getIntent().getExtras().getString("collectionTitle"));
-		System.out.println("Collection Title : " + getIntent().getExtras().getString("collectionTitle"));
-		System.out.println("Collection Id : " + getIntent().getExtras().getString("collectionId"));
-		System.out.println("Collection TMDb Id : " + getIntent().getExtras().getString("collectionTmdbId"));
 	}
 
 	@Override

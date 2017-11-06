@@ -33,7 +33,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.MenuItemCompat.OnActionExpandListener;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.SearchView.OnQueryTextListener;
 import android.view.ActionMode;
@@ -48,7 +47,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -83,7 +81,7 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
     private Context mContext;
     private String baseUrl, imageSizeUrl;
     private SharedPreferences mSharedPreferences;
-    private int mImageThumbSize, mImageThumbSpacing;
+    private int mImageThumbSize;
     private LoaderAdapter mAdapter;
     private ObservableGridView mGridView;
     private ProgressBar mProgressBar;
@@ -91,7 +89,6 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
     private Picasso mPicasso;
     private Config mConfig;
     private MovieLoader mMovieLoader;
-    private SearchView mSearchView;
     private View mEmptyLibraryLayout;
     private TextView mEmptyLibraryTitle, mEmptyLibraryDescription;
     private String mListId, mListTmdbId;
@@ -133,6 +130,7 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        int mImageThumbSpacing;
         super.onCreate(savedInstanceState);
 
         setHasOptionsMenu(true);
@@ -177,17 +175,17 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.image_grid_fragment, container, false);
 
-        mProgressBar = (ProgressBar) v.findViewById(R.id.progress);
+        mProgressBar = v.findViewById(R.id.progress);
 
         mEmptyLibraryLayout = v.findViewById(R.id.empty_library_layout);
-        mEmptyLibraryTitle = (TextView) v.findViewById(R.id.empty_library_title);
+        mEmptyLibraryTitle = v.findViewById(R.id.empty_library_title);
         mEmptyLibraryTitle.setTypeface(TypefaceUtils.getRobotoCondensedRegular(mContext));
-        mEmptyLibraryDescription = (TextView) v.findViewById(R.id.empty_library_description);
+        mEmptyLibraryDescription = v.findViewById(R.id.empty_library_description);
         mEmptyLibraryDescription.setTypeface(TypefaceUtils.getRobotoLight(mContext));
 
         mAdapter = new LoaderAdapter(mContext);
 
-        mGridView = (ObservableGridView) v.findViewById(R.id.gridView);
+        mGridView = v.findViewById(R.id.gridView);
         mGridView.setAdapter(mAdapter);
         mGridView.setColumnWidth(mImageThumbSize);
         mGridView.setOnItemClickListener(new OnItemClickListener() {
@@ -225,32 +223,32 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
 
                 int id = item.getItemId();
 
-                    switch (id) {
-                        case R.id.movie_add_fav:
-                            NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedItems(), true);
-                            break;
-                        case R.id.movie_remove_fav:
-                            NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedItems(), false);
-                            break;
-                        case R.id.movie_watched:
-                            NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedItems(), true);
-                            break;
-                        case R.id.movie_unwatched:
-                            NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedItems(), false);
-                            break;
-                        case R.id.add_to_watchlist:
-                            NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedItems(), true);
-                            break;
-                        case R.id.remove_from_watchlist:
-                            NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedItems(), false);
-                            break;
-                        case R.id.add_to_list:
-                            NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedItems(), true);
-                            break;
-                        case R.id.remove_from_list:
-                            NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedItems(), false);
-                            break;
-                    }
+                switch (id) {
+                    case R.id.movie_add_fav:
+                        NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedItems(), true);
+                        break;
+                    case R.id.movie_remove_fav:
+                        NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedItems(), false);
+                        break;
+                    case R.id.movie_watched:
+                        NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedItems(), true);
+                        break;
+                    case R.id.movie_unwatched:
+                        NMJLib.setMoviesWatched(mContext, mAdapter.getCheckedItems(), false);
+                        break;
+                    case R.id.add_to_watchlist:
+                        NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedItems(), true);
+                        break;
+                    case R.id.remove_from_watchlist:
+                        NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedItems(), false);
+                        break;
+                    case R.id.add_to_list:
+                        NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedItems(), true);
+                        break;
+                    case R.id.remove_from_list:
+                        NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedItems(), false);
+                        break;
+                }
 
                 if (!(id == R.id.watched_menu ||
                         id == R.id.watchlist_menu ||
@@ -303,6 +301,7 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        SearchView mSearchView;
         inflater.inflate(R.menu.menu, menu);
 
         menu.findItem(R.id.random).setVisible(mMovieLoader.getType() != MovieLibraryType.LISTS);
@@ -455,24 +454,27 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(IGNORED_TITLE_PREFIXES)) {
-            mIgnorePrefixes = mSharedPreferences.getBoolean(IGNORED_TITLE_PREFIXES, false);
+        switch (key) {
+            case IGNORED_TITLE_PREFIXES:
+                mIgnorePrefixes = mSharedPreferences.getBoolean(IGNORED_TITLE_PREFIXES, false);
 
-            if (mMovieLoader != null) {
-                //mMovieLoader.setIgnorePrefixes(mIgnorePrefixes);
-                mMovieLoader.load();
-            }
+                if (mMovieLoader != null) {
+                    //mMovieLoader.setIgnorePrefixes(mIgnorePrefixes);
+                    mMovieLoader.load();
+                }
+                break;
+            case GRID_ITEM_SIZE:
+                mImageThumbSize = ViewUtils.getGridViewThumbSize(mContext);
 
-        } else if (key.equals(GRID_ITEM_SIZE)) {
-            mImageThumbSize = ViewUtils.getGridViewThumbSize(mContext);
+                if (mGridView != null)
+                    mGridView.setColumnWidth(mImageThumbSize);
 
-            if (mGridView != null)
-                mGridView.setColumnWidth(mImageThumbSize);
-
-            mAdapter.notifyDataSetChanged();
-        } else if (key.equals(SHOW_TITLES_IN_GRID)) {
-            mShowTitles = sharedPreferences.getBoolean(SHOW_TITLES_IN_GRID, true);
-            mAdapter.notifyDataSetChanged();
+                mAdapter.notifyDataSetChanged();
+                break;
+            case SHOW_TITLES_IN_GRID:
+                mShowTitles = sharedPreferences.getBoolean(SHOW_TITLES_IN_GRID, true);
+                mAdapter.notifyDataSetChanged();
+                break;
         }
     }
 
@@ -541,6 +543,7 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
         public boolean hasWatched(int position) {
             return getItem(position).hasWatched();
         }
+
         @Override
         public long getItemId(int position) {
             return position;
@@ -556,11 +559,11 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
                 convertView = mInflater.inflate(R.layout.grid_cover, container, false);
                 holder = new CoverItem();
 
-                holder.cardview = (CardView) convertView.findViewById(R.id.card);
-                holder.cover = (ImageView) convertView.findViewById(R.id.cover);
-                holder.hasWatched = (ImageView) convertView.findViewById(R.id.hasWatched);
-                holder.inLibrary = (ImageView) convertView.findViewById(R.id.inLibrary);
-                holder.text = (TextView) convertView.findViewById(R.id.text);
+                holder.cardview = convertView.findViewById(R.id.card);
+                holder.cover = convertView.findViewById(R.id.cover);
+                holder.hasWatched = convertView.findViewById(R.id.hasWatched);
+                holder.inLibrary = convertView.findViewById(R.id.inLibrary);
+                holder.text = convertView.findViewById(R.id.text);
                 holder.text.setTypeface(mTypeface);
 
                 convertView.setTag(holder);
@@ -585,7 +588,7 @@ public class ListLibraryFragment extends Fragment implements SharedPreferences.O
             //System.out.println("baseUrl: " + baseUrl);
             //System.out.println("Thumbnail: " + movie.getNMJThumbnail());
             //System.out.println("Video Type:" + movie.getVideoType());
-            if (movie.getTitleType() == "tmdb")
+            if (movie.getTitleType().equals("tmdb"))
                 mURL = baseUrl + imageSizeUrl;
             else
                 mURL = NMJLib.getNMJImageURL();

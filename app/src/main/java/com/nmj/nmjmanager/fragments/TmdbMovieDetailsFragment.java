@@ -125,7 +125,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View v = inflater.inflate(R.layout.movie_and_tv_show_details, container, false);
 
-        mToolbar = (Toolbar) v.findViewById(R.id.toolbar);
+        mToolbar = v.findViewById(R.id.toolbar);
         mToolbar.setBackgroundResource(android.R.color.transparent);
         ViewUtils.setProperToolbarSize(mContext, mToolbar);
 
@@ -139,25 +139,25 @@ public class TmdbMovieDetailsFragment extends Fragment {
         mProgressBar = v.findViewById(R.id.progress_layout);
         mDetailsArea = v.findViewById(R.id.details_area);
 
-        mBackground = (ImageView) v.findViewById(R.id.imageBackground);
-        mTitle = (TextView) v.findViewById(R.id.movieTitle);
-        mPlot = (TextView) v.findViewById(R.id.textView2);
-        mGenre = (TextView) v.findViewById(R.id.textView7);
-        mRuntime = (TextView) v.findViewById(R.id.textView9);
-        mReleaseDate = (TextView) v.findViewById(R.id.textReleaseDate);
-        mRating = (TextView) v.findViewById(R.id.textView12);
-        mTagline = (TextView) v.findViewById(R.id.textView6);
-        mCertification = (TextView) v.findViewById(R.id.textView11);
-        mCover = (ImageView) v.findViewById(R.id.traktIcon);
-        mCastLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout);
-        mCrewLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra);
-        mSimilarMoviesLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra_1);
-        mRecommendedMoviesLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra_2);
+        mBackground = v.findViewById(R.id.imageBackground);
+        mTitle = v.findViewById(R.id.movieTitle);
+        mPlot = v.findViewById(R.id.textView2);
+        mGenre = v.findViewById(R.id.textView7);
+        mRuntime = v.findViewById(R.id.textView9);
+        mReleaseDate = v.findViewById(R.id.textReleaseDate);
+        mRating = v.findViewById(R.id.textView12);
+        mTagline = v.findViewById(R.id.textView6);
+        mCertification = v.findViewById(R.id.textView11);
+        mCover = v.findViewById(R.id.traktIcon);
+        mCastLayout = v.findViewById(R.id.horizontal_card_layout);
+        mCrewLayout = v.findViewById(R.id.horizontal_card_layout_extra);
+        mSimilarMoviesLayout = v.findViewById(R.id.horizontal_card_layout_extra_1);
+        mRecommendedMoviesLayout = v.findViewById(R.id.horizontal_card_layout_extra_2);
 
-        mScrollView = (ObservableScrollView) v.findViewById(R.id.observableScrollView);
-        mFab = (FloatingActionButton) v.findViewById(R.id.fab);
-        mHasWatched = (ImageView) v.findViewById(R.id.hasWatched);
-        mInLibrary = (ImageView) v.findViewById(R.id.inLibrary);
+        mScrollView = v.findViewById(R.id.observableScrollView);
+        mFab = v.findViewById(R.id.fab);
+        mHasWatched = v.findViewById(R.id.hasWatched);
+        mInLibrary = v.findViewById(R.id.inLibrary);
 
         mFab.setVisibility(View.INVISIBLE);
 

@@ -17,14 +17,12 @@
 package com.nmj.nmjmanager.fragments;
 
 import android.app.SearchManager;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap.Config;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -33,11 +31,8 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.MenuItemCompat.OnActionExpandListener;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.SearchView.OnQueryTextListener;
 import android.view.ActionMode;
@@ -51,9 +46,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.ExpandableListView;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.AbsListView.OnScrollListener;
@@ -61,10 +54,7 @@ import android.widget.AbsListView.OnScrollListener;
 import com.github.ksoichiro.android.observablescrollview.ObservableGridView;
 import com.nmj.apis.nmj.Movie;
 import com.nmj.functions.CoverItem;
-import com.nmj.functions.Library;
-import com.nmj.functions.NMJAdapter;
 import com.nmj.functions.NMJLib;
-import com.nmj.functions.PreferenceKeys;
 import com.nmj.loader.MovieLoader;
 import com.nmj.loader.MovieLibraryType;
 import com.nmj.loader.MovieSortType;
@@ -102,7 +92,6 @@ import static com.nmj.loader.MovieLoader.SORT_TITLE;
 
 public class MovieLibraryFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    boolean loadingMore = false;
     private Context mContext;
     private String baseUrl, imageSizeUrl;
     private SharedPreferences mSharedPreferences;
@@ -116,7 +105,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     private MovieLoader mMovieLoader;
     private SearchView mSearchView;
     private View mEmptyLibraryLayout;
-    private DrawerLayout mFilterLayout;
     private TextView mEmptyLibraryTitle, mEmptyLibraryDescription;
     private MenuItem sortMenu;
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
@@ -218,17 +206,17 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.image_grid_fragment, container, false);
 
-        mProgressBar = (ProgressBar) v.findViewById(R.id.progress);
+        mProgressBar = v.findViewById(R.id.progress);
 
         mEmptyLibraryLayout = v.findViewById(R.id.empty_library_layout);
-        mEmptyLibraryTitle = (TextView) v.findViewById(R.id.empty_library_title);
+        mEmptyLibraryTitle = v.findViewById(R.id.empty_library_title);
         mEmptyLibraryTitle.setTypeface(TypefaceUtils.getRobotoCondensedRegular(mContext));
-        mEmptyLibraryDescription = (TextView) v.findViewById(R.id.empty_library_description);
+        mEmptyLibraryDescription = v.findViewById(R.id.empty_library_description);
         mEmptyLibraryDescription.setTypeface(TypefaceUtils.getRobotoLight(mContext));
 
         mAdapter = new LoaderAdapter(mContext);
 
-        mGridView = (ObservableGridView) v.findViewById(R.id.gridView);
+        mGridView = v.findViewById(R.id.gridView);
         mGridView.setAdapter(mAdapter);
         mGridView.setColumnWidth(mImageThumbSize);
         mGridView.setOnItemClickListener(new OnItemClickListener() {
@@ -769,11 +757,11 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 convertView = mInflater.inflate(R.layout.grid_cover, container, false);
                 holder = new CoverItem();
 
-                holder.cardview = (CardView) convertView.findViewById(R.id.card);
-                holder.cover = (ImageView) convertView.findViewById(R.id.cover);
-                holder.hasWatched = (ImageView) convertView.findViewById(R.id.hasWatched);
-                holder.inLibrary = (ImageView) convertView.findViewById(R.id.inLibrary);
-                holder.text = (TextView) convertView.findViewById(R.id.text);
+                holder.cardview = convertView.findViewById(R.id.card);
+                holder.cover = convertView.findViewById(R.id.cover);
+                holder.hasWatched = convertView.findViewById(R.id.hasWatched);
+                holder.inLibrary = convertView.findViewById(R.id.inLibrary);
+                holder.text = convertView.findViewById(R.id.text);
                 holder.text.setTypeface(mTypeface);
 
                 convertView.setTag(holder);
@@ -802,8 +790,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 mURL = baseUrl + imageSizeUrl;
             else
                 mURL = NMJLib.getNMJImageURL();
-
-            mPicasso.load(mURL + movie.getThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
+            mPicasso.load(mURL + movie.getPoster()).placeholder(R.drawable.bg).config(mConfig).into(holder);
             if (mChecked.contains(position)) {
                 holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));
             } else {

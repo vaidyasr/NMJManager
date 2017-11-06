@@ -35,13 +35,8 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
-import com.nmj.apis.tmdb.TMDbMovieService;
-import com.nmj.functions.CompleteActor;
 import com.nmj.functions.CoverItem;
 import com.nmj.functions.IntentKeys;
 import com.nmj.functions.NMJLib;
@@ -65,7 +60,7 @@ public class SimilarMoviesFragment extends Fragment {
 	private Config mConfig;
 	private ProgressBar mProgressBar;
 	private String mTmdbId, mLoadType, mVideoType;
-	private List<WebMovie> mSimilarMovies = new ArrayList<WebMovie>();
+	private List<WebMovie> mSimilarMovies = new ArrayList<>();
 	private boolean mChecked = false;
 
 	/**
@@ -136,8 +131,8 @@ public class SimilarMoviesFragment extends Fragment {
 	public void onViewCreated(View v, Bundle savedInstanceState) {
 		super.onViewCreated(v, savedInstanceState);
 
-		mProgressBar = (ProgressBar) v.findViewById(R.id.progress);
-		mGridView = (GridView) v.findViewById(R.id.gridView);
+		mProgressBar = v.findViewById(R.id.progress);
+		mGridView = v.findViewById(R.id.gridView);
 
 		// Calculate the total column width to set item heights by factor 1.5
 		mGridView.getViewTreeObserver().addOnGlobalLayoutListener(
@@ -178,7 +173,7 @@ public class SimilarMoviesFragment extends Fragment {
 
 		private final Context mContext;
 		private ArrayList<WebMovie> mMovies;
-		private LayoutInflater mInflater;
+		private final LayoutInflater mInflater;
 
 		public ImageAdapter(Context context) {
 			mContext = context;
@@ -211,12 +206,12 @@ public class SimilarMoviesFragment extends Fragment {
 				convertView = mInflater.inflate(R.layout.grid_cover_two_line, container, false);
 				holder = new CoverItem();
 
-				holder.cover = (ImageView) convertView.findViewById(R.id.cover);
-				holder.hasWatched = (ImageView) convertView.findViewById(R.id.hasWatched);
-				holder.inLibrary = (ImageView) convertView.findViewById(R.id.inLibrary);
-				holder.text = (TextView) convertView.findViewById(R.id.text);
+				holder.cover = convertView.findViewById(R.id.cover);
+				holder.hasWatched = convertView.findViewById(R.id.hasWatched);
+				holder.inLibrary = convertView.findViewById(R.id.inLibrary);
+				holder.text = convertView.findViewById(R.id.text);
 				holder.text.setSingleLine(true);
-				holder.subtext = (TextView) convertView.findViewById(R.id.sub_text);
+				holder.subtext = convertView.findViewById(R.id.sub_text);
 				holder.subtext.setSingleLine(true);
 
 				holder.text.setTypeface(TypefaceUtils.getRobotoMedium(mContext));
@@ -251,7 +246,7 @@ public class SimilarMoviesFragment extends Fragment {
 		public void notifyDataSetChanged() {
 
 			// Initialize
-			mMovies = new ArrayList<WebMovie>();
+			mMovies = new ArrayList<>();
 
 			// Go through all movies
 			for (WebMovie movie : mSimilarMovies) {
