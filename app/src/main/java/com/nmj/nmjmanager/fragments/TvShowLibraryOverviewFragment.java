@@ -16,16 +16,17 @@ package com.nmj.nmjmanager.fragments;/*
 
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.astuetz.PagerSlidingTabStrip;
 import com.nmj.functions.NMJLib;
 import com.nmj.loader.TvShowLoader;
 import com.nmj.nmjmanager.R;
@@ -43,9 +44,9 @@ import static com.nmj.functions.PreferenceKeys.SHOWS_TAB_SELECTED;
 
 public class TvShowLibraryOverviewFragment extends Fragment {
 
+    private static ViewPagerAdapter mAdapter;
+    private static TabLayout mTabs;
     List<String> TITLES = new ArrayList<>();
-    private ViewPager mViewPager;
-    private PagerSlidingTabStrip mTabs;
 
     public TvShowLibraryOverviewFragment() {} // Empty constructor
 
@@ -53,10 +54,39 @@ public class TvShowLibraryOverviewFragment extends Fragment {
         return new TvShowLibraryOverviewFragment();
     }
 
+    private static void removeTab(int position) {
+        if (mTabs.getTabCount() >= 1 && position < mTabs.getTabCount()) {
+            mTabs.removeTabAt(position);
+            mAdapter.removeTabPage(position);
+        }
+    }
+
+    public static void initializeTabs(Set<String> values, boolean remove) {
+        if (remove) {
+            for (int i = 8; i >= 1; i--)
+                if (mTabs.getTabAt(i) != null)
+                    removeTab(i);
+        }
+
+        List<String> list = new ArrayList<>(values);
+        Collections.sort(list, new Comparator<String>() {
+            @Override
+            public int compare(String s1, String s2) {
+                Integer val1 = Integer.parseInt(s1);
+                Integer val2 = Integer.parseInt(s2);
+                return val1.compareTo(val2);
+            }
+        });
+
+        for (int i = 0; i < list.size(); i++) {
+            mAdapter.addTabPage(Integer.parseInt(list.get(i)));
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.viewpager_with_tabs, container, false);
-        PagerAdapter mAdapter;
+        ViewPager mViewPager;
 
         final String[] TITLES1 = {getString(R.string.choiceAllShows), getString(R.string.choiceFavorites), getString(R.string.recently_aired),
                 getString(R.string.watched_tv_shows), getString(R.string.unwatched_tv_shows), getString(R.string.popular_shows),
@@ -67,38 +97,24 @@ public class TvShowLibraryOverviewFragment extends Fragment {
         if (NMJLib.hasLollipop())
             ((AppCompatActivity) getActivity()).getSupportActionBar().setElevation(0);
 
-        mViewPager = (ViewPager) v.findViewById(R.id.awesomepager);
+        mViewPager = v.findViewById(R.id.awesomepager);
         mViewPager.setPageMargin(NMJLib.convertDpToPixels(getActivity(), 16));
 
-        mTabs = (PagerSlidingTabStrip) v.findViewById(R.id.tabs);
+        mTabs = v.findViewById(R.id.tabs);
 
-        mViewPager.setAdapter(mAdapter = new PagerAdapter(getChildFragmentManager()));
+        mViewPager.setAdapter(mAdapter = new ViewPagerAdapter(getChildFragmentManager()));
 
-        mTabs.setViewPager(mViewPager);
+        mTabs.setupWithViewPager(mViewPager);
         mTabs.setVisibility(View.VISIBLE);
 
         // Work-around a bug that sometimes happens with the tabs
         mViewPager.setCurrentItem(0);
-
-        mAdapter.addTab(TITLES.get(0));
+        mAdapter.addTabPage(0);
 
         Set<String> defValues = new HashSet<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8"));
         Set<String> values = PreferenceManager.getDefaultSharedPreferences(getActivity()).getStringSet(SHOWS_TAB_SELECTED, defValues);
-        List<String> list = new ArrayList<String>(values);
-        Collections.sort(list, new Comparator<String>()
-        {
-            @Override
-            public int compare(String s1, String s2)
-            {
-                Integer val1 = Integer.parseInt(s1);
-                Integer val2 = Integer.parseInt(s2);
-                return val1.compareTo(val2);
-            }
-        });
 
-        for (int i=0; i<list.size();i++){
-            mAdapter.addTab(TITLES.get(Integer.parseInt(list.get(i))));
-        }
+        initializeTabs(values, false);
         mViewPager.setOffscreenPageLimit(mViewPager.getAdapter().getCount());
 
         if (NMJLib.hasLollipop())
@@ -107,33 +123,37 @@ public class TvShowLibraryOverviewFragment extends Fragment {
         return v;
     }
 
-    private class PagerAdapter extends FragmentPagerAdapter {
+    private class ViewPagerAdapter extends CustomFragmentPagerAdapter {
+        private final List<String> mFragmentTitleList = new ArrayList<>();
 
-        private ArrayList<String> tabs = new ArrayList<>();
-        public PagerAdapter(FragmentManager fm) {
+        public ViewPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
-        public void addTab(String tab) {
-            tabs.add(tab);
+        public void addTabPage(int index) {
+            mFragmentTitleList.add(TITLES.get(index));
             notifyDataSetChanged();
-            mTabs.notifyDataSetChanged();
         }
 
-        public void removeTab(int position) {
-            tabs.remove(position);
+        public void removeTabPage(int index) {
+            mFragmentTitleList.remove(index);
             notifyDataSetChanged();
-            mTabs.notifyDataSetChanged();
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return tabs.get(position);
+            return mFragmentTitleList.get(position);
+        }
+
+        @Override
+        public int getItemPosition(Object object) {
+            return PagerAdapter.POSITION_NONE;
         }
 
         @Override
         public Fragment getItem(int index) {
-            switch (TITLES.indexOf(getPageTitle(index))) {
+            int idx = TITLES.indexOf(mFragmentTitleList.get(index));
+            switch (idx) {
                 case 0:
                     return TvShowLibraryFragment.newInstance(TvShowLoader.ALL_SHOWS);
                 case 1:
@@ -159,7 +179,7 @@ public class TvShowLibraryOverviewFragment extends Fragment {
 
         @Override
         public int getCount() {
-            return tabs.size();
+            return mFragmentTitleList.size();
         }
     }
 }

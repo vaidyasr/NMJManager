@@ -16,6 +16,10 @@
         <item name="android:colorControlActivated">#fff</item>
         <item name="android:colorControlHighlight">#fff</item>
         <item name="android:activatedBackgroundIndicator">@drawable/menu_selector</item>
+        <item name="android:windowAllowEnterTransitionOverlap">true</item>
+        <item name="android:windowAllowReturnTransitionOverlap">true</item>
+        <item name="android:windowSharedElementEnterTransition">@android:transition/move</item>
+        <item name="android:windowSharedElementExitTransition">@android:transition/move</item>
     </style>
 
     <style name="Button.RightAligned" parent="android:style/Widget.Material.Button" >

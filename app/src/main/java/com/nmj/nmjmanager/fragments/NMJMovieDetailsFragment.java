@@ -59,7 +59,6 @@ import com.nmj.functions.FileSource;
 import com.nmj.functions.IntentKeys;
 import com.nmj.functions.NMJAdapter;
 import com.nmj.functions.NMJLib;
-import com.nmj.functions.Video;
 import com.nmj.functions.PaletteLoader;
 import com.nmj.functions.SimpleAnimatorListener;
 import com.nmj.functions.TmdbTrailerSearch;
@@ -169,7 +168,7 @@ public class NMJMovieDetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View v = inflater.inflate(R.layout.movie_and_tv_show_details, container, false);
 
-        mToolbar = (Toolbar) v.findViewById(R.id.toolbar);
+        mToolbar = v.findViewById(R.id.toolbar);
         mToolbar.setBackgroundResource(android.R.color.transparent);
         ViewUtils.setProperToolbarSize(mContext, mToolbar);
 
@@ -183,25 +182,25 @@ public class NMJMovieDetailsFragment extends Fragment {
         mProgressBar = v.findViewById(R.id.progress_layout);
         mDetailsArea = v.findViewById(R.id.details_area);
 
-        mBackground = (ImageView) v.findViewById(R.id.imageBackground);
-        mTitle = (TextView) v.findViewById(R.id.movieTitle);
-        mPlot = (TextView) v.findViewById(R.id.textView2);
-        mSrc = (TextView) v.findViewById(R.id.textView3);
-        mGenre = (TextView) v.findViewById(R.id.textView7);
-        mRuntime = (TextView) v.findViewById(R.id.textView9);
-        mReleaseDate = (TextView) v.findViewById(R.id.textReleaseDate);
-        mRating = (TextView) v.findViewById(R.id.textView12);
-        mTagline = (TextView) v.findViewById(R.id.textView6);
-        mCertification = (TextView) v.findViewById(R.id.textView11);
-        mCover = (ImageView) v.findViewById(R.id.traktIcon);
-        mCastLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout);
-        mCrewLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra);
-        mSimilarMoviesLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra_1);
-        mRecommendedMoviesLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra_2);
-        mScrollView = (ObservableScrollView) v.findViewById(R.id.observableScrollView);
-        mFab = (FloatingActionButton) v.findViewById(R.id.fab);
-        mHasWatched = (ImageView) v.findViewById(R.id.hasWatched);
-        mInLibrary = (ImageView) v.findViewById(R.id.inLibrary);
+        mBackground = v.findViewById(R.id.imageBackground);
+        mTitle = v.findViewById(R.id.movieTitle);
+        mPlot = v.findViewById(R.id.textView2);
+        mSrc = v.findViewById(R.id.textView3);
+        mGenre = v.findViewById(R.id.textView7);
+        mRuntime = v.findViewById(R.id.textView9);
+        mReleaseDate = v.findViewById(R.id.textReleaseDate);
+        mRating = v.findViewById(R.id.textView12);
+        mTagline = v.findViewById(R.id.textView6);
+        mCertification = v.findViewById(R.id.textView11);
+        mCover = v.findViewById(R.id.traktIcon);
+        mCastLayout = v.findViewById(R.id.horizontal_card_layout);
+        mCrewLayout = v.findViewById(R.id.horizontal_card_layout_extra);
+        mSimilarMoviesLayout = v.findViewById(R.id.horizontal_card_layout_extra_1);
+        mRecommendedMoviesLayout = v.findViewById(R.id.horizontal_card_layout_extra_2);
+        mScrollView = v.findViewById(R.id.observableScrollView);
+        mFab = v.findViewById(R.id.fab);
+        mHasWatched = v.findViewById(R.id.hasWatched);
+        mInLibrary = v.findViewById(R.id.inLibrary);
 
         if (mMovie.getShowId().equals("0"))
             mFab.setVisibility(View.INVISIBLE);
@@ -371,7 +370,7 @@ public class NMJMovieDetailsFragment extends Fragment {
                                 final int numColumns = (int) Math.floor(mCastLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
                                 mImageThumbSize = (mCastLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
 
-                                loadCast(numColumns);
+                                new loadCast().execute(numColumns);
                                 NMJLib.removeViewTreeObserver(mCastLayout.getViewTreeObserver(), this);
                             }
                         }
@@ -394,7 +393,7 @@ public class NMJMovieDetailsFragment extends Fragment {
                                 final int numColumns = (int) Math.floor(mCrewLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
                                 mImageThumbSize = (mCrewLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
 
-                                loadCrew(numColumns);
+                                new loadCrew().execute(numColumns);
                                 NMJLib.removeViewTreeObserver(mCrewLayout.getViewTreeObserver(), this);
                             }
                         }
@@ -417,7 +416,7 @@ public class NMJMovieDetailsFragment extends Fragment {
                                 final int numColumns = (int) Math.floor(mSimilarMoviesLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
                                 mImageThumbSize = (mSimilarMoviesLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
 
-                                loadSimilarMovies(numColumns);
+                                new loadSimilarMovies().execute(numColumns);
                                 NMJLib.removeViewTreeObserver(mSimilarMoviesLayout.getViewTreeObserver(), this);
                             }
                         }
@@ -440,7 +439,7 @@ public class NMJMovieDetailsFragment extends Fragment {
                                 final int numColumns = (int) Math.floor(mRecommendedMoviesLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
                                 mImageThumbSize = (mRecommendedMoviesLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
 
-                                loadRecommendedMovies(numColumns);
+                                new loadRecommendedMovies().execute(numColumns);
                                 NMJLib.removeViewTreeObserver(mRecommendedMoviesLayout.getViewTreeObserver(), this);
                             }
                         }
@@ -452,7 +451,6 @@ public class NMJMovieDetailsFragment extends Fragment {
                 }
             });
 
-
             ViewUtils.updateToolbarBackground(getActivity(), mToolbar, 0, mMovie.getTitle(), mToolbarColor);
 
             if (NMJManagerApplication.getNMJAdapter().getWatchedByShowId(mMovie.getShowId()))
@@ -463,119 +461,6 @@ public class NMJMovieDetailsFragment extends Fragment {
             loadImages();
         }
     }
-
-    private void loadCast(final int capacity) {
-        // Show ProgressBar
-        new AsyncTask<Void, Void, Void>() {
-            private List<Actor> mActors = new ArrayList<>();
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                List<Actor> actors = NMJLib.getTMDbCast(mContext, "movie", mMovie.getTmdbId(), "en");
-                for (Integer i = 0; i < actors.size(); i++) {
-                    mActors.add(new Actor(
-                            actors.get(i).getName(),
-                            actors.get(i).getCharacter(),
-                            actors.get(i).getId(),
-                            "cast",
-                            actors.get(i).getUrl()));
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                mCastLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
-            }
-        }.execute();
-    }
-
-    private void loadCrew(final int capacity) {
-        // Show ProgressBar
-        new AsyncTask<Void, Void, Void>() {
-            private List<Actor> mActors = new ArrayList<>();
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                List<Actor> actors = NMJLib.getTMDbCrew(mContext, "movie", mMovie.getTmdbId(), "en");
-                for (Integer i = 0; i < actors.size(); i++) {
-                    mActors.add(new Actor(
-                            actors.get(i).getName(),
-                            actors.get(i).getCharacter(),
-                            actors.get(i).getId(),
-                            "crew",
-                            actors.get(i).getUrl()));
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                mCrewLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
-            }
-        }.execute();
-    }
-
-    private void loadSimilarMovies(final int capacity) {
-        // Show ProgressBar
-        new AsyncTask<Void, Void, Void>() {
-            private List<WebMovie> mSimilarMovies = new ArrayList<>();
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                List<WebMovie> similar = NMJLib.getTMDbMovies(mContext, "movie", "similar", mMovie.getTmdbId(), "en");
-                for (Integer i = 0; i < similar.size(); i++) {
-                    mSimilarMovies.add(new WebMovie(mContext,
-                            similar.get(i).getTitle(),
-                            similar.get(i).getId(),
-                            similar.get(i).getUrl(),
-                            similar.get(i).getDate(), ""));
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                NMJAdapter adapter = NMJManagerApplication.getNMJAdapter();
-                for (int i = 0; i < mSimilarMovies.size(); i++) {
-                    String id = "tmdb" + mSimilarMovies.get(i).getId();
-                    mSimilarMovies.get(i).setInLibrary(adapter.movieExistsbyId(id));
-                }
-                mSimilarMoviesLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mSimilarMovies, HorizontalCardLayout.RELATED_MOVIES, mToolbarColor);
-            }
-        }.execute();
-    }
-
-    private void loadRecommendedMovies(final int capacity) {
-        // Show ProgressBar
-        new AsyncTask<Void, Void, Void>() {
-            private List<WebMovie> mSimilarMovies = new ArrayList<>();
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                List<WebMovie> similar = NMJLib.getTMDbMovies(mContext, "movie", "recommendations", mMovie.getTmdbId(), "en");
-                for (Integer i = 0; i < similar.size(); i++) {
-                    mSimilarMovies.add(new WebMovie(mContext,
-                            similar.get(i).getTitle(),
-                            similar.get(i).getId(),
-                            similar.get(i).getUrl(),
-                            similar.get(i).getDate(), ""));
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                NMJAdapter adapter = NMJManagerApplication.getNMJAdapter();
-                for (int i = 0; i < mSimilarMovies.size(); i++) {
-                    String id = "tmdb" + mSimilarMovies.get(i).getId();
-                    mSimilarMovies.get(i).setInLibrary(adapter.movieExistsbyId(id));
-                }
-                mRecommendedMoviesLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mSimilarMovies, HorizontalCardLayout.RELATED_MOVIES, mToolbarColor);
-            }
-        }.execute();
-    }
-
 
     private void loadImages() {
         System.out.println("Poster: " + mMovie.getPoster());
@@ -759,7 +644,6 @@ public class NMJMovieDetailsFragment extends Fragment {
         }
 
     }
-
 
     private void playMovie(String filepath, int filetype) {
 /*        if (filepath.toLowerCase(Locale.getDefault()).matches(".*(cd1|part1).*")) {
@@ -1229,6 +1113,115 @@ public class NMJMovieDetailsFragment extends Fragment {
                     Toast.makeText(mContext, getString(R.string.errorSomethingWentWrong), Toast.LENGTH_SHORT).show();
             }
         }.execute();
+    }
+
+    private class loadCast extends AsyncTask<Integer, Void, Void> {
+        int capacity;
+        private List<Actor> mActors = new ArrayList<>();
+
+        @Override
+        protected Void doInBackground(Integer... params) {
+            capacity = params[0];
+
+            List<Actor> actors = NMJLib.getTMDbCast(mContext, "movie", mMovie.getTmdbId(), "en");
+            for (Integer i = 0; i < actors.size(); i++) {
+                mActors.add(new Actor(
+                        actors.get(i).getName(),
+                        actors.get(i).getCharacter(),
+                        actors.get(i).getId(),
+                        "cast",
+                        actors.get(i).getUrl()));
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            mCastLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
+        }
+    }
+
+    private class loadCrew extends AsyncTask<Integer, Void, Void> {
+        int capacity;
+        private List<Actor> mActors = new ArrayList<>();
+
+        @Override
+        protected Void doInBackground(Integer... params) {
+            capacity = params[0];
+            List<Actor> actors = NMJLib.getTMDbCrew(mContext, "movie", mMovie.getTmdbId(), "en");
+            for (Integer i = 0; i < actors.size(); i++) {
+                mActors.add(new Actor(
+                        actors.get(i).getName(),
+                        actors.get(i).getCharacter(),
+                        actors.get(i).getId(),
+                        "crew",
+                        actors.get(i).getUrl()));
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            mCrewLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
+        }
+    }
+
+    private class loadSimilarMovies extends AsyncTask<Integer, Void, Void> {
+        int capacity;
+        private List<WebMovie> mSimilarMovies = new ArrayList<>();
+
+        @Override
+        protected Void doInBackground(Integer... params) {
+            capacity = params[0];
+            List<WebMovie> similar = NMJLib.getTMDbMovies(mContext, "movie", "similar", mMovie.getTmdbId(), "en");
+            for (Integer i = 0; i < similar.size(); i++) {
+                mSimilarMovies.add(new WebMovie(mContext,
+                        similar.get(i).getTitle(),
+                        similar.get(i).getId(),
+                        similar.get(i).getUrl(),
+                        similar.get(i).getDate(), ""));
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            NMJAdapter adapter = NMJManagerApplication.getNMJAdapter();
+            for (int i = 0; i < mSimilarMovies.size(); i++) {
+                String id = "tmdb" + mSimilarMovies.get(i).getId();
+                mSimilarMovies.get(i).setInLibrary(adapter.movieExistsbyId(id));
+            }
+            mSimilarMoviesLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mSimilarMovies, HorizontalCardLayout.RELATED_MOVIES, mToolbarColor);
+        }
+    }
+
+    private class loadRecommendedMovies extends AsyncTask<Integer, Void, Void> {
+        int capacity;
+        private List<WebMovie> mSimilarMovies = new ArrayList<>();
+
+        @Override
+        protected Void doInBackground(Integer... params) {
+            capacity = params[0];
+            List<WebMovie> similar = NMJLib.getTMDbMovies(mContext, "movie", "recommendations", mMovie.getTmdbId(), "en");
+            for (Integer i = 0; i < similar.size(); i++) {
+                mSimilarMovies.add(new WebMovie(mContext,
+                        similar.get(i).getTitle(),
+                        similar.get(i).getId(),
+                        similar.get(i).getUrl(),
+                        similar.get(i).getDate(), ""));
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            NMJAdapter adapter = NMJManagerApplication.getNMJAdapter();
+            for (int i = 0; i < mSimilarMovies.size(); i++) {
+                String id = "tmdb" + mSimilarMovies.get(i).getId();
+                mSimilarMovies.get(i).setInLibrary(adapter.movieExistsbyId(id));
+            }
+            mRecommendedMoviesLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mSimilarMovies, HorizontalCardLayout.RELATED_MOVIES, mToolbarColor);
+        }
     }
 
     private class MovieLoader extends AsyncTask<String, Object, Object> {

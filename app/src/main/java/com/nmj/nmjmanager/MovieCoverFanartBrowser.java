@@ -19,6 +19,7 @@ package com.nmj.nmjmanager;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -27,7 +28,6 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.astuetz.PagerSlidingTabStrip;
 import com.nmj.base.NMJActivity;
 import com.nmj.functions.IntentKeys;
 import com.nmj.functions.NMJLib;
@@ -43,8 +43,8 @@ public class MovieCoverFanartBrowser extends NMJActivity  {
 	private String mTmdbId, mShowId, mCollectionId, mBaseUrl = "", mJson = "", mCollection = "", mTmdbApiKey, mTmdbApiURL;
 	private ViewPager mViewPager;
 	private ProgressBar mProgressBar;
-    private PagerSlidingTabStrip mTabs;
-    private int mToolbarColor;
+	private TabLayout mTabs;
+	private int mToolbarColor;
 
 	@Override
 	protected int getLayoutResource() {
@@ -113,7 +113,7 @@ public class MovieCoverFanartBrowser extends NMJActivity  {
 
 		mProgressBar.setVisibility(View.GONE);
 		mViewPager.setAdapter(new PagerAdapter(getSupportFragmentManager()));
-		mTabs.setViewPager(mViewPager);
+		mTabs.setupWithViewPager(mViewPager);
 		mTabs.setVisibility(View.VISIBLE);
 	}
 

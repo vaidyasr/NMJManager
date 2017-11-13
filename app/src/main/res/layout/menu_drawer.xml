@@ -14,8 +14,8 @@
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:fitsSystemWindows="false">
+        android:fitsSystemWindows="false"
+        android:orientation="vertical">
 
         <!--
              We use a Toolbar so that our drawer can be displayed
@@ -29,11 +29,11 @@
 
     </LinearLayout>
 
-    <com.nmj.views.ScrimInsetsFrameLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    <android.support.design.widget.NavigationView xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/left_drawer"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_gravity="start|left"
+        android:layout_gravity="start"
         android:background="#fafafa"
         android:elevation="10dp"
         android:fitsSystemWindows="true"
@@ -50,7 +50,38 @@
             android:drawSelectorOnTop="true"
             android:focusable="true" >
         </ListView>
+    </android.support.design.widget.NavigationView>
 
-        </com.nmj.views.ScrimInsetsFrameLayout>
+    <android.support.design.widget.NavigationView
+        android:id="@+id/right_drawer"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:fitsSystemWindows="false">
 
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:background="#f4f4f4"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/resetFilter"
+                android:layout_width="match_parent"
+                android:layout_height="128dp"
+                android:layout_margin="16dp"
+                android:layout_weight="1"
+                android:text="Reset all filters..." />
+
+            <ExpandableListView
+                android:id="@+id/lvExp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:divider="#A4C739"
+                android:dividerHeight="0.5dp"
+                android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorRight" />
+
+        </LinearLayout>
+    </android.support.design.widget.NavigationView>
 </android.support.v4.widget.DrawerLayout>

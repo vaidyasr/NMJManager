@@ -2,7 +2,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"
     android:descendantFocusability="blocksDescendants"
     android:gravity="center_vertical">
 
@@ -12,22 +11,27 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="48dp"
         android:layout_marginRight="48dp"
+        android:maxLines="1"
         android:paddingBottom="16dp"
         android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
         android:paddingTop="16dp"
-        android:text="New Text" />
+        android:text="New Text"
+        android:textColor="@color/color_primary_dark"
+        android:textIsSelectable="false"
+        android:textSize="22sp" />
 
     <ImageButton
         android:id="@+id/resetFilter"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
+        android:layout_gravity="center_vertical"
         android:background="@null"
         android:focusable="false"
-        android:paddingBottom="2dp"
         android:paddingRight="16dp"
-        android:paddingTop="2dp"
+        android:paddingTop="8dp"
+        android:scaleType="centerInside"
         android:src="@drawable/ic_reset_white_24dp" />
 
 </RelativeLayout>

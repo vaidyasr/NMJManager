@@ -18,11 +18,18 @@
             android:title="@string/forceEnglishApplicationLanguage" />
 
         <CheckBoxPreference
+            android:defaultValue="true"
             android:icon="@drawable/ic_db_white_24dp"
             android:key="prefsLoadLastDatabase"
             android:summary="@string/loadLastDatabase"
-            android:defaultValue="true"
             android:title="@string/loadLast" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:icon="@drawable/ic_app_update_white_24dp"
+            android:key="prefsCheckAppUpdate"
+            android:summary="@string/checkAppUpdate"
+            android:title="@string/checkUpdate" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/chooserMovies">
         <MultiSelectListPreference

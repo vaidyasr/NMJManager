@@ -17,6 +17,7 @@
 package com.nmj.nmjmanager;
 
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -24,7 +25,6 @@ import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.astuetz.PagerSlidingTabStrip;
 import com.nmj.base.NMJActivity;
 import com.nmj.functions.IntentKeys;
 import com.nmj.functions.NMJLib;
@@ -37,7 +37,7 @@ public class ShowCoverFanartBrowser extends NMJActivity  {
 	private String tvdbId;
     private ViewPager mViewPager;
     private ProgressBar mProgressBar;
-    private PagerSlidingTabStrip mTabs;
+    private TabLayout mTabs;
     private int mToolbarColor;
 
 	@Override
@@ -58,14 +58,14 @@ public class ShowCoverFanartBrowser extends NMJActivity  {
 		tvdbId = getIntent().getExtras().getString("id");
         mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
 
-        mProgressBar = (ProgressBar) findViewById(R.id.progressbar);
+        mProgressBar = findViewById(R.id.progressbar);
         mProgressBar.setVisibility(View.VISIBLE);
 
-        mViewPager = (ViewPager) findViewById(R.id.awesomepager);
+        mViewPager = findViewById(R.id.awesomepager);
         mViewPager.setOffscreenPageLimit(2);
         mViewPager.setPageMargin(NMJLib.convertDpToPixels(this, 16));
 
-        mTabs = (PagerSlidingTabStrip) findViewById(R.id.tabs);
+        mTabs = findViewById(R.id.tabs);
         mTabs.setVisibility(View.GONE);
 
         setupActionBarStuff();
@@ -96,7 +96,7 @@ public class ShowCoverFanartBrowser extends NMJActivity  {
 
         mProgressBar.setVisibility(View.GONE);
         mViewPager.setAdapter(new PagerAdapter(getSupportFragmentManager()));
-        mTabs.setViewPager(mViewPager);
+        mTabs.setupWithViewPager(mViewPager);
         mTabs.setVisibility(View.VISIBLE);
     }
 

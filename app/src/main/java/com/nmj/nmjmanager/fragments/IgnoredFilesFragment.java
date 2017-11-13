@@ -19,19 +19,19 @@ package com.nmj.nmjmanager.fragments;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.astuetz.PagerSlidingTabStrip;
 import com.nmj.nmjmanager.R;
 
 public class IgnoredFilesFragment extends Fragment {
 
     private ViewPager mViewPager;
-    private PagerSlidingTabStrip mTabs;
+    private TabLayout mTabs;
 
     public IgnoredFilesFragment() {}
 
@@ -42,9 +42,9 @@ public class IgnoredFilesFragment extends Fragment {
         mViewPager = (ViewPager) v.findViewById(R.id.awesomepager);
         mViewPager.setAdapter(new IgnoredFilesAdapter(getFragmentManager()));
 
-        mTabs = (PagerSlidingTabStrip) v.findViewById(R.id.tabs);
+        mTabs = v.findViewById(R.id.tabs);
         mTabs.setBackgroundResource(R.drawable.bg);
-        mTabs.setViewPager(mViewPager);
+        mTabs.setupWithViewPager(mViewPager);
 
         return v;
     }

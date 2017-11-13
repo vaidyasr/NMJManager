@@ -2,16 +2,16 @@ package com.nmj.nmjmanager.fragments;
 
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.astuetz.PagerSlidingTabStrip;
 import com.nmj.functions.NMJLib;
 import com.nmj.loader.MovieLoader;
 import com.nmj.nmjmanager.R;
@@ -28,8 +28,9 @@ import static com.nmj.functions.PreferenceKeys.MOVIES_TABS_SELECTED;
 
 public class MovieLibraryOverviewFragment extends Fragment {
 
-    private List<String> TITLES = new ArrayList<>();
-    private PagerSlidingTabStrip mTabs;
+    private static TabLayout mTabs;
+    private static ViewPagerAdapter mAdapter;
+    private final List<String> TITLES = new ArrayList<>();
 
     public MovieLibraryOverviewFragment() {
     } // Empty constructor
@@ -38,10 +39,38 @@ public class MovieLibraryOverviewFragment extends Fragment {
         return new MovieLibraryOverviewFragment();
     }
 
+    private static void removeTab(int position) {
+        if (mTabs.getTabCount() >= 1 && position < mTabs.getTabCount()) {
+            mTabs.removeTabAt(position);
+            mAdapter.removeTabPage(position);
+        }
+    }
+
+    public static void initializeTabs(Set<String> values, boolean remove) {
+        if (remove) {
+            for (int i = 11; i >= 1; i--)
+                if (mTabs.getTabAt(i) != null)
+                    removeTab(i);
+        }
+
+        List<String> list = new ArrayList<>(values);
+        Collections.sort(list, new Comparator<String>() {
+            @Override
+            public int compare(String s1, String s2) {
+                Integer val1 = Integer.parseInt(s1);
+                Integer val2 = Integer.parseInt(s2);
+                return val1.compareTo(val2);
+            }
+        });
+
+        for (int i = 0; i < list.size(); i++) {
+            mAdapter.addTabPage(Integer.parseInt(list.get(i)));
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.viewpager_with_tabs, container, false);
-        PagerAdapter mAdapter;
         ViewPager mViewPager;
 
         final String[] TITLES1 = {getString(R.string.choiceAllMovies), getString(R.string.choiceFavorites), getString(R.string.choiceNewReleases),
@@ -59,29 +88,18 @@ public class MovieLibraryOverviewFragment extends Fragment {
 
         mTabs = v.findViewById(R.id.tabs);
 
-        mViewPager.setAdapter(mAdapter = new PagerAdapter(getChildFragmentManager()));
+        mViewPager.setAdapter(mAdapter = new ViewPagerAdapter(getChildFragmentManager()));
 
-        mTabs.setViewPager(mViewPager);
+        mTabs.setupWithViewPager(mViewPager);
         mTabs.setVisibility(View.VISIBLE);
 
         // Work-around a bug that sometimes happens with the tabs
         mViewPager.setCurrentItem(0);
-        mAdapter.addTab(TITLES.get(0));
+        mAdapter.addTabPage(0);
         Set<String> defValues = new HashSet<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"));
         Set<String> values = PreferenceManager.getDefaultSharedPreferences(getActivity()).getStringSet(MOVIES_TABS_SELECTED, defValues);
-        List<String> list = new ArrayList<>(values);
-        Collections.sort(list, new Comparator<String>() {
-            @Override
-            public int compare(String s1, String s2) {
-                Integer val1 = Integer.parseInt(s1);
-                Integer val2 = Integer.parseInt(s2);
-                return val1.compareTo(val2);
-            }
-        });
 
-        for (int i = 0; i < list.size(); i++) {
-            mAdapter.addTab(TITLES.get(Integer.parseInt(list.get(i))));
-        }
+        initializeTabs(values, false);
         mViewPager.setOffscreenPageLimit(mViewPager.getAdapter().getCount());
 
         if (NMJLib.hasLollipop())
@@ -90,34 +108,37 @@ public class MovieLibraryOverviewFragment extends Fragment {
         return v;
     }
 
-    public class PagerAdapter extends FragmentPagerAdapter {
+    public class ViewPagerAdapter extends CustomFragmentPagerAdapter {
+        private final List<String> mFragmentTitleList = new ArrayList<>();
 
-        private ArrayList<String> tabs = new ArrayList<>();
-
-        public PagerAdapter(FragmentManager fm) {
+        public ViewPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
-        public void addTab(String tab) {
-            tabs.add(tab);
+        public void addTabPage(int index) {
+            mFragmentTitleList.add(TITLES.get(index));
             notifyDataSetChanged();
-            mTabs.notifyDataSetChanged();
         }
 
-        public void removeTab(int position) {
-            tabs.remove(position);
+        public void removeTabPage(int index) {
+            mFragmentTitleList.remove(index);
             notifyDataSetChanged();
-            mTabs.notifyDataSetChanged();
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return tabs.get(position);
+            return mFragmentTitleList.get(position);
+        }
+
+        @Override
+        public int getItemPosition(Object object) {
+            return PagerAdapter.POSITION_NONE;
         }
 
         @Override
         public Fragment getItem(int index) {
-            switch (TITLES.indexOf(getPageTitle(index))) {
+            int idx = TITLES.indexOf(mFragmentTitleList.get(index));
+            switch (idx) {
                 case 0:
                     return MovieLibraryFragment.newInstance(MovieLoader.ALL_MOVIES);
                 case 1:
@@ -149,7 +170,7 @@ public class MovieLibraryOverviewFragment extends Fragment {
 
         @Override
         public int getCount() {
-            return tabs.size();
+            return mFragmentTitleList.size();
         }
     }
 }

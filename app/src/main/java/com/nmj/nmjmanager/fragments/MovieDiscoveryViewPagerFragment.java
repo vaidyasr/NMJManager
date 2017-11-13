@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -34,7 +35,6 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.astuetz.PagerSlidingTabStrip;
 import com.nmj.functions.NMJLib;
 import com.nmj.nmjmanager.R;
 import com.nmj.nmjmanager.SearchWebMovies;
@@ -44,7 +44,7 @@ public class MovieDiscoveryViewPagerFragment extends Fragment {
 	private ProgressBar mProgressBar;
 	private String mBaseUrl = "", mJson = "";
 	private ViewPager mViewPager;
-    private PagerSlidingTabStrip mTabs;
+	private TabLayout mTabs;
 
 	public MovieDiscoveryViewPagerFragment() {}
 
@@ -69,16 +69,16 @@ public class MovieDiscoveryViewPagerFragment extends Fragment {
 	public void onViewCreated(View v, Bundle savedInstanceState) {
 		super.onViewCreated(v, savedInstanceState);
 
-        mProgressBar = (ProgressBar) v.findViewById(R.id.progressbar);
-        mProgressBar.setVisibility(View.VISIBLE);
+		mProgressBar = v.findViewById(R.id.progressbar);
+		mProgressBar.setVisibility(View.VISIBLE);
 
-        mViewPager = (ViewPager) v.findViewById(R.id.awesomepager);
-        mViewPager.setOffscreenPageLimit(3);
+		mViewPager = v.findViewById(R.id.awesomepager);
+		mViewPager.setOffscreenPageLimit(3);
         mViewPager.setPageMargin(NMJLib.convertDpToPixels(getActivity(), 16));
 
-        mTabs = (PagerSlidingTabStrip) v.findViewById(R.id.tabs);
-        mTabs.setVisibility(View.GONE);
-        mTabs.setShouldExpand(true);
+		mTabs = v.findViewById(R.id.tabs);
+		mTabs.setVisibility(View.GONE);
+		//mTabs.setShouldExpand(true);
 
 		if (savedInstanceState != null) {
             mViewPager.setCurrentItem(savedInstanceState.getInt("selectedIndex", 0));
@@ -121,8 +121,8 @@ public class MovieDiscoveryViewPagerFragment extends Fragment {
             ((AppCompatActivity) getActivity()).getSupportActionBar().setElevation(0);
 
         mViewPager.setAdapter(new WebVideosAdapter(getChildFragmentManager()));
-        mTabs.setViewPager(mViewPager);
-        mTabs.setVisibility(View.VISIBLE);
+		mTabs.setupWithViewPager(mViewPager);
+		mTabs.setVisibility(View.VISIBLE);
         if (NMJLib.hasLollipop())
             mTabs.setElevation(1f);
 

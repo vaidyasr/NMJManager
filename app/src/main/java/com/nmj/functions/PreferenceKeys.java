@@ -50,7 +50,8 @@ public class PreferenceKeys {
 	public static final String IGNORED_NFO_FILES = "prefsIgnoreNfoFiles";
 	public static final String IGNORE_VIDEO_FILE_TYPE = "prefsIgnoreFileType";
 	public static final String IGNORED_TITLE_PREFIXES = "prefsIgnorePrefixesInTitles";
-	public static final String REMOVE_MOVIES_FROM_WATCHLIST = "prefsRemoveMoviesFromWatchlist";
+    public static final String CHECK_APP_UPDATE = "prefsCheckAppUpdate";
+    public static final String REMOVE_MOVIES_FROM_WATCHLIST = "prefsRemoveMoviesFromWatchlist";
 	public static final String LOAD_LAST_DATABASE = "prefsLoadLastDatabase";
 	public static final String TVSHOWS_COLLECTION_LAYOUT = "prefsSeasonsLayout";
 	public static final String TVSHOWS_EPISODE_ORDER = "prefsEpisodesOrder";

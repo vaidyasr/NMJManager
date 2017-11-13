@@ -11,13 +11,12 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
-        android:background="?attr/selectableItemBackground"
         android:gravity="center_vertical"
         android:paddingBottom="16dp"
-        android:paddingLeft="16dp"
+        android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
         android:paddingTop="16dp"
         android:text="New Text"
-        android:textSize="14sp" />
+        android:textSize="18sp" />
 
     <CheckBox
         android:id="@+id/lstcheckBox"

@@ -74,6 +74,7 @@ public class NMJMovieDetails extends NMJActivity {
 
         Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
         if (frag == null) {
+            System.out.println("Adding fragment: ");
             final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.add(android.R.id.content, NMJMovieDetailsFragment.newInstance(mMovieId, mShowId), TAG);
             ft.commit();

@@ -24,6 +24,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap.Config;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
@@ -31,8 +32,10 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.MenuItemCompat.OnActionExpandListener;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.SearchView.OnQueryTextListener;
 import android.view.ActionMode;
@@ -46,10 +49,12 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.ExpandableListView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.AbsListView.OnScrollListener;
+import android.widget.Toast;
 
 import com.github.ksoichiro.android.observablescrollview.ObservableGridView;
 import com.nmj.apis.nmj.Movie;
@@ -59,6 +64,7 @@ import com.nmj.loader.MovieLoader;
 import com.nmj.loader.MovieLibraryType;
 import com.nmj.loader.MovieSortType;
 import com.nmj.loader.OnLoadCompletedCallback;
+import com.nmj.nmjmanager.ExpListViewAdapterWithCheckbox;
 import com.nmj.nmjmanager.MovieCollection;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.MovieList;
@@ -71,12 +77,17 @@ import com.nmj.utils.TypefaceUtils;
 import com.nmj.utils.ViewUtils;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import static com.nmj.functions.NMJLib.getStringFromJSONObject;
 import static com.nmj.functions.PreferenceKeys.GRID_ITEM_SIZE;
 import static com.nmj.functions.PreferenceKeys.IGNORED_TITLE_PREFIXES;
 import static com.nmj.functions.PreferenceKeys.SHOW_TITLES_IN_GRID;
@@ -89,9 +100,14 @@ import static com.nmj.loader.MovieLoader.SORT_DURATION;
 import static com.nmj.loader.MovieLoader.SORT_RATING;
 import static com.nmj.loader.MovieLoader.SORT_RELEASE;
 import static com.nmj.loader.MovieLoader.SORT_TITLE;
+import static com.nmj.nmjmanager.Main.togglefilterDrawerMenu;
 
 public class MovieLibraryFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
+    ExpListViewAdapterWithCheckbox listAdapter;
+    ExpandableListView expListView;
+    ArrayList<String> listDataHeader;
+    HashMap<String, List<String>> listDataChild;
     private Context mContext;
     private String baseUrl, imageSizeUrl;
     private SharedPreferences mSharedPreferences;
@@ -100,6 +116,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     private ObservableGridView mGridView;
     private ProgressBar mProgressBar;
     private boolean mShowTitles, mIgnorePrefixes, mLoading = true;
+    private DrawerLayout mFilterLayout;
     private Picasso mPicasso;
     private Config mConfig;
     private MovieLoader mMovieLoader;
@@ -225,7 +242,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 viewMovieDetails(arg2, arg1);
             }
         });
-
 
         mGridView.setOnScrollListener(new EndlessScrollListener());
 
@@ -494,6 +510,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 showProgressBar();
                 break;
             case R.id.filters:
+                togglefilterDrawerMenu();
                 System.out.println("Filters selected");
                 break;
             case R.id.random:
@@ -677,7 +694,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     }
 
     public class LoaderAdapter extends BaseAdapter {
-
         private final Context mContext;
         private Set<Integer> mChecked = new HashSet<>();
         private LayoutInflater mInflater;
@@ -783,10 +799,10 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             //mPicasso.load(mMovieLoader.getType() == MovieLibraryType.COLLECTIONS ?
             //       movie.getCollectionPoster() : movie.getThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
 
-            //System.out.println("baseUrl: " + baseUrl);
-            //System.out.println("Thumbnail: " + movie.getNMJThumbnail());
+            System.out.println("baseUrl: " + baseUrl);
+            System.out.println("Thumbnail: " + movie.getPoster());
             //System.out.println("Video Type:" + movie.getVideoType());
-            if (movie.getTitleType() == "tmdb")
+            if (movie.getShowId().equals("0"))
                 mURL = baseUrl + imageSizeUrl;
             else
                 mURL = NMJLib.getNMJImageURL();

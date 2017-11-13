@@ -18,6 +18,7 @@ package com.nmj.nmjmanager;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -25,16 +26,24 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.FileProvider;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -50,6 +59,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -59,6 +69,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nmj.apis.trakt.Trakt;
 import com.nmj.base.NMJActivity;
 import com.nmj.db.DbAdapterTvShows;
 import com.nmj.functions.AsyncTask;
@@ -70,6 +81,7 @@ import com.nmj.functions.NMJLib;
 import com.nmj.nmjmanager.fragments.AccountsFragment;
 import com.nmj.nmjmanager.fragments.ContactDeveloperFragment;
 import com.nmj.nmjmanager.fragments.MovieDiscoveryViewPagerFragment;
+import com.nmj.nmjmanager.fragments.MovieLibraryFragment;
 import com.nmj.nmjmanager.fragments.MovieLibraryOverviewFragment;
 import com.nmj.nmjmanager.fragments.TvShowLibraryOverviewFragment;
 import com.nmj.utils.LocalBroadcastUtils;
@@ -80,41 +92,58 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
 
+import javax.net.ssl.HttpsURLConnection;
+
+import okhttp3.Request;
+import okhttp3.Response;
+
+import static com.nmj.functions.NMJLib.getStringFromJSONObject;
+import static com.nmj.functions.PreferenceKeys.CHECK_APP_UPDATE;
 import static com.nmj.functions.PreferenceKeys.CONFIRM_BACK_PRESS;
 import static com.nmj.functions.PreferenceKeys.LOAD_LAST_DATABASE;
 import static com.nmj.functions.PreferenceKeys.STARTUP_SELECTION;
 import static com.nmj.functions.PreferenceKeys.TRAKT_FULL_NAME;
 import static com.nmj.functions.PreferenceKeys.TRAKT_USERNAME;
+import static com.nmj.nmjmanager.NMJManagerApplication.getContext;
 
 @SuppressLint("NewApi")
 public class Main extends NMJActivity {
 
     public static final int MOVIES = 1, SHOWS = 2, MUSIC = 3, SELECT = 4, SOURCE = 5;
+    private static NavigationView rightNavigationView;
+    private static DrawerLayout mDrawerLayout;
     protected ListView mDrawerList;
     AlertDialog alertDialog;
     ArrayList<NMJDb> nmjdb = new ArrayList<>();
     AlertDialog.Builder alertDialogBuilder;
+    ExpListViewAdapterWithCheckbox listAdapter;
+    ExpandableListView expListView;
+    ArrayList<String> listDataHeader;
+    HashMap<String, List<String>> listDataChild;
     private ArrayList<NMJSource> nmjsource;
     private EditText ip_address, display_name;
     private int mNumMovies, mNumShows, selectedIndex, mStartup, mNumMusic;
     private Typeface mTfMedium, mTfRegular;
-    private DrawerLayout mDrawerLayout, mFilterLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private NMJAdapter mDbHelper;
     private DbAdapterTvShows mDbHelperTv;
     private boolean mConfirmExit, mTriedOnce = false;
-    private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
-    private ArrayList<MenuItem> mNMJItems = new ArrayList<MenuItem>();
-    private List<ApplicationInfo> mApplicationList;
-    private Picasso mPicasso;
-    private Context mContext;
-    private String mDriveType = "local";
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+    private ArrayList<MenuItem> mMenuItems = new ArrayList<>();
+    public BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.filterEquals(new Intent("NMJManager-update-library-count")))
@@ -125,6 +154,22 @@ public class Main extends NMJActivity {
                 reloadFragment("frag2");
         }
     };
+    private ArrayList<MenuItem> mNMJItems = new ArrayList<>();
+    private List<ApplicationInfo> mApplicationList;
+    private Picasso mPicasso;
+    private Context mContext;
+    private String mDriveType = "local";
+    private String VersionName = "1.0.0";
+    private String ApkName = "NMJManager.apk";
+    private String PackageName = "com.nmj.nmjmanager";
+
+    public static void togglefilterDrawerMenu() {
+        if (!mDrawerLayout.isDrawerOpen(rightNavigationView)) {
+            mDrawerLayout.openDrawer(GravityCompat.END);
+        } else {
+            mDrawerLayout.closeDrawer(GravityCompat.END);
+        }
+    }
 
     private void reloadFragment(String fragment) {
         Fragment frag = getSupportFragmentManager().findFragmentByTag(fragment);
@@ -164,6 +209,81 @@ public class Main extends NMJActivity {
         mDrawerLayout.setStatusBarBackgroundColor(getResources().getColor(R.color.color_primary_dark));
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_list_shadow, GravityCompat.START);
 
+        rightNavigationView = findViewById(R.id.right_drawer);
+
+        expListView = findViewById(R.id.lvExp);
+
+        listDataHeader = new ArrayList<>();
+        listDataChild = new HashMap<>();
+
+        // Adding child data
+        listDataHeader.add("Index");
+        listDataHeader.add("Genre");
+        listDataHeader.add("Certification");
+        listDataHeader.add("Release year");
+        listDataHeader.add("User rating");
+        listDataHeader.add("Video resolution");
+        listDataHeader.add("Others");
+
+        listAdapter = new ExpListViewAdapterWithCheckbox(mContext, listDataHeader, listDataChild);
+
+        // setting list adapter
+        expListView.setAdapter(listAdapter);
+
+        // Listview Group click listener
+        expListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
+
+            @Override
+            public boolean onGroupClick(ExpandableListView parent, View v,
+                                        int groupPosition, long id) {
+                if (expListView.isGroupExpanded(groupPosition))
+                    expListView.collapseGroup(groupPosition);
+                else {
+                    if (listAdapter.getChildrenCount(groupPosition) == 0)
+                        new BackgroundTask(groupPosition, listDataHeader.get(groupPosition)).execute();
+                    else
+                        expListView.expandGroup(groupPosition);
+                }
+                return true;
+            }
+        });
+
+        // Listview Group collasped listener
+        expListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
+
+            @Override
+            public void onGroupCollapse(int groupPosition) {
+                Toast.makeText(mContext,
+                        listDataHeader.get(groupPosition) + " Collapsed",
+                        Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        // Listview on child click listener
+        expListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v,
+                                        int groupPosition, int childPosition, long id) {
+
+                // TODO Auto-generated method stub
+                Toast.makeText(
+                        mContext,
+                        listDataHeader.get(groupPosition)
+                                + " : "
+                                + listDataChild.get(
+                                listDataHeader.get(groupPosition)).get(
+                                childPosition), Toast.LENGTH_SHORT)
+                        .show();
+                listAdapter.getChildCheckBox(childPosition, groupPosition).toggle();
+                if (listAdapter.getChildrenCount(groupPosition) == 0) {
+                    System.out.println("Zero");
+                }
+                return true;
+            }
+        });
+
         mDrawerList = findViewById(R.id.listView1);
         mDrawerList.setLayoutParams(new FrameLayout.LayoutParams(ViewUtils.getNavigationDrawerWidth(this), FrameLayout.LayoutParams.MATCH_PARENT));
         mDrawerList.setAdapter(new MenuAdapter());
@@ -177,7 +297,6 @@ public class Main extends NMJActivity {
                 System.out.println("Selected: " + arg2);
                 switch (mMenuItems.get(arg2).getType()) {
                     case MenuItem.HEADER:
-
                         Intent intent = new Intent(getApplicationContext(), Preferences.class);
                         intent.putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, AccountsFragment.class.getName());
                         intent.putExtra(PreferenceActivity.EXTRA_NO_HEADERS, true);
@@ -194,7 +313,6 @@ public class Main extends NMJActivity {
                         loadFragment(mMenuItems.get(arg2).getFragment(), arg2);
                         break;
                     case MenuItem.SETTINGS_AREA:
-
                         Intent smallIntent = new Intent(getApplicationContext(), Preferences.class);
                         if (mMenuItems.get(arg2).getIcon() == R.drawable.ic_help_grey600_24dp) {
                             smallIntent.putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, ContactDeveloperFragment.class.getName());
@@ -204,9 +322,7 @@ public class Main extends NMJActivity {
                         }
 
                         startActivity(smallIntent);
-
                         mDrawerLayout.closeDrawers();
-
                         break;
                 }
             }
@@ -214,6 +330,8 @@ public class Main extends NMJActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+        if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(CHECK_APP_UPDATE, true))
+            GetVersionFromServer();
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close);
         mDrawerLayout.addDrawerListener(mDrawerToggle);
@@ -318,7 +436,7 @@ public class Main extends NMJActivity {
         // set prompts.xml to alertdialog builder
         alertDialogBuilder.setView(promptsView);
 
-        final EditText userInput =  promptsView.findViewById(R.id.ip_address);
+        final EditText userInput = promptsView.findViewById(R.id.ip_address);
 
         // create alert dialog
         alertDialog = alertDialogBuilder.create();
@@ -352,13 +470,13 @@ public class Main extends NMJActivity {
         View promptsView = li.inflate(R.layout.nmjdb_select, null);
         alertDialogBuilder.setView(promptsView);
         dialog = alertDialogBuilder.create();
-        RelativeLayout relativeLayout = (RelativeLayout) promptsView.findViewById(R.id.segmented_layout);
+        RelativeLayout relativeLayout = promptsView.findViewById(R.id.segmented_layout);
 
-        ListView listView = (ListView) promptsView.findViewById(R.id.nmjlist);
+        ListView listView = promptsView.findViewById(R.id.nmjlist);
         //System.out.println("Machine Type: " + NMJLib.getMachineType());
         if (NMJLib.getMachineType().equals(""))
             relativeLayout.setVisibility(View.GONE);
-        RadioGroup radioGroup = (RadioGroup) promptsView.findViewById(R.id.segmented_group);
+        RadioGroup radioGroup = promptsView.findViewById(R.id.segmented_group);
         if (mDriveType.equals("local"))
             radioGroup.check(R.id.local_button);
         else
@@ -403,8 +521,8 @@ public class Main extends NMJActivity {
     }
 
     public void ok(View v) {
-        ip_address = (EditText) alertDialog.findViewById(R.id.ip_address);
-        display_name = (EditText) alertDialog.findViewById(R.id.display_name);
+        ip_address = alertDialog.findViewById(R.id.ip_address);
+        display_name = alertDialog.findViewById(R.id.display_name);
 
         if (ip_address.getText().toString().isEmpty()) {
             Toast.makeText(this, getString(R.string.enterNetworkAddress), Toast.LENGTH_LONG).show();
@@ -443,6 +561,111 @@ public class Main extends NMJActivity {
         alertDialog.dismiss();
     }
 
+    private Boolean checkInstalledApp(String appName) {
+        return getPackages(appName);
+    }
+
+    private ArrayList<PInfo> getInstalledApps(boolean getSysPackages) {
+        ArrayList<PInfo> res = new ArrayList<>();
+        List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
+
+        for (int i = 0; i < packs.size(); i++) {
+            PackageInfo p = packs.get(i);
+            if ((!getSysPackages) && (p.versionName == null)) {
+                continue;
+            }
+            PInfo newInfo = new PInfo();
+            newInfo.appname = p.applicationInfo.loadLabel(getPackageManager()).toString();
+            newInfo.pname = p.packageName;
+            newInfo.versionName = p.versionName;
+            newInfo.versionCode = p.versionCode;
+            res.add(newInfo);
+        }
+        return res;
+    }
+
+    public void GetVersionFromServer() {
+        final String URL = "http://sourceforge.net/projects/nmtcsi/files/Version.txt";
+        new AsyncTask<Void, Void, Void>() {
+            JSONObject jObject;
+
+            protected Void doInBackground(Void... params) {
+                try {
+                    String serverURL = "http://www.pchportal.duckdns.org/NMJManager/version.txt";
+
+                    jObject = NMJLib.getJSONObject(mContext, serverURL);
+                    VersionName = NMJLib.getStringFromJSONObject(jObject, "version", "");
+                } catch (Exception e) {
+                    System.out.println("Exception : " + e.toString());
+                }
+                return null;
+            }
+
+            protected void onPostExecute(Void result) {
+                checkInstalledApp("NMJManager");
+            }
+        }.execute();
+    }
+
+    public void InstallApplication() {
+        Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
+        Uri packageURI;
+        String path = getApplicationContext().getFilesDir().getPath() + "/" + ApkName;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            packageURI = FileProvider.getUriForFile(this, getPackageName() + ".provider", new File(path));
+
+            List<ResolveInfo> resInfoList = getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+            for (ResolveInfo resolveInfo : resInfoList) {
+                String packageName = resolveInfo.activityInfo.packageName;
+                grantUriPermission(packageName, packageURI, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            }
+            intent.setDataAndType(packageURI, "application/vnd.android.package-archive");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(intent);
+        } else {
+            packageURI = Uri.fromFile(new File(path));
+            intent.setDataAndType(packageURI, "application/vnd.android.package-archive");
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
+    }
+
+    private Boolean getPackages(String appName) {
+        Boolean isInstalled = false;
+        ArrayList<PInfo> apps = getInstalledApps(false); /* false = no system packages */
+        final int max = apps.size();
+        for (int i = 0; i < max; i++) {
+            if (apps.get(i).appname.equals(appName)) {
+                if (!VersionName.equals(apps.get(i).versionName)) {
+                    isInstalled = true;
+                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    new DownloadAPK().execute();
+                                    break;
+
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    break;
+                            }
+                        }
+                    };
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("New Version " + VersionName + " Available...");
+                    builder.setMessage("Do you want to Update?").setPositiveButton("Yes Proceed", dialogClickListener)
+                            .setNegativeButton("Ignore", dialogClickListener);
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                    dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(Color.WHITE);
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(Color.WHITE);
+                }
+            }
+        }
+        return isInstalled;
+    }
+
     public void LoadDatabase(AlertDialog dialog) {
         //System.out.println("DBPath : " + NMJLib.getDbPath());
         //System.out.println("Drivepath : " + NMJLib.getDrivePath());
@@ -451,22 +674,22 @@ public class Main extends NMJActivity {
 
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
             protected Void doInBackground(Void... params) {
-                NMJLib.setLibrary(NMJManagerApplication.getContext(), mDbHelper);
+                NMJLib.setLibrary(getContext(), mDbHelper);
                 return null;
             }
 
             protected void onPostExecute(Void result) {
-                LocalBroadcastUtils.updateLibraryCount(NMJManagerApplication.getContext());
+                LocalBroadcastUtils.updateLibraryCount(getContext());
                 //System.out.println("Total : " + NMJManagerApplication.getNMJAdapter().getLibrary().size());
                 if (mStartup == 1)
-                    LocalBroadcastUtils.loadMovieLibrary(NMJManagerApplication.getContext());
+                    LocalBroadcastUtils.loadMovieLibrary(getContext());
                 else if (mStartup == 2)
-                    LocalBroadcastUtils.loadTvShowLibrary(NMJManagerApplication.getContext());
+                    LocalBroadcastUtils.loadTvShowLibrary(getContext());
             }
         };
         task.execute();
 
-        if(dialog != null)
+        if (dialog != null)
             dialog.dismiss();
     }
 
@@ -489,7 +712,7 @@ public class Main extends NMJActivity {
                     System.out.println("Output: " + jArray.toString());
                     for (int i = 0; i < jArray.length(); i++) {
                         JSONObject dObject = jArray.getJSONObject(i);
-                        NMJDb tmpdb = new NMJDb(NMJManagerApplication.getContext(),
+                        NMJDb tmpdb = new NMJDb(getContext(),
                                 NMJLib.getStringFromJSONObject(dObject, "name", ""),
                                 NMJLib.getStringFromJSONObject(dObject, "dbpath", ""),
                                 NMJLib.getStringFromJSONObject(dObject, "drivepath", ""));
@@ -520,7 +743,7 @@ public class Main extends NMJActivity {
         task.execute();
     }
 
-    public void updatePHPScript(){
+    public void updatePHPScript() {
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
             JSONObject jObject;
             JSONArray jArray;
@@ -536,7 +759,7 @@ public class Main extends NMJActivity {
                     jObject = NMJLib.getJSONObject(mContext, clientURL);
                     String clientMD5 = NMJLib.getStringFromJSONObject(jObject, "md5sum", "");
 
-                    if (!serverMD5.equals(clientMD5)){
+                    if (!serverMD5.equals(clientMD5)) {
                         String updateURL = NMJLib.getNMJServerPHPURL() + "action=updateProgram";
                         jObject = NMJLib.getJSONObject(mContext, updateURL);
                         status = NMJLib.getStringFromJSONObject(jObject, "status", "");
@@ -552,8 +775,8 @@ public class Main extends NMJActivity {
             }
 
             protected void onPostExecute(Void result) {
-                if(!status.equals("success") && !status.equals("")){
-                } else if(status.equals("success")) {
+                if (!status.equals("success") && !status.equals("")) {
+                } else if (status.equals("success")) {
                     showToast("Updated Server script successfully...");
                 }
             }
@@ -581,7 +804,7 @@ public class Main extends NMJActivity {
                     jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerPHPURL() +
                             "action=getDriveDetails&DATA=" + obj.toString());
                     System.out.println("Output: " + jObject.toString());
-                    NMJDb tmpdb = new NMJDb(NMJManagerApplication.getContext(),
+                    NMJDb tmpdb = new NMJDb(getContext(),
                             NMJLib.getStringFromJSONObject(jObject, "name", ""),
                             NMJLib.getStringFromJSONObject(jObject, "dbpath", ""),
                             NMJLib.getStringFromJSONObject(jObject, "drivepath", ""));
@@ -598,7 +821,7 @@ public class Main extends NMJActivity {
             }
 
             protected void onPostExecute(Void result) {
-                if(status.equals("success")){
+                if (status.equals("success")) {
                     if (!nmdb.get(0).getJukebox().equals("0")) {
                         NMJLib.setDbPath(nmdb.get(0).getDbPath());
                         NMJLib.setDrivePath(nmdb.get(0).getDrivePath());
@@ -615,7 +838,7 @@ public class Main extends NMJActivity {
     }
 
     public void search(View v) {
-        TreeSet<String> uniqueSources = new TreeSet<String>();
+        TreeSet<String> uniqueSources = new TreeSet<>();
         final CharSequence[] items = new CharSequence[uniqueSources.size() + 1];
         items[items.length - 1] = getString(R.string.scanForSources);
 
@@ -688,7 +911,7 @@ public class Main extends NMJActivity {
 
                 for (int i = 0; i < db.length(); i++) {
                     JSONObject dObject = db.getJSONObject(i);
-                    NMJSource tmpdb = new NMJSource(NMJManagerApplication.getContext(),
+                    NMJSource tmpdb = new NMJSource(getContext(),
                             NMJLib.getStringFromJSONObject(dObject, "IP_ADDRESS", ""),
                             NMJLib.getStringFromJSONObject(dObject, "PORT", "80"),
                             NMJLib.getStringFromJSONObject(dObject, "DISPLAY_NAME", ""));
@@ -896,6 +1119,57 @@ public class Main extends NMJActivity {
         nbutton.setTextColor(Color.WHITE);
     }
 
+    private class PInfo {
+        private String appname = "";
+        private String pname = "";
+        private String versionName = "";
+        private int versionCode = 0;
+        //private Drawable icon;
+        /*private void prettyPrint() {
+            //Log.v(appname + "\t" + pname + "\t" + versionName + "\t" + versionCode);
+        }*/
+    }
+
+    private class DownloadAPK extends AsyncTask<Void, Void, Void> {
+        private ProgressDialog dialog;
+
+        public DownloadAPK() {
+            dialog = new ProgressDialog(Main.this);
+            dialog.setCancelable(false);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            dialog.setMessage("Downloading...");
+            dialog.show();
+        }
+
+        protected Void doInBackground(Void... params) {
+            final String URL = "https://sourceforge.net/projects/nmtcsi/files/NMJManager.apk";
+            try {
+                String PATH = getApplicationContext().getFilesDir().getPath() + "/";
+                File file = new File(PATH); // PATH = /mnt/sdcard/download/
+                file.mkdirs();
+                File outputFile = new File(file, "NMJManager.apk");
+                if (outputFile.exists()) {
+                    outputFile.delete();
+                }
+                NMJLib.downloadFile(URL, outputFile.getAbsolutePath());
+            } catch (Exception e) {
+                if (dialog.isShowing())
+                    dialog.dismiss();
+                showToast("Error: " + e.toString());
+            }
+            return null;
+        }
+
+        protected void onPostExecute(Void result) {
+            if (dialog.isShowing())
+                dialog.dismiss();
+            InstallApplication();
+        }
+    }
+
     public class ListAdapter extends BaseAdapter {
 
         ViewHolder holder;
@@ -927,16 +1201,16 @@ public class Main extends NMJActivity {
             convertView = mInflater.inflate(R.layout.menu_drawer_item, parent, false);
 
             // Icon
-            ImageView icon = (ImageView) convertView.findViewById(R.id.icon);
+            ImageView icon = convertView.findViewById(R.id.icon);
             icon.setImageResource(mNMJItems.get(position).getIcon());
 
             // Title
-            TextView title = (TextView) convertView.findViewById(R.id.title);
+            TextView title = convertView.findViewById(R.id.title);
             title.setText(mNMJItems.get(position).getTitle());
             title.setTypeface(mTfMedium);
 
             // Description
-            TextView description = (TextView) convertView.findViewById(R.id.count);
+            TextView description = convertView.findViewById(R.id.count);
             description.setTypeface(mTfRegular);
             description.setVisibility(View.GONE);
 
@@ -1017,11 +1291,11 @@ public class Main extends NMJActivity {
 
                 final String fullName = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(TRAKT_FULL_NAME, "");
                 final String userName = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(TRAKT_USERNAME, "");
-                final ImageView backgroundImage = ((ImageView) convertView.findViewById(R.id.userCover));
-                final ImageView userImage = ((ImageView) convertView.findViewById(R.id.userPhoto));
-                final ImageView plusIcon = ((ImageView) convertView.findViewById(R.id.plus_icon));
-                final TextView realName = ((TextView) convertView.findViewById(R.id.real_name));
-                final TextView userNameTextField = ((TextView) convertView.findViewById(R.id.username));
+                final ImageView backgroundImage = convertView.findViewById(R.id.userCover);
+                final ImageView userImage = convertView.findViewById(R.id.userPhoto);
+                final ImageView plusIcon = convertView.findViewById(R.id.plus_icon);
+                final TextView realName = convertView.findViewById(R.id.real_name);
+                final TextView userNameTextField = convertView.findViewById(R.id.username);
 
                 realName.setTypeface(mTfMedium);
                 userNameTextField.setTypeface(mTfRegular);
@@ -1070,23 +1344,23 @@ public class Main extends NMJActivity {
                 convertView = mInflater.inflate(R.layout.menu_drawer_separator_extra_padding, parent, false);
             } else if (mMenuItems.get(position).getType() == MenuItem.SUB_HEADER) {
                 convertView = mInflater.inflate(R.layout.menu_drawer_header_item, parent, false);
-                TextView title = (TextView) convertView.findViewById(R.id.title);
+                TextView title = convertView.findViewById(R.id.title);
                 title.setText(mMenuItems.get(position).getTitle());
                 title.setTypeface(mTfMedium);
             } else if (mMenuItems.get(position).getType() == MenuItem.SECTION) {
                 convertView = mInflater.inflate(R.layout.menu_drawer_item, parent, false);
 
                 // Icon
-                ImageView icon = (ImageView) convertView.findViewById(R.id.icon);
+                ImageView icon = convertView.findViewById(R.id.icon);
                 icon.setImageResource(mMenuItems.get(position).getIcon());
 
                 // Title
-                TextView title = (TextView) convertView.findViewById(R.id.title);
+                TextView title = convertView.findViewById(R.id.title);
                 title.setText(mMenuItems.get(position).getTitle());
                 title.setTypeface(mTfMedium);
 
                 // Description
-                TextView description = (TextView) convertView.findViewById(R.id.count);
+                TextView description = convertView.findViewById(R.id.count);
                 description.setTypeface(mTfRegular);
 
                 if (mMenuItems.get(position).getType() == MenuItem.SECTION &&
@@ -1114,12 +1388,12 @@ public class Main extends NMJActivity {
                 convertView = mInflater.inflate(R.layout.menu_drawer_small_item, parent, false);
 
                 // Icon
-                ImageView icon = (ImageView) convertView.findViewById(R.id.icon);
+                ImageView icon = convertView.findViewById(R.id.icon);
 
                 icon.setImageResource(mMenuItems.get(position).getIcon());
                 icon.setColorFilter(Color.parseColor("#737373"));
 
-                ImageButton deletebutton = (ImageButton) convertView.findViewById(R.id.delete_button);
+                ImageButton deletebutton = convertView.findViewById(R.id.delete_button);
                 if (mMenuItems.get(position).getType() == MenuItem.NMJ_DB) {
                     deletebutton.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -1132,12 +1406,54 @@ public class Main extends NMJActivity {
                 }
 
                 // Title
-                TextView title = (TextView) convertView.findViewById(R.id.title);
+                TextView title = convertView.findViewById(R.id.title);
                 title.setText(mMenuItems.get(position).getTitle());
                 title.setTypeface(mTfMedium);
             }
 
             return convertView;
+        }
+    }
+
+    private class BackgroundTask extends android.os.AsyncTask<Void, Void, List<String>> {
+        int groupPosition;
+        String groupType;
+
+        private BackgroundTask(int groupPosition, String groupType) {
+            this.groupPosition = groupPosition;
+            this.groupType = groupType;
+        }
+
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            // TODO: Do your background computation...
+            // Then return it
+            List<String> Index = new ArrayList<String>();
+            String URL = "http://pchportal.duckdns.org/NMJManager/getData.php?action=getMenu&dbpath=guerilla/nmj_database/media.db&filter=" + groupType.toLowerCase();
+            JSONObject jObject = NMJLib.getJSONObject(mContext, URL.replace(" ", "%20"));
+            try {
+                String name = getStringFromJSONObject(jObject, "data", "");
+                Index.addAll(Arrays.asList(name.split("#", -1)));
+                //JSONObject dObject = jObject.getJSONObject("data");
+                //System.out.println("JSON Array: " + jObject.toString());
+/*                for (int i = 0; i < jArray.length(); i++) {
+                    JSONObject dObject = jArray.getJSONObject(i);
+                    String name = getStringFromJSONObject(dObject, "id", "");
+                    Index.add(name);
+                }*/
+            } catch (Exception e) {
+                System.out.println("Exception occurred: " + e.toString());
+            }
+            return Index;
+        }
+
+
+        @Override
+        protected void onPostExecute(List<String> resultsList) {
+            super.onPostExecute(resultsList);
+            listDataChild.put(listDataHeader.get(groupPosition), resultsList);
+            // TODO: Add the resultsList to whatever structure you're using to store the data in the ListView Adapter
+            expListView.expandGroup(groupPosition);
         }
     }
 }

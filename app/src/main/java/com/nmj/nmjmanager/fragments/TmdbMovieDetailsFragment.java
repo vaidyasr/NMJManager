@@ -526,6 +526,8 @@ public class TmdbMovieDetailsFragment extends Fragment {
                             }
                         });
 
+                        System.out.println("Poster: " + mMovie.getPoster());
+
                         mPaletteLoader.addView(mDetailsArea);
                         mPaletteLoader.addView(mCastLayout.getSeeMoreView());
                         mPaletteLoader.addView(mCrewLayout.getSeeMoreView());

@@ -5,13 +5,16 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.astuetz.PagerSlidingTabStrip
+    <android.support.design.widget.TabLayout
         android:id="@+id/tabs"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/toolbar_tabs_height"
+        android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
+        app:layout_scrollFlags="scroll|enterAlways"
         app:pstsTabBackground="?android:attr/selectableItemBackground"
-        app:pstsTabPaddingLeftRight="16dp" />
+        app:pstsTabPaddingLeftRight="16dp"
+        app:tabIndicatorColor="@android:color/white"
+        app:tabMode="scrollable" />
 
     <FrameLayout
         android:id="@+id/layout"

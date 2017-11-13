@@ -25,6 +25,7 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
     ImageView lineColorCode;
     // Define activity context
     private Context mContext;
+
     /*
      * Here we have a Hashmap containing a String key
      * (can be Integer or other type but I was testing
@@ -106,14 +107,13 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
         groupText = getGroup(groupPosition);
 
         if (convertView == null) {
-            LayoutInflater inflater = (LayoutInflater) mContext
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.list_group, null);
 
             // Initialize the GroupViewHolder defined at the bottom of this document
             groupViewHolder = new GroupViewHolder();
-            groupViewHolder.mGroupText = (TextView) convertView.findViewById(R.id.lblListHeader);
-            groupViewHolder.mGroupImageButton = (ImageButton) convertView.findViewById(R.id.resetFilter);
+            groupViewHolder.mGroupText = convertView.findViewById(R.id.lblListHeader);
+            groupViewHolder.mGroupImageButton = convertView.findViewById(R.id.resetFilter);
 
             mGroupResetButton.put(groupPosition, groupViewHolder.mGroupImageButton);
             convertView.setTag(groupViewHolder);
@@ -199,7 +199,6 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
         childText = getChild(mGroupPosition, mChildPosition);
 
         if (convertView == null) {
-
             LayoutInflater inflater = (LayoutInflater) this.mContext
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.list_item, null);

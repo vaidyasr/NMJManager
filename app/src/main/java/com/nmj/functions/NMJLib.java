@@ -16,6 +16,7 @@
 
 package com.nmj.functions;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 
 import android.app.ActivityManager;
@@ -26,6 +27,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -44,6 +46,8 @@ import android.net.NetworkInfo;
 import android.os.*;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.support.v13.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v8.renderscript.Allocation;
 import android.support.v8.renderscript.Element;
 import android.support.v8.renderscript.RenderScript;
@@ -1235,8 +1239,10 @@ public class NMJLib {
                     .build();
 
             Response response = NMJManagerApplication.getOkHttpClient().newCall(request).execute();
-            if (!response.isSuccessful())
+            if (!response.isSuccessful()) {
+                System.out.println("Exception " + new IOException("Unexpected code " + response));
                 return false;
+            }
 
             fileos = new BufferedOutputStream(new FileOutputStream(savePath));
             in = new BufferedInputStream(response.body().byteStream(), bufferSize);
@@ -1247,6 +1253,7 @@ public class NMJLib {
                 fileos.write(retVal, 0, length);
             }
         } catch (Exception e) {
+            System.out.println("Exception Occured: " + e.toString());
             // The download failed, so let's delete whatever was downloaded
             deleteFile(new File(savePath));
 

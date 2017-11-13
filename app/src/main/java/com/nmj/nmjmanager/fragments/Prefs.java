@@ -31,6 +31,10 @@ import android.preference.PreferenceScreen;
 import android.text.TextUtils;
 import android.preference.MultiSelectListPreference;
 import android.widget.Toast;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.nmj.functions.NMJLib;
@@ -53,9 +57,9 @@ import static com.nmj.functions.PreferenceKeys.SHOWS_TAB_SELECTED;
 
 public class Prefs extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
+    MultiSelectListPreference mShowsSelectedTabs, mMoviesSelectedTabs;
     private Preference mPref, mLanguagePref, mCopyDatabase, mIgnoreNfoFiles;
     private Locale[] mSystemLocales;
-    MultiSelectListPreference mShowsSelectedTabs, mMoviesSelectedTabs;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -223,10 +227,14 @@ public class Prefs extends PreferenceFragment implements OnSharedPreferenceChang
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(MOVIES_TABS_SELECTED)) {
-            LocalBroadcastUtils.reloadMovieFragment(NMJManagerApplication.getContext());
+            Set<String> defValues = new HashSet<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"));
+            Set<String> values = PreferenceManager.getDefaultSharedPreferences(getActivity()).getStringSet(MOVIES_TABS_SELECTED, defValues);
+            MovieLibraryOverviewFragment.initializeTabs(values, true);
         }
         if (key.equals(SHOWS_TAB_SELECTED)) {
-            LocalBroadcastUtils.reloadTVShowFragment(NMJManagerApplication.getContext());
+            Set<String> defValues = new HashSet<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8"));
+            Set<String> values = PreferenceManager.getDefaultSharedPreferences(getActivity()).getStringSet(SHOWS_TAB_SELECTED, defValues);
+            TvShowLibraryOverviewFragment.initializeTabs(values, true);
         }
         if (key.equals(IGNORED_FILES_ENABLED)) {
             if (mPref != null)
