@@ -2,6 +2,7 @@ package com.nmj.nmjmanager;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,10 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.common.base.Joiner;
+import com.nmj.utils.LocalBroadcastUtils;
+
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -129,36 +134,12 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
         groupViewHolder.mGroupImageButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 boolean getChecked[] = new boolean[getChildrenCount(groupPosition)];
-                ;
                 for (int i = 0; i < getChildrenCount(groupPosition); i++) {
                     getChecked[i] = false;
                 }
                 mChildCheckStates.put(groupPosition, getChecked);
 
                 notifyDataSetChanged();
-
-/*                boolean getChecked[];
-                if (mChildCheckStates.get(groupPosition) == null)
-                    getChecked = new boolean[getChildrenCount(groupPosition)];
-                else
-                    getChecked = mChildCheckStates.get(groupPosition);
-                for (int i = 0; i < getChildrenCount(groupPosition); i++) {
-                    if (state == null) {
-                        // do nothing
-                    }else if (state) {
-                        getChecked[i] = true;
-                    } else {
-                        getChecked[i] = false;
-                    }
-                }
-                checkBoxState[groupPosition] = state;
-
-                mChildCheckStates.put(groupPosition, getChecked);
-                System.out.println("Original State: " + state);
-                System.out.println("Group Position: " + groupPosition);
-                System.out.println("Group State: " + checkBoxState[groupPosition]);
-
-                notifyDataSetChanged();*/
             }
         });
         return convertView;
@@ -262,7 +243,19 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
                 boolean getChecked[] = mChildCheckStates.get(mGroupPosition);
                 getChecked[mChildPosition] = isChecked;
                 mChildCheckStates.put(mGroupPosition, getChecked);
-
+                String filterString = "";
+                for(int i=0;i < getGroupCount(); i++){
+                    filterString += "&" + getGroup(i) + "=";
+                    List<String> checked = new ArrayList<>();
+                    for(int j=0;j< getChildrenCount(i); j++){
+                        if (mChildCheckStates.get(i)[j]){
+                            checked.add( URLEncoder.encode(getChild(i, j)));
+                        }
+                    }
+                    filterString +=TextUtils.join(",", checked);
+                }
+                System.out.println("filterURL = " + filterString);
+                LocalBroadcastUtils.filterMovieLibrary(mContext, filterString);
             }
         });
 

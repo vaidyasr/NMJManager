@@ -266,7 +266,6 @@ public class Main extends NMJActivity {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v,
                                         int groupPosition, int childPosition, long id) {
-
                 // TODO Auto-generated method stub
                 Toast.makeText(
                         mContext,

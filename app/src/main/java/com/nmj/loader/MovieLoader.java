@@ -94,7 +94,7 @@ public class MovieLoader {
     private MovieLoaderAsyncTask mAsyncTask;
     private boolean mShowingSearchResults = false;
     private String mListId, mListTmdbId, mCollectionId, mCollectionTmdbId;
-    private String mQuery;
+    private String mQuery, mQtype;
 
     public MovieLoader(Context context, MovieLibraryType libraryType, Intent intent, OnLoadCompletedCallback callback) {
         //System.out.println("Entering MovieLoader");
@@ -225,7 +225,7 @@ public class MovieLoader {
      * sorting types and settings, i.e. prefix ignoring.
      */
     public void load() {
-        load("");
+        load("", "");
     }
 
     /**
@@ -235,7 +235,11 @@ public class MovieLoader {
      * @param query
      */
     public void search(String query) {
-        load(query);
+        load(query, "search");
+    }
+
+    public void filter(String query) {
+        load(query, "filter");
     }
 
     /**
@@ -243,11 +247,12 @@ public class MovieLoader {
      *
      * @param query
      */
-    private void load(String query) {
+    private void load(String query, String qType) {
         if (mAsyncTask != null) {
             mAsyncTask.cancel(true);
         }
         mQuery = query;
+        mQtype = qType;
 
         mShowingSearchResults = !TextUtils.isEmpty(query);
         //System.out.println("Executing MovieLoader");
@@ -255,9 +260,9 @@ public class MovieLoader {
 
             if (mLibraryType == MovieLibraryType.TOP_RATED || mLibraryType == MovieLibraryType.POPULAR ||
                     mLibraryType == MovieLibraryType.NOW_PLAYING || mLibraryType == MovieLibraryType.UPCOMING)
-                mAsyncTask = new MovieLoaderAsyncTask(mQuery, 0, 1);
+                mAsyncTask = new MovieLoaderAsyncTask(mQuery, mQtype, 0, 1);
             else
-                mAsyncTask = new MovieLoaderAsyncTask(mQuery, 0, 25);
+                mAsyncTask = new MovieLoaderAsyncTask(mQuery, mQtype, 0, 25);
             mAsyncTask.execute();
         } else
             mResults.clear();
@@ -267,7 +272,7 @@ public class MovieLoader {
         if (mAsyncTask != null) {
             mAsyncTask.cancel(true);
         }
-        mAsyncTask = new MovieLoaderAsyncTask(mQuery, start, count);
+        mAsyncTask = new MovieLoaderAsyncTask(mQuery, mQtype, start, count);
         mAsyncTask.execute();
     }
 
@@ -446,12 +451,16 @@ public class MovieLoader {
 
         private final ArrayList<Movie> mMovieList;
         private final NMJAdapter mTotalCount = new NMJAdapter();
-        private final String mSearchQuery;
+        private final String mSearchQuery, mFilterType;
         private final int mStart, mCount;
 
-        public MovieLoaderAsyncTask(String searchQuery, int start, int count) {
+        public MovieLoaderAsyncTask(String searchQuery, String filterType, int start, int count) {
             // Lowercase in order to search more efficiently
-            mSearchQuery = searchQuery.toLowerCase(Locale.getDefault());
+            if (filterType.equals("search"))
+                mSearchQuery = searchQuery.toLowerCase(Locale.getDefault());
+            else
+                mSearchQuery = searchQuery;
+            mFilterType = filterType;
 
             mStart = start;
             mCount = count;
@@ -462,46 +471,46 @@ public class MovieLoader {
         protected Void doInBackground(Void... params) {
             switch (mLibraryType) {
                 case ALL_MOVIES:
-                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "all", "", mSearchQuery, mStart, mCount));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "all", "", mSearchQuery, mFilterType, mStart, mCount));
                     break;
                 case FAVORITES:
-                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "favorites", "", mSearchQuery, mStart, mCount));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "favorites", "", mSearchQuery, mFilterType, mStart, mCount));
                     break;
                 case NEW_RELEASES:
-                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "newReleases", "", mSearchQuery, mStart, mCount));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "newReleases", "", mSearchQuery, mFilterType, mStart, mCount));
                     break;
                 case WATCHLIST:
-                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "watchlist", "", mSearchQuery, mStart, mCount));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "watchlist", "", mSearchQuery, mFilterType, mStart, mCount));
                     break;
                 case UNWATCHED:
-                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "unwatched", "", mSearchQuery, mStart, mCount));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "unwatched", "", mSearchQuery, mFilterType, mStart, mCount));
                     break;
                 case WATCHED:
-                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "watched", "", mSearchQuery, mStart, mCount));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "watched", "", mSearchQuery, mFilterType, mStart, mCount));
                     break;
                 case COLLECTIONS:
-                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "collections", "", mSearchQuery, mStart, mCount));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "collections", "", mSearchQuery, mFilterType, mStart, mCount));
                     break;
                 case LISTS:
-                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "lists", "", "", mStart, mCount));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "lists", "", "", mFilterType, mStart, mCount));
                     break;
                 case UPCOMING:
-                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "movie", "upcoming", "", "", mStart, mCount));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "movie", "upcoming", "", "", mFilterType, mStart, mCount));
                     break;
                 case NOW_PLAYING:
-                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "movie", "now_playing", "", "", mStart, mCount));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "movie", "now_playing", "", "", mFilterType, mStart, mCount));
                     break;
                 case POPULAR:
-                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "movie", "popular", "", "", mStart, mCount));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "movie", "popular", "", "", mFilterType, mStart, mCount));
                     break;
                 case TOP_RATED:
-                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "movie", "top_rated", "", "", mStart, mCount));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "movie", "top_rated", "", "", mFilterType, mStart, mCount));
                     break;
                 case LIST_MOVIES:
-                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "list", mListId, "", mStart, mCount));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "list", mListId, "", mFilterType, mStart, mCount));
                     break;
                 case COLLECTION_MOVIES:
-                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "collection", mCollectionId, "", mStart, mCount));
+                    mMovieList.addAll(NMJLib.getMovieFromJSON(mContext, "Movies", "collection", mCollectionId, "", mFilterType, mStart, mCount));
                     break;
                 default:
                     break;

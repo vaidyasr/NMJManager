@@ -2896,8 +2896,9 @@ public class NMJLib {
      */
     public static ArrayList<Movie> getMovieFromJSON(Context mContext, String videoType,
                                                     String loadType, String id,
-                                                    String searchText, int start, int count) {
-        //System.out.println("Search Query: " + searchText);
+                                                    String searchText, String filterType, int start, int count) {
+        System.out.println("Search Query: " + searchText);
+        System.out.println("Filter Type: " + filterType);
         ArrayList<Movie> list = new ArrayList<>();
         String url;
         //System.out.println("LoadType: " + loadType);
@@ -2918,12 +2919,14 @@ public class NMJLib {
                 url = NMJLib.getNMJServerPHPURL() + "action=getVideos&drivepath=" +
                         NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() +
                         "&orderby=" + NMJLib.getSortOrder() + "&filterby=";
-                if (searchText.equals(""))
+                if (searchText.equals("") && filterType.equals(""))
                     url += "All";
-                else
+                else if (!searchText.equals("") && filterType.equals("filter"))
+                    url += "Filter&" + searchText;
+                else if (filterType.equals("search"))
                     url += "search&VALUE=" + searchText;
                 url += "&sortby=" + NMJLib.getSortType() + "&load=" + loadType + "&TYPE=" +
-                        videoType + "&searchtype=title&Index=&Genre=&Certification=&Year=&Rating=&Resolution=&Others=";
+                        videoType + "&searchtype=title";
                 if (start != 0)
                     url += "&start=" + start;
                 if (count != 0)

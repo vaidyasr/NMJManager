@@ -131,6 +131,12 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 if (intent.filterEquals(new Intent("NMJManager-movie-actor-search"))) {
                     mMovieLoader.search("actor: " + intent.getStringExtra("intent_extra_data_key"));
                     showProgressBar();
+                } else if (intent.filterEquals(new Intent("NMJManager-movies-filter"))) {
+                    System.out.println("URL from filter: " + intent.getStringExtra("filterURL"));
+                    hideEmptyView();
+                    mMovieLoader.clearAll();
+                    mMovieLoader.filter(intent.getExtras().getString(("filterURL")));
+                    showProgressBar();
                 } else if (intent.filterEquals(new Intent("NMJManager-movies-load"))) {
                     hideEmptyView();
                     mMovieLoader.clearAll();
@@ -207,6 +213,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_MOVIE_LIBRARY));
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter("NMJManager-movie-actor-search"));
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.FILTER_MOVIE_LIBRARY));
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.LOAD_MOVIE_LIBRARY));
     }
 
@@ -799,8 +806,8 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             //mPicasso.load(mMovieLoader.getType() == MovieLibraryType.COLLECTIONS ?
             //       movie.getCollectionPoster() : movie.getThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
 
-            System.out.println("baseUrl: " + baseUrl);
-            System.out.println("Thumbnail: " + movie.getPoster());
+            //System.out.println("baseUrl: " + baseUrl);
+            //System.out.println("Thumbnail: " + movie.getPoster());
             //System.out.println("Video Type:" + movie.getVideoType());
             if (movie.getShowId().equals("0"))
                 mURL = baseUrl + imageSizeUrl;

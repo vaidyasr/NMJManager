@@ -25,6 +25,7 @@ import com.nmj.nmjmanager.NMJManagerApplication;
 public class LocalBroadcastUtils {
 
 	public static final String UPDATE_MOVIE_LIBRARY = "NMJManager-movies-update";
+	public static final String FILTER_MOVIE_LIBRARY = "NMJManager-movies-filter";
 	public static final String UPDATE_MOVIE_DETAIL = "NMJManager-movie-detail-update";
 	public static final String LOAD_MOVIE_LIBRARY = "NMJManager-movies-load";
 	public static final String LOAD_TV_SHOW_LIBRARY = "NMJManager-tvshows-load";
@@ -48,6 +49,12 @@ public class LocalBroadcastUtils {
 		LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(UPDATE_MOVIE_LIBRARY));
 	}
 
+	public static void filterMovieLibrary(Context context, String filterString) {
+		Intent intent = new Intent(FILTER_MOVIE_LIBRARY);
+		intent.putExtra("filterURL", filterString);
+		LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+	}
+
 	public static void updateMovieDetail(Context context) {
 		LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(UPDATE_MOVIE_DETAIL));
 	}
@@ -60,13 +67,6 @@ public class LocalBroadcastUtils {
 		LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(UPDATE_LIBRARY_COUNT));
 	}
 
-	public static void reloadMovieFragment(Context context) {
-		LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(RELOAD_MOVIE_FRAGMENT));
-	}
-
-	public static void reloadTVShowFragment(Context context) {
-		LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(RELOAD_SHOW_FRAGMENT));
-	}
 	/**
 	 * Force the TV show library to clear the cache and reload everything.
 	 * @param context

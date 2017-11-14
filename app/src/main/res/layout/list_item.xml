@@ -15,6 +15,7 @@
         android:paddingBottom="16dp"
         android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
         android:paddingTop="16dp"
+        android:textColor="#000"
         android:text="New Text"
         android:textSize="18sp" />
 
