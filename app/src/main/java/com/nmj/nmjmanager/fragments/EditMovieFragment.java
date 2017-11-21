@@ -289,8 +289,7 @@ public class EditMovieFragment extends Fragment {
             String error = "";
 
             protected Void doInBackground(Void... params) {
-                final String url = NMJLib.getNMJServerPHPURL() + "action=getMenu&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&filter=certification";
+                final String url = NMJLib.getNMJServerPHPURL() + "&action=getMenu&filter=certification";
                 try {
                     jObject = NMJLib.getJSONObject(getContext(), url);
                     jArray = jObject.getJSONArray("data");

@@ -148,8 +148,7 @@ public class NMJTvShowService extends TvShowApiService {
 
 
                 jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerPHPURL() +
-                        "action=getVideoDetails&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&showid=" + id + "&title_type=2");
+                        "&action=getVideoDetails&showid=" + id + "&title_type=2");
 
 
             show.setTitle(NMJLib.getStringFromJSONObject(jObject, "TITLE", ""));

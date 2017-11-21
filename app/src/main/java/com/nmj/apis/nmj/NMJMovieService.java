@@ -128,9 +128,7 @@ public class NMJMovieService extends NMJApiService {
             if (NMJLib.getTMDbCache(CacheId).equals("")) {
                 System.out.println("Putting Cache in " + CacheId);
                 jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerPHPURL() +
-                        "action=getVideoDetails&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&showid=" +
-                        id + "&title_type=1");
+                        "&action=getVideoDetails&showid=" + id + "&title_type=1");
                 NMJLib.setTMDbCache(CacheId, jObject.toString());
             }
             System.out.println("Getting Cache from " + CacheId);

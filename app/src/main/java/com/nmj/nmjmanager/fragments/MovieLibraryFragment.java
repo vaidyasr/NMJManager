@@ -24,18 +24,16 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap.Config;
 import android.graphics.Typeface;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.MenuItemCompat.OnActionExpandListener;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.SearchView.OnQueryTextListener;
 import android.view.ActionMode;
@@ -49,13 +47,14 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.ExpandableListView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.github.ksoichiro.android.observablescrollview.ObservableGridView;
 import com.nmj.apis.nmj.Movie;
 import com.nmj.functions.CoverItem;
@@ -64,7 +63,6 @@ import com.nmj.loader.MovieLoader;
 import com.nmj.loader.MovieLibraryType;
 import com.nmj.loader.MovieSortType;
 import com.nmj.loader.OnLoadCompletedCallback;
-import com.nmj.nmjmanager.ExpListViewAdapterWithCheckbox;
 import com.nmj.nmjmanager.MovieCollection;
 import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.MovieList;
@@ -77,17 +75,13 @@ import com.nmj.utils.TypefaceUtils;
 import com.nmj.utils.ViewUtils;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import static com.nmj.functions.NMJLib.getStringFromJSONObject;
 import static com.nmj.functions.PreferenceKeys.GRID_ITEM_SIZE;
 import static com.nmj.functions.PreferenceKeys.IGNORED_TITLE_PREFIXES;
 import static com.nmj.functions.PreferenceKeys.SHOW_TITLES_IN_GRID;
@@ -95,19 +89,17 @@ import static com.nmj.loader.MovieLibraryType.NOW_PLAYING;
 import static com.nmj.loader.MovieLibraryType.POPULAR;
 import static com.nmj.loader.MovieLibraryType.TOP_RATED;
 import static com.nmj.loader.MovieLibraryType.UPCOMING;
+import static com.nmj.loader.MovieLoader.LISTS;
 import static com.nmj.loader.MovieLoader.SORT_DATE_ADDED;
 import static com.nmj.loader.MovieLoader.SORT_DURATION;
 import static com.nmj.loader.MovieLoader.SORT_RATING;
 import static com.nmj.loader.MovieLoader.SORT_RELEASE;
 import static com.nmj.loader.MovieLoader.SORT_TITLE;
+import static com.nmj.nmjmanager.Main.disableFilterDrawerMenu;
+import static com.nmj.nmjmanager.Main.enableFilterDrawerMenu;
 import static com.nmj.nmjmanager.Main.togglefilterDrawerMenu;
 
 public class MovieLibraryFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
-
-    ExpListViewAdapterWithCheckbox listAdapter;
-    ExpandableListView expListView;
-    ArrayList<String> listDataHeader;
-    HashMap<String, List<String>> listDataChild;
     private Context mContext;
     private String baseUrl, imageSizeUrl;
     private SharedPreferences mSharedPreferences;
@@ -116,7 +108,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     private ObservableGridView mGridView;
     private ProgressBar mProgressBar;
     private boolean mShowTitles, mIgnorePrefixes, mLoading = true;
-    private DrawerLayout mFilterLayout;
     private Picasso mPicasso;
     private Config mConfig;
     private MovieLoader mMovieLoader;
@@ -124,6 +115,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
     private View mEmptyLibraryLayout;
     private TextView mEmptyLibraryTitle, mEmptyLibraryDescription;
     private MenuItem sortMenu;
+    private View mMovieView;
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -132,7 +124,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                     mMovieLoader.search("actor: " + intent.getStringExtra("intent_extra_data_key"));
                     showProgressBar();
                 } else if (intent.filterEquals(new Intent("NMJManager-movies-filter"))) {
-                    System.out.println("URL from filter: " + intent.getStringExtra("filterURL"));
                     hideEmptyView();
                     mMovieLoader.clearAll();
                     mMovieLoader.filter(intent.getExtras().getString(("filterURL")));
@@ -215,6 +206,8 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter("NMJManager-movie-actor-search"));
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.FILTER_MOVIE_LIBRARY));
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.LOAD_MOVIE_LIBRARY));
+
+        setRetainInstance(true);
     }
 
     @Override
@@ -224,23 +217,24 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(mContext).unregisterReceiver(mMessageReceiver);
         PreferenceManager.getDefaultSharedPreferences(mContext).unregisterOnSharedPreferenceChangeListener(this);
+        mMovieView = null;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.image_grid_fragment, container, false);
+        mMovieView = inflater.inflate(R.layout.image_grid_fragment, container, false);
 
-        mProgressBar = v.findViewById(R.id.progress);
+        mProgressBar = mMovieView.findViewById(R.id.progress);
 
-        mEmptyLibraryLayout = v.findViewById(R.id.empty_library_layout);
-        mEmptyLibraryTitle = v.findViewById(R.id.empty_library_title);
+        mEmptyLibraryLayout = mMovieView.findViewById(R.id.empty_library_layout);
+        mEmptyLibraryTitle = mMovieView.findViewById(R.id.empty_library_title);
         mEmptyLibraryTitle.setTypeface(TypefaceUtils.getRobotoCondensedRegular(mContext));
-        mEmptyLibraryDescription = v.findViewById(R.id.empty_library_description);
+        mEmptyLibraryDescription = mMovieView.findViewById(R.id.empty_library_description);
         mEmptyLibraryDescription.setTypeface(TypefaceUtils.getRobotoLight(mContext));
 
         mAdapter = new LoaderAdapter(mContext);
 
-        mGridView = v.findViewById(R.id.gridView);
+        mGridView = mMovieView.findViewById(R.id.gridView);
         mGridView.setAdapter(mAdapter);
         mGridView.setColumnWidth(mImageThumbSize);
         mGridView.setOnItemClickListener(new OnItemClickListener() {
@@ -272,7 +266,8 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
 
                 @Override
                 public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                    getActivity().getMenuInflater().inflate(R.menu.movie_library_cab, menu);
+                    if (getActivity() != null)
+                        getActivity().getMenuInflater().inflate(R.menu.movie_library_cab, menu);
                     return true;
                 }
 
@@ -283,9 +278,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
 
                 @Override
                 public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-
                     int id = item.getItemId();
-
                     switch (id) {
                         case R.id.movie_add_fav:
                             NMJLib.setMoviesFavourite(mContext, mAdapter.getCheckedItems(), true);
@@ -310,6 +303,22 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                             break;
                         case R.id.remove_from_list:
                             NMJLib.setMoviesWatchlist(mContext, mAdapter.getCheckedItems(), false);
+                            break;
+                        case R.id.delete_button_2:
+                            new MaterialDialog.Builder(getActivity())
+                                    .iconRes(R.drawable.ic_movie_white_24dp)
+                                    .limitIconToDefaultSize()
+                                    .title("Do you want to delete the Movie?")
+                                    .positiveText("Yes")
+                                    .negativeText("No")
+                                    .onAny(new MaterialDialog.SingleButtonCallback() {
+                                        @Override
+                                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                            Toast.makeText(mContext, "Prompt checked? " + dialog.isPromptCheckBoxChecked(), Toast.LENGTH_LONG).show();
+                                        }
+                                    })
+                                    .checkBoxPrompt("Delete media files", true, null)
+                                    .show();
                             break;
                     }
 
@@ -342,7 +351,24 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             mMovieLoader.load();
             showProgressBar();
         }
-        return v;
+        return mMovieView;
+    }
+
+    private void showDeleteDialog() {
+        new MaterialDialog.Builder(getContext())
+                .iconRes(R.drawable.ic_movie_white_24dp)
+                .limitIconToDefaultSize()
+                .title("Do you want to delete the Movie?")
+                .positiveText("Yes")
+                .negativeText("No")
+                .onAny(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        Toast.makeText(mContext, "Prompt checked? " + dialog.isPromptCheckBoxChecked(), Toast.LENGTH_LONG).show();
+                    }
+                })
+                .checkBoxPrompt("Delete media files", true, null)
+                .show();
     }
 
     private void viewMovieDetails(int position, View view) {
@@ -421,9 +447,12 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         menu.findItem(R.id.random).setVisible(mMovieLoader.getType() != MovieLibraryType.COLLECTIONS &&
                 mMovieLoader.getType() != MovieLibraryType.LISTS);
 
+        enableFilterDrawerMenu();
+
         if (mMovieLoader.getType() == MovieLibraryType.COLLECTIONS || mMovieLoader.getType() == MovieLibraryType.LISTS) {
             menu.findItem(R.id.sort).setVisible(false);
             menu.findItem(R.id.filters).setVisible(false);
+            disableFilterDrawerMenu();
         }
 
         if (mMovieLoader.getType() == MovieLibraryType.POPULAR ||
@@ -434,6 +463,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             menu.findItem(R.id.sort).setVisible(false);
             menu.findItem(R.id.filters).setVisible(false);
             menu.findItem(R.id.random).setVisible(false);
+            disableFilterDrawerMenu();
         }
 
         MenuItemCompat.setOnActionExpandListener(menu.findItem(R.id.search_textbox), new OnActionExpandListener() {
@@ -518,7 +548,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 break;
             case R.id.filters:
                 togglefilterDrawerMenu();
-                System.out.println("Filters selected");
                 break;
             case R.id.random:
                 if (mAdapter.getCount() > 0) {
@@ -564,6 +593,10 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         if (mMovieLoader.isShowingSearchResults()) {
             mEmptyLibraryTitle.setText(R.string.no_search_results);
             mEmptyLibraryDescription.setText(R.string.no_search_results_description);
+        } else if (mMovieLoader.isShowingFilterResults() && (mMovieLoader.getType() != MovieLibraryType.LISTS &&
+                mMovieLoader.getType() != MovieLibraryType.COLLECTIONS)) {
+            mEmptyLibraryTitle.setText(R.string.no_filter_results);
+            mEmptyLibraryDescription.setText(R.string.no_filter_results_description);
         } else {
             switch (mMovieLoader.getType()) {
                 case ALL_MOVIES:
@@ -706,13 +739,13 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         private LayoutInflater mInflater;
         private Typeface mTypeface;
 
-        public LoaderAdapter(Context context) {
+        private LoaderAdapter(Context context) {
             mContext = context;
             mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             mTypeface = TypefaceUtils.getRobotoMedium(mContext);
         }
 
-        public void setItemChecked(int index, boolean checked) {
+        private void setItemChecked(int index, boolean checked) {
             if (checked)
                 mChecked.add(index);
             else
@@ -721,23 +754,16 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             notifyDataSetChanged();
         }
 
-        public void clearCheckedItems() {
+        private void clearCheckedItems() {
             mChecked.clear();
             notifyDataSetChanged();
         }
 
-        public int getCheckedItemCount() {
+        private int getCheckedItemCount() {
             return mChecked.size();
         }
 
-        public List<String> getCheckedMovies() {
-            List<String> movies = new ArrayList<>(mChecked.size());
-            for (Integer i : mChecked)
-                movies.add(getItem(i).getShowId());
-            return movies;
-        }
-
-        public List<Movie> getCheckedItems() {
+        private List<Movie> getCheckedItems() {
             List<Movie> movies = new ArrayList<>(mChecked.size());
             for (Integer i : mChecked)
                 movies.add(getItem(i));

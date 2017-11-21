@@ -75,6 +75,7 @@ import com.nmj.nmjmanager.NMJManagerApplication;
 import com.nmj.nmjmanager.R;
 import com.nmj.nmjmanager.TvShow;
 import com.nmj.nmjmanager.fragments.MovieLibraryFragment;
+import com.nmj.nmjmanager.fragments.MovieLibraryOverviewFragment;
 import com.nmj.nmjmanager.fragments.ScheduledUpdatesFragment;
 import com.nmj.service.MakeAvailableOffline;
 import com.nmj.service.MovieLibraryUpdate;
@@ -224,7 +225,7 @@ public class NMJLib {
     }
 
     public static String getTMDbCache(String id) {
-        String Cache="";
+        String Cache = "";
         if (tmdbMovieCache.get(id) != null)
             Cache = tmdbMovieCache.get(id);
         return Cache;
@@ -254,12 +255,12 @@ public class NMJLib {
     }
 
     public static String getNMJServerPHPURL() {
-        return getNMJServerURL() + "?";
+        return getNMJServerURL() + "?drivepath=" + getDrivePath() + "&dbpath=" + getDbPath();
     }
 
     public static String getNMJImageURL() {
         if (!getNMJServerURL().equals("") && !getDrivePath().equals(""))
-            return getNMJServerURL() + "/" ;
+            return getNMJServerURL() + "/";
         else
             return "";
     }
@@ -289,7 +290,7 @@ public class NMJLib {
         return PreferenceManager.getDefaultSharedPreferences(NMJManagerApplication.getContext()).getString(SORTING_MOVIES, "title");
     }
 
-    public static String getSortOrder(){
+    public static String getSortOrder() {
         return PreferenceManager.getDefaultSharedPreferences(NMJManagerApplication.getContext()).getString(PreferenceKeys.SORT_TYPE, "asc");
     }
 
@@ -457,8 +458,8 @@ public class NMJLib {
     public static boolean isPortrait(Context c) {
         return c != null && (c.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
     }
-    /**
 
+    /**
      * Determines if the device is currently connected to a network
      *
      * @param c - Context of the application
@@ -2473,8 +2474,7 @@ public class NMJLib {
     public static void setLibrary(Context context, NMJAdapter mDatabase) {
         if (!NMJLib.getNMJServerURL().equals("")) {
             ArrayList<Library> list = new ArrayList<>();
-            String url = NMJLib.getNMJServerPHPURL() + "action=getCount&drivepath=" +
-                    NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath();
+            String url = NMJLib.getNMJServerPHPURL() + "&action=getCount";
 
             JSONObject jObject;
             try {
@@ -2676,8 +2676,7 @@ public class NMJLib {
         for (int i = 0; i < nmjMovies.size(); i++) {
             showIds.add(i, nmjMovies.get(i).getShowId());
         }
-        final String url = getNMJServerPHPURL() + "action=editFavourite&drivepath=" +
-                NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&TTYPE=1&mode=" +
+        final String url = getNMJServerPHPURL() + "&action=editFavourite&TTYPE=1&mode=" +
                 mode + "&showid=" + StringUtils.join(showIds, ",");
         new AsyncTask<Void, Void, Void>() {
             JSONObject jObject, dObject;
@@ -2718,8 +2717,7 @@ public class NMJLib {
         for (int i = 0; i < nmjMovies.size(); i++) {
             showIds.add(i, nmjMovies.get(i).getShowId());
         }
-        final String url = getNMJServerPHPURL() + "action=editWatched&drivepath=" +
-                NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&TTYPE=1&mode=" +
+        final String url = getNMJServerPHPURL() + "&action=editWatched&TTYPE=1&mode=" +
                 mode + "&showid=" + StringUtils.join(showIds, ",");
         new AsyncTask<Void, Void, Void>() {
             JSONObject jObject, dObject;
@@ -2741,8 +2739,7 @@ public class NMJLib {
                     Toast.makeText(mContext, mContext.getString(R.string.markedAsWatched), Toast.LENGTH_SHORT).show();
                     if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(REMOVE_MOVIES_FROM_WATCHLIST, true))
                         setMoviesWatchlist(mContext, nmjMovies, false); // False to remove from watchlist
-                }
-                else
+                } else
                     Toast.makeText(mContext, mContext.getString(R.string.markedAsUnwatched), Toast.LENGTH_SHORT).show();
 
                 NMJAdapter adapter = NMJManagerApplication.getNMJAdapter();
@@ -2767,8 +2764,7 @@ public class NMJLib {
         for (int i = 0; i < nmjMovies.size(); i++) {
             showIds.add(i, nmjMovies.get(i).getShowId());
         }
-        final String url = getNMJServerPHPURL() + "action=editWatchlist&drivepath=" +
-                NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&TTYPE=1&mode=" +
+        final String url = getNMJServerPHPURL() + "&action=editWatchlist&TTYPE=1&mode=" +
                 mode + "&showid=" + StringUtils.join(showIds, ",");
         new AsyncTask<Void, Void, Void>() {
             JSONObject jObject, dObject;
@@ -2809,11 +2805,9 @@ public class NMJLib {
         System.out.println("LoadType: " + loadType);
         if (!NMJLib.getNMJServerURL().equals("")) {
             if (id != null && loadType.equals("list"))
-                url = NMJLib.getNMJServerPHPURL() + "action=getLists&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id;
+                url = NMJLib.getNMJServerPHPURL() + "&action=getLists&id=" + id;
             else if (id != null && loadType.equals("collection"))
-                url = NMJLib.getNMJServerPHPURL() + "action=getCollections&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id ;
+                url = NMJLib.getNMJServerPHPURL() + "&action=getCollections&id=" + id;
             else if (videoType.equals("tv")) {
                 url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" +
                         getTmdbApiKey(mContext) + "&language=en";
@@ -2821,10 +2815,10 @@ public class NMJLib {
                         loadType.equals("on_the_air") || loadType.equals("airing_today"))
                     url += "&page=" + count;
             } else {
-                url = NMJLib.getNMJServerPHPURL() + "action=getVideos&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() +
-                        "&orderby=" + NMJLib.getSortOrder() + "&filterby=All" + "&sortby=" + NMJLib.getSortType() + "&load=" +
-                        loadType + "&TYPE=" + videoType + "&VALUE=&searchtype=title";
+                url = NMJLib.getNMJServerPHPURL() + "&action=getVideos&orderby=" +
+                        NMJLib.getSortOrder() + "&filterby=All" + "&sortby=" +
+                        NMJLib.getSortType() + "&load=" + loadType + "&TYPE=" + videoType +
+                        "&VALUE=&searchtype=title";
                 if (start != 0)
                     url += "&start=" + start;
                 if (count != 0)
@@ -2847,7 +2841,7 @@ public class NMJLib {
 
                 if (!cacheManager.exists(CacheId)) {
                     System.out.println("Putting Cache in " + CacheId);*/
-                    jObject = NMJLib.getJSONObject(mContext, url.replace(" ", "%20"));
+                jObject = NMJLib.getJSONObject(mContext, url.replace(" ", "%20"));
 /*                    NMJLib.putCache(cacheManager, CacheId, jObject.toString());
                 }
                 System.out.println("Getting Cache from " + CacheId);
@@ -2904,11 +2898,9 @@ public class NMJLib {
         //System.out.println("LoadType: " + loadType);
         if (!NMJLib.getNMJServerURL().equals("")) {
             if (id != null && loadType.equals("list"))
-                url = NMJLib.getNMJServerPHPURL() + "action=getLists&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id;
+                url = NMJLib.getNMJServerPHPURL() + "&action=getLists&id=" + id;
             else if (id != null && loadType.equals("collection"))
-                url = NMJLib.getNMJServerPHPURL() + "action=getCollections&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&id=" + id;
+                url = NMJLib.getNMJServerPHPURL() + "&action=getCollections&id=" + id;
             else if (videoType.equals("movie")) {
                 url = "http://api.themoviedb.org/3/" + videoType + "/" + loadType + "?api_key=" +
                         getTmdbApiKey(mContext) + "&language=en";
@@ -2916,17 +2908,29 @@ public class NMJLib {
                         loadType.equals("now_playing") || loadType.equals("upcoming"))
                     url += "&page=" + count;
             } else {
-                url = NMJLib.getNMJServerPHPURL() + "action=getVideos&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() +
-                        "&orderby=" + NMJLib.getSortOrder() + "&filterby=";
-                if (searchText.equals("") && filterType.equals(""))
-                    url += "All";
-                else if (!searchText.equals("") && filterType.equals("filter"))
-                    url += "Filter&" + searchText;
-                else if (filterType.equals("search"))
-                    url += "search&VALUE=" + searchText;
+                url = NMJLib.getNMJServerPHPURL() + "&action=getVideos&orderby=" + NMJLib.getSortOrder();
+
                 url += "&sortby=" + NMJLib.getSortType() + "&load=" + loadType + "&TYPE=" +
                         videoType + "&searchtype=title";
+                url += "&filterby=";
+
+                if (searchText.equals("") && filterType.equals(""))
+                    url += "All";
+                else if (filterType.equals("filter"))
+                    url += "Filter" + searchText;
+                else if (filterType.equals("search"))
+                    url += "search&VALUE=" + searchText;
+
+/*                if (filterType.equals("filter")) {
+                    if (MovieLibraryOverviewFragment.getCurrentTab().toLowerCase().equals(loadType))
+                        url += "Filter&" + searchText;
+                    else
+                        url += "All";
+                } else if (searchText.equals("") && filterType.equals(""))
+                    url += "All";
+                else if (filterType.equals("search"))
+                    url += "search&VALUE=" + searchText;*/
+
                 if (start != 0)
                     url += "&start=" + start;
                 if (count != 0)

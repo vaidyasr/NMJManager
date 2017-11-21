@@ -659,8 +659,7 @@ public class NMJMovieDetailsFragment extends Fragment {
 
     public void removeFromWatchlist() {
         String mode = "remove";
-        final String url = getNMJServerPHPURL() + "action=editWatchlist&drivepath=" +
-                NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&TTYPE=1&mode=" +
+        final String url = getNMJServerPHPURL() + "&action=editWatchlist&TTYPE=1&mode=" +
                 mode + "&showid=" + mMovie.getShowId();
         new com.nmj.functions.AsyncTask<Void, Void, Void>() {
             JSONObject jObject, dObject;
@@ -838,8 +837,7 @@ public class NMJMovieDetailsFragment extends Fragment {
             mode = "add";
         else
             mode = "remove";
-        final String url = getNMJServerPHPURL() + "action=editWatched&drivepath=" +
-                NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&TTYPE=1&mode=" +
+        final String url = getNMJServerPHPURL() + "&action=editWatched&&TTYPE=1&mode=" +
                 mode + "&showid=" + mMovie.getShowId();
         new com.nmj.functions.AsyncTask<Void, Void, Void>() {
             JSONObject jObject, dObject;
@@ -889,8 +887,7 @@ public class NMJMovieDetailsFragment extends Fragment {
             mode = "add";
         else
             mode = "remove";
-        final String url = getNMJServerPHPURL() + "action=editWatchlist&drivepath=" +
-                NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&TTYPE=1&mode=" +
+        final String url = getNMJServerPHPURL() + "&action=editWatchlist&TTYPE=1&mode=" +
                 mode + "&showid=" + mMovie.getShowId();
         new com.nmj.functions.AsyncTask<Void, Void, Void>() {
             JSONObject jObject, dObject;
@@ -932,8 +929,7 @@ public class NMJMovieDetailsFragment extends Fragment {
             mode = "add";
         else
             mode = "remove";
-        final String url = getNMJServerPHPURL() + "action=editFavourite&drivepath=" +
-                NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&TTYPE=1&mode=" +
+        final String url = getNMJServerPHPURL() + "&action=editFavourite&TTYPE=1&mode=" +
                 mode + "&showid=" + mMovie.getShowId();
         new com.nmj.functions.AsyncTask<Void, Void, Void>() {
             JSONObject jObject, dObject;
@@ -1004,8 +1000,7 @@ public class NMJMovieDetailsFragment extends Fragment {
             String error = "";
 
             protected Void doInBackground(Void... params) {
-                final String url = NMJLib.getNMJServerPHPURL() + "action=saveImage&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() + "&filter=certification";
+                final String url = NMJLib.getNMJServerPHPURL() + "&action=saveImage&filter=certification";
                 try {
                     jObject = NMJLib.getJSONObject(getContext(), url);
                     jArray = jObject.getJSONArray("data");
@@ -1032,9 +1027,7 @@ public class NMJMovieDetailsFragment extends Fragment {
             String error = "";
 
             protected Void doInBackground(Void... params) {
-                final String url = NMJLib.getNMJServerPHPURL() + "action=updateData&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() +
-                        "&SHOWID=" + mMovie.getShowId() + "&tmdbid=" + mMovie.getId();
+                final String url = NMJLib.getNMJServerPHPURL() + "&action=updateData&SHOWID=" + mMovie.getShowId() + "&tmdbid=" + mMovie.getId();
                 try {
                     jObject = NMJLib.getJSONObject(getContext(), url);
                 } catch (Exception e) {
@@ -1057,9 +1050,8 @@ public class NMJMovieDetailsFragment extends Fragment {
             String error = "";
 
             protected Void doInBackground(Void... params) {
-                final String url = NMJLib.getNMJServerPHPURL() + "action=updateData&drivepath=" +
-                        NMJLib.getDrivePath() + "&dbpath=" + NMJLib.getDbPath() +
-                        "&SHOWID=" + mMovie.getShowId() + "&imdbid=" + mMovie.getImdbId();
+                final String url = NMJLib.getNMJServerPHPURL() + "&action=updateData&SHOWID=" +
+                        mMovie.getShowId() + "&imdbid=" + mMovie.getImdbId();
                 try {
                     jObject = NMJLib.getJSONObject(getContext(), url);
                     System.out.println("Output: " + jObject.toString());

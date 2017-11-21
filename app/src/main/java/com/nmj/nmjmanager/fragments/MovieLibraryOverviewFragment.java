@@ -1,5 +1,6 @@
 package com.nmj.nmjmanager.fragments;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
@@ -28,7 +29,8 @@ import static com.nmj.functions.PreferenceKeys.MOVIES_TABS_SELECTED;
 
 public class MovieLibraryOverviewFragment extends Fragment {
 
-    private static TabLayout mTabs;
+    public static TabLayout mTabs;
+    public static int mPosition;
     private static ViewPagerAdapter mAdapter;
     private final List<String> TITLES = new ArrayList<>();
 
@@ -44,6 +46,10 @@ public class MovieLibraryOverviewFragment extends Fragment {
             mTabs.removeTabAt(position);
             mAdapter.removeTabPage(position);
         }
+    }
+
+    public static String getCurrentTab() {
+        return mAdapter.getPageTitle(mPosition).toString();
     }
 
     public static void initializeTabs(Set<String> values, boolean remove) {
@@ -105,22 +111,39 @@ public class MovieLibraryOverviewFragment extends Fragment {
         if (NMJLib.hasLollipop())
             mTabs.setElevation(1f);
 
+        mTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                mPosition = tab.getPosition();
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
         return v;
     }
 
     public class ViewPagerAdapter extends CustomFragmentPagerAdapter {
         private final List<String> mFragmentTitleList = new ArrayList<>();
 
-        public ViewPagerAdapter(FragmentManager fm) {
+        private ViewPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
-        public void addTabPage(int index) {
+        private void addTabPage(int index) {
             mFragmentTitleList.add(TITLES.get(index));
             notifyDataSetChanged();
         }
 
-        public void removeTabPage(int index) {
+        private void removeTabPage(int index) {
             mFragmentTitleList.remove(index);
             notifyDataSetChanged();
         }

@@ -11,10 +11,8 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.common.base.Joiner;
 import com.nmj.utils.LocalBroadcastUtils;
 
 import java.net.URLEncoder;
@@ -27,28 +25,27 @@ import java.util.List;
 @SuppressLint("UseSparseArrays")
 public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
 
-    ImageView lineColorCode;
     // Define activity context
-    private Context mContext;
+    private final Context mContext;
 
     /*
      * Here we have a Hashmap containing a String key
      * (can be Integer or other type but I was testing
      * with contacts so I used contact name as the key)
     */
-    private HashMap<String, List<String>> mListDataChild;
+    private final HashMap<String, List<String>> mListDataChild;
 
     // ArrayList that is what each key in the above
     // hashmap points to
-    private ArrayList<String> mListDataGroup;
+    private final ArrayList<String> mListDataGroup;
 
     // Hashmap for keeping track of our checkbox check states
-    private HashMap<Integer, boolean[]> mChildCheckStates;
-    private HashMap<Integer, ImageButton> mGroupResetButton;
-    private Boolean[] checkBoxState;
+    private final HashMap<Integer, boolean[]> mChildCheckStates;
+    private final HashMap<Integer, ImageButton> mGroupResetButton;
+    private final Boolean[] checkBoxState;
 
-    private HashMap<Integer, HashMap<Integer, CheckBox>> mGroupCheckBoxes;
-    private HashMap<Integer, CheckBox> mChildCheckBoxes;
+    private final HashMap<Integer, HashMap<Integer, CheckBox>> mGroupCheckBoxes;
+    private final HashMap<Integer, CheckBox> mChildCheckBoxes;
 
     // Our getChildView & getGroupView use the viewholder patter
     // Here are the viewholders defined, the inner classes are
@@ -113,23 +110,24 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.list_group, null);
+            if (inflater != null)
+                convertView = inflater.inflate(R.layout.list_group, null);
 
             // Initialize the GroupViewHolder defined at the bottom of this document
             groupViewHolder = new GroupViewHolder();
-            groupViewHolder.mGroupText = convertView.findViewById(R.id.lblListHeader);
-            groupViewHolder.mGroupImageButton = convertView.findViewById(R.id.resetFilter);
-
+            if (convertView != null) {
+                groupViewHolder.mGroupText = convertView.findViewById(R.id.lblListHeader);
+                groupViewHolder.mGroupImageButton = convertView.findViewById(R.id.resetFilter);
+                convertView.setTag(groupViewHolder);
+            }
             mGroupResetButton.put(groupPosition, groupViewHolder.mGroupImageButton);
-            convertView.setTag(groupViewHolder);
         } else {
             groupViewHolder = (GroupViewHolder) convertView.getTag();
         }
 
         groupViewHolder.mGroupText.setText(groupText);
 
-        System.out.println("Setting state for Group " + groupPosition + ": " + checkBoxState[groupPosition]);
-
+        //System.out.println("Setting state for Group " + groupPosition + ": " + checkBoxState[groupPosition]);
 
         groupViewHolder.mGroupImageButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -140,6 +138,7 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
                 mChildCheckStates.put(groupPosition, getChecked);
 
                 notifyDataSetChanged();
+                updateGridView();
             }
         });
         return convertView;
@@ -170,28 +169,22 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
 
     @Override
     public View getChildView(final int groupPosition, int childPosition, boolean isLastChild, View convertView, final ViewGroup parent) {
-
-        final int mGroupPosition = groupPosition;
         final int mChildPosition = childPosition;
 
         //  I passed a text string into an activity holding a getter/setter
         //  which I passed in through "ExpListChildItems".
         //  Here is where I call the getter to get that text
-        childText = getChild(mGroupPosition, mChildPosition);
+        childText = getChild(groupPosition, mChildPosition);
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) this.mContext
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.list_item, null);
+            if (inflater != null)
+                convertView = inflater.inflate(R.layout.list_item, null);
 
             childViewHolder = new ChildViewHolder();
-
-            childViewHolder.mChildText = (TextView) convertView
-                    .findViewById(R.id.lblListItem);
-
-            childViewHolder.mChildCheckBox = (CheckBox) convertView
-                    .findViewById(R.id.lstcheckBox);
-
+            childViewHolder.mChildText = convertView.findViewById(R.id.lblListItem);
+            childViewHolder.mChildCheckBox = convertView.findViewById(R.id.lstcheckBox);
             convertView.setTag(R.layout.list_item, childViewHolder);
         } else {
             childViewHolder = (ChildViewHolder) convertView
@@ -208,13 +201,13 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
 		*/
         childViewHolder.mChildCheckBox.setOnCheckedChangeListener(null);
 
-        if (mChildCheckStates.containsKey(mGroupPosition)) {
+        if (mChildCheckStates.containsKey(groupPosition)) {
             /*
              * if the hashmap mChildCheckStates<Integer, Boolean[]> contains
 			 * the value of the parent view (group) of this child (aka, the key),
 			 * then retrive the boolean array getChecked[]
 			*/
-            boolean getChecked[] = mChildCheckStates.get(mGroupPosition);
+            boolean getChecked[] = mChildCheckStates.get(groupPosition);
 
             // set the check state of this position's checkbox based on the
             // boolean value of getChecked[position]
@@ -227,10 +220,10 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
 			 *  and set; it's size to the total number of children associated with
 			 *  the parent group
 			*/
-            boolean getChecked[] = new boolean[getChildrenCount(mGroupPosition)];
+            boolean getChecked[] = new boolean[getChildrenCount(groupPosition)];
 
             // add getChecked[] to the mChildCheckStates hashmap using mGroupPosition as the key
-            mChildCheckStates.put(mGroupPosition, getChecked);
+            mChildCheckStates.put(groupPosition, getChecked);
 
             // set the check state of this position's checkbox based on the
             // boolean value of getChecked[position]
@@ -240,49 +233,30 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
         childViewHolder.mChildCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                boolean getChecked[] = mChildCheckStates.get(mGroupPosition);
+                boolean getChecked[] = mChildCheckStates.get(groupPosition);
                 getChecked[mChildPosition] = isChecked;
-                mChildCheckStates.put(mGroupPosition, getChecked);
-                String filterString = "";
-                for(int i=0;i < getGroupCount(); i++){
-                    filterString += "&" + getGroup(i) + "=";
-                    List<String> checked = new ArrayList<>();
-                    for(int j=0;j< getChildrenCount(i); j++){
-                        if (mChildCheckStates.get(i)[j]){
-                            checked.add( URLEncoder.encode(getChild(i, j)));
-                        }
-                    }
-                    filterString +=TextUtils.join(",", checked);
-                }
-                System.out.println("filterURL = " + filterString);
-                LocalBroadcastUtils.filterMovieLibrary(mContext, filterString);
+                mChildCheckStates.put(groupPosition, getChecked);
+                updateGridView();
             }
         });
 
         return convertView;
     }
 
-    /*
- * Find if all values are checked.
- */
-    protected boolean isAllValuesChecked(boolean[] mChecked) {
-
-        for (int i = 0; i < mChecked.length; i++) {
-            if (!mChecked[i]) {
-                return false;
+    private void updateGridView() {
+        StringBuilder filterString = new StringBuilder();
+        for (int i = 0; i < getGroupCount(); i++) {
+            filterString.append("&").append(getGroup(i)).append("=");
+            List<String> checked = new ArrayList<>();
+            for (int j = 0; j < getChildrenCount(i); j++) {
+                if (mChildCheckStates.get(i)[j]) {
+                    checked.add(URLEncoder.encode(getChild(i, j)));
+                }
             }
+            filterString.append(TextUtils.join(",", checked));
         }
-        return true;
-    }
-
-    protected boolean isNotAllValuesChecked(boolean[] mChecked) {
-
-        for (int i = 0; i < mChecked.length; i++) {
-            if (mChecked[i]) {
-                return false;
-            }
-        }
-        return true;
+        //System.out.println("filterURL = " + filterString);
+        LocalBroadcastUtils.filterMovieLibrary(mContext, filterString.toString());
     }
 
     @Override
@@ -311,13 +285,11 @@ public class ExpListViewAdapterWithCheckbox extends BaseExpandableListAdapter {
     }
 
     public final class GroupViewHolder {
-
         TextView mGroupText;
         ImageButton mGroupImageButton;
     }
 
     public final class ChildViewHolder {
-
         TextView mChildText;
         CheckBox mChildCheckBox;
     }

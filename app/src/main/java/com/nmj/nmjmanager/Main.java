@@ -78,6 +78,7 @@ import com.nmj.functions.NMJAdapter;
 import com.nmj.functions.NMJDb;
 import com.nmj.functions.NMJSource;
 import com.nmj.functions.NMJLib;
+import com.nmj.loader.MovieLoader;
 import com.nmj.nmjmanager.fragments.AccountsFragment;
 import com.nmj.nmjmanager.fragments.ContactDeveloperFragment;
 import com.nmj.nmjmanager.fragments.MovieDiscoveryViewPagerFragment;
@@ -124,13 +125,13 @@ import static com.nmj.nmjmanager.NMJManagerApplication.getContext;
 public class Main extends NMJActivity {
 
     public static final int MOVIES = 1, SHOWS = 2, MUSIC = 3, SELECT = 4, SOURCE = 5;
+    static ExpListViewAdapterWithCheckbox listAdapter;
     private static NavigationView rightNavigationView;
     private static DrawerLayout mDrawerLayout;
     protected ListView mDrawerList;
     AlertDialog alertDialog;
     ArrayList<NMJDb> nmjdb = new ArrayList<>();
     AlertDialog.Builder alertDialogBuilder;
-    ExpListViewAdapterWithCheckbox listAdapter;
     ExpandableListView expListView;
     ArrayList<String> listDataHeader;
     HashMap<String, List<String>> listDataChild;
@@ -159,7 +160,7 @@ public class Main extends NMJActivity {
     private Picasso mPicasso;
     private Context mContext;
     private String mDriveType = "local";
-    private String VersionName = "1.0.0";
+    private String VersionName;
     private String ApkName = "NMJManager.apk";
     private String PackageName = "com.nmj.nmjmanager";
 
@@ -169,6 +170,14 @@ public class Main extends NMJActivity {
         } else {
             mDrawerLayout.closeDrawer(GravityCompat.END);
         }
+    }
+
+    public static void disableFilterDrawerMenu() {
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.END);
+    }
+
+    public static void enableFilterDrawerMenu() {
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.END);
     }
 
     private void reloadFragment(String fragment) {
@@ -232,7 +241,6 @@ public class Main extends NMJActivity {
 
         // Listview Group click listener
         expListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
-
             @Override
             public boolean onGroupClick(ExpandableListView parent, View v,
                                         int groupPosition, long id) {
@@ -250,36 +258,39 @@ public class Main extends NMJActivity {
 
         // Listview Group collasped listener
         expListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
-
             @Override
             public void onGroupCollapse(int groupPosition) {
-                Toast.makeText(mContext,
+/*                Toast.makeText(mContext,
                         listDataHeader.get(groupPosition) + " Collapsed",
-                        Toast.LENGTH_SHORT).show();
-
+                        Toast.LENGTH_SHORT).show();*/
             }
         });
 
         // Listview on child click listener
         expListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-
             @Override
             public boolean onChildClick(ExpandableListView parent, View v,
                                         int groupPosition, int childPosition, long id) {
                 // TODO Auto-generated method stub
-                Toast.makeText(
+/*                Toast.makeText(
                         mContext,
                         listDataHeader.get(groupPosition)
                                 + " : "
                                 + listDataChild.get(
                                 listDataHeader.get(groupPosition)).get(
                                 childPosition), Toast.LENGTH_SHORT)
-                        .show();
+                        .show();*/
                 listAdapter.getChildCheckBox(childPosition, groupPosition).toggle();
-                if (listAdapter.getChildrenCount(groupPosition) == 0) {
-                    System.out.println("Zero");
-                }
                 return true;
+            }
+        });
+
+        Button button = findViewById(R.id.reset_button);
+
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                listAdapter.resetGroupCheckBoxes();
+                LocalBroadcastUtils.loadMovieLibrary(mContext);
             }
         });
 
@@ -293,7 +304,7 @@ public class Main extends NMJActivity {
         mDrawerList.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-                System.out.println("Selected: " + arg2);
+                //System.out.println("Selected: " + arg2);
                 switch (mMenuItems.get(arg2).getType()) {
                     case MenuItem.HEADER:
                         Intent intent = new Intent(getApplicationContext(), Preferences.class);
@@ -590,7 +601,7 @@ public class Main extends NMJActivity {
 
             protected Void doInBackground(Void... params) {
                 try {
-                    String serverURL = "http://www.pchportal.duckdns.org/NMJManager/version.txt";
+                    String serverURL = "http://www.pchportal.duckdns.org/NMJManager/version.txt?" + Math.random();
 
                     jObject = NMJLib.getJSONObject(mContext, serverURL);
                     VersionName = NMJLib.getStringFromJSONObject(jObject, "version", "");
@@ -704,8 +715,8 @@ public class Main extends NMJActivity {
             protected Void doInBackground(Void... params) {
                 nmjdb.clear();
                 try {
-                    jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerPHPURL() +
-                            "action=getDrives&type=" + mDriveType);
+                    jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerURL() +
+                            "?action=getDrives&type=" + mDriveType);
                     NMJLib.setMachineType(NMJLib.getStringFromJSONObject(jObject, "machine", ""));
                     jArray = jObject.getJSONArray("data");
                     System.out.println("Output: " + jArray.toString());
@@ -752,14 +763,14 @@ public class Main extends NMJActivity {
             protected Void doInBackground(Void... params) {
                 try {
                     String serverURL = "http://www.pchportal.duckdns.org/NMJManager/getData.php?action=getServerMD5sum";
-                    String clientURL = NMJLib.getNMJServerPHPURL() + "action=getMD5sum";
+                    String clientURL = NMJLib.getNMJServerURL() + "?action=getMD5sum";
                     jObject = NMJLib.getJSONObject(mContext, serverURL);
                     String serverMD5 = NMJLib.getStringFromJSONObject(jObject, "md5sum", "");
                     jObject = NMJLib.getJSONObject(mContext, clientURL);
                     String clientMD5 = NMJLib.getStringFromJSONObject(jObject, "md5sum", "");
 
                     if (!serverMD5.equals(clientMD5)) {
-                        String updateURL = NMJLib.getNMJServerPHPURL() + "action=updateProgram";
+                        String updateURL = NMJLib.getNMJServerURL() + "?action=updateProgram";
                         jObject = NMJLib.getJSONObject(mContext, updateURL);
                         status = NMJLib.getStringFromJSONObject(jObject, "status", "");
                         if (!status.equals("success"))
@@ -800,8 +811,8 @@ public class Main extends NMJActivity {
                     obj.put("path", path);
                     obj.put("device_type", deviceType);
 
-                    jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerPHPURL() +
-                            "action=getDriveDetails&DATA=" + obj.toString());
+                    jObject = NMJLib.getJSONObject(mContext, NMJLib.getNMJServerURL() +
+                            "?action=getDriveDetails&DATA=" + obj.toString());
                     System.out.println("Output: " + jObject.toString());
                     NMJDb tmpdb = new NMJDb(getContext(),
                             NMJLib.getStringFromJSONObject(jObject, "name", ""),
@@ -1428,7 +1439,7 @@ public class Main extends NMJActivity {
             // TODO: Do your background computation...
             // Then return it
             List<String> Index = new ArrayList<String>();
-            String URL = "http://pchportal.duckdns.org/NMJManager/getData.php?action=getMenu&dbpath=guerilla/nmj_database/media.db&filter=" + groupType.toLowerCase();
+            String URL = NMJLib.getNMJServerPHPURL() + "&action=getMenu&filter=" + groupType.toLowerCase();
             JSONObject jObject = NMJLib.getJSONObject(mContext, URL.replace(" ", "%20"));
             try {
                 String name = getStringFromJSONObject(jObject, "data", "");

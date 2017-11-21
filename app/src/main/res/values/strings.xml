@@ -254,8 +254,8 @@
     <string name="detailsFirstAired">First aired</string>
     <string name="openInBrowser">Open in browser</string>
     <string name="deviceNotSupported">Unsupported device!</string>
-    <string name="choiceWatchedMovies">Watched movies</string>
-    <string name="choiceUnwatchedMovies">Unwatched movies</string>
+    <string name="choiceWatchedMovies">Watched</string>
+    <string name="choiceUnwatchedMovies">Unwatched</string>
     <string name="allGenres">All genres</string>
     <string name="noFileSources">No file sources</string>
     <string name="addFileSourcesAbove">Add file sources using the menu item above.</string>
@@ -529,6 +529,8 @@
     <string name="no_movies_description_tablet">Select the <b>Add NMJ Server</b> from the navigation menu to add movies.</string>
     <string name="no_search_results">Nothing found</string>
     <string name="no_search_results_description">Please try again with a different query.</string>
+    <string name="no_filter_results">Nothing found</string>
+    <string name="no_filter_results_description">Please try again with a different filter.</string>
     <string name="no_favorites">No favorites</string>
     <string name="no_favorites_description">Don\'t you like movies?</string>
     <string name="no_new_releases">No new releases</string>

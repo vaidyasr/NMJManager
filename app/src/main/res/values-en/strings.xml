@@ -56,8 +56,8 @@
     <string name="stringNowPlaying">In cinemas</string>
     <string name="ignorenfotitle">Ignore custom film data files</string>
     <string name="detailsFirstAired">First broadcast</string>
-    <string name="choiceWatchedMovies">Watched movies</string>
-    <string name="choiceUnwatchedMovies">Unwatched movies</string>
+    <string name="choiceWatchedMovies">Watched</string>
+    <string name="choiceUnwatchedMovies">Unwatched</string>
     <string name="automaticallyRemoveMoviesFromWatchlist">Automatically remove movies from watchlist</string>
     <string name="automaticallyRemoveMoviesFromWatchlistDescription">Remove movies on the watchlist when marking as watched.</string>
     <string name="automaticallyShareSocialUpdates">Automatically share social updates when you watch a film or TV shows.</string>
